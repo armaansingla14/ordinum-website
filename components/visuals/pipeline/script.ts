@@ -3,13 +3,12 @@
  *
  * Everything is a pure function of one looping clock (seconds, 0..LOOP), so the
  * animation can pause/resume exactly and render a static frame for reduced motion.
- * Positions along the rail are in "stage units" (0 = SCENARIO ... 6 = REGRESSION);
+ * Positions along the rail are in "stage units" (0 = SYSTEMS ... 6 = REGRESS);
  * each layout maps stage units to SVG coordinates.
  *
- * This is an illustrative composition, not recorded data.
+ * This is a conceptual composition, not recorded data: no counts, rates or fault
+ * numbers shown here describe a real run.
  */
-
-import { research } from "@/lib/content";
 
 /** Loop length in seconds. */
 export const LOOP = 16;
@@ -67,7 +66,7 @@ export type PacketDef = {
   launch: number;
   /** Fault ticks carried by the scenario (1-6). */
   faults: number;
-  /** Number of new coverage cells this packet lights at COVERAGE. */
+  /** Number of new behavior cells this packet lights at EVIDENCE. */
   newCells: number;
   failing: boolean;
   /** Shown in the reduced "mobile" variant. */
@@ -77,9 +76,10 @@ export type PacketDef = {
 const SPACING = 0.95;
 const FIRST = 0.3;
 const FAIL_INDEX = 6;
-const FAULTS = [2, 1, 3, 4, 2, 5, 6, 3, 1, 4, 2, 5, 3, 2];
+// 13 scenarios: the last one has left the rail before the resolved STATIC_T frame.
+const FAULTS = [2, 1, 3, 4, 2, 5, 6, 3, 1, 4, 2, 5, 3];
 /** Diminishing returns: new behavior gets rarer as the campaign runs. */
-const NEW_CELLS = [3, 3, 2, 3, 2, 2, 2, 2, 1, 2, 1, 0, 1, 0];
+const NEW_CELLS = [3, 3, 2, 3, 2, 2, 2, 2, 1, 2, 1, 0, 1];
 
 export const PACKETS: PacketDef[] = FAULTS.map((faults, i) => ({
   id: `p${i}`,
@@ -95,23 +95,35 @@ export const FAIL_PACKET = PACKETS[FAIL_INDEX];
 /** Travel time between adjacent stages. */
 export const HOP = 0.5;
 
+/** Stage indices. */
+export const STAGE = {
+  systems: 0,
+  engines: 1,
+  execute: 2,
+  evidence: 3,
+  verify: 4,
+  reproduce: 5,
+  regress: 6,
+} as const;
+
 /** Key moments for the failing scenario. */
 const tF = FAIL_PACKET.launch;
+const atReproduce = tF + 5 * HOP + 1.3;
 export const FAIL = {
-  atExecute: tF + HOP + 0.05,
-  atCoverage: tF + 2 * HOP + 0.35,
-  atFailure: tF + 3 * HOP + 0.55,
-  violation: tF + 3 * HOP + 0.6,
-  atMinimize: tF + 4 * HOP + 1.25,
-  dropTick: tF + 4 * HOP + 1.55,
-  collapse: tF + 4 * HOP + 1.95,
-  leaveMinimize: tF + 4 * HOP + 2.45,
-  atReplay: tF + 5 * HOP + 2.45,
-  ghostIn: tF + 5 * HOP + 2.5,
-  ghostLock: tF + 5 * HOP + 3.2,
-  leaveReplay: tF + 5 * HOP + 3.45,
-  atRegression: tF + 6 * HOP + 3.45,
-  saved: tF + 6 * HOP + 3.7,
+  atEngines: tF + HOP,
+  atExecute: tF + 2 * HOP + 0.05,
+  atEvidence: tF + 3 * HOP + 0.35,
+  atVerify: tF + 4 * HOP + 0.55,
+  violation: tF + 4 * HOP + 0.6,
+  leaveVerify: tF + 4 * HOP + 1.3,
+  atReproduce,
+  /** Re-runs start; each one lands RERUN_GAP apart. */
+  rerunStart: atReproduce + 0.1,
+  dropTick: atReproduce + 1.05,
+  collapse: atReproduce + 1.45,
+  leaveReproduce: atReproduce + 1.75,
+  atRegression: atReproduce + 1.75 + HOP,
+  saved: atReproduce + 1.75 + HOP + 0.25,
 } as const;
 
 /** Stage position over time (stage units). */
@@ -119,31 +131,31 @@ export function packetStage(p: PacketDef): Keyframes {
   const t0 = p.launch;
   if (!p.failing) {
     return track([
-      [t0, 0],
-      [t0 + HOP + 0.05, 1],
-      [t0 + HOP + 0.35, 1], // execute dwell
-      [t0 + 2 * HOP + 0.35, 2],
+      [t0, STAGE.systems],
+      [t0 + HOP, STAGE.engines],
+      [t0 + 2 * HOP + 0.05, STAGE.execute],
+      [t0 + 2 * HOP + 0.35, STAGE.execute], // execute dwell
+      [t0 + 3 * HOP + 0.35, STAGE.evidence],
     ]);
   }
   return track([
-    [t0, 0],
-    [FAIL.atExecute, 1],
-    [FAIL.atExecute + 0.3, 1],
-    [FAIL.atCoverage, 2],
-    [FAIL.atCoverage + 0.2, 2],
-    [FAIL.atFailure, 3],
-    [FAIL.atFailure + 0.75, 3],
-    [FAIL.atMinimize, 4],
-    [FAIL.leaveMinimize, 4],
-    [FAIL.atReplay, 5],
-    [FAIL.leaveReplay, 5],
-    [FAIL.atRegression, 6],
+    [t0, STAGE.systems],
+    [FAIL.atEngines, STAGE.engines],
+    [FAIL.atExecute, STAGE.execute],
+    [FAIL.atExecute + 0.3, STAGE.execute],
+    [FAIL.atEvidence, STAGE.evidence],
+    [FAIL.atEvidence + 0.2, STAGE.evidence],
+    [FAIL.atVerify, STAGE.verify],
+    [FAIL.leaveVerify, STAGE.verify],
+    [FAIL.atReproduce, STAGE.reproduce],
+    [FAIL.leaveReproduce, STAGE.reproduce],
+    [FAIL.atRegression, STAGE.regress],
   ]);
 }
 
-/** Time the packet reaches COVERAGE (where it lights cells). */
+/** Time the packet reaches EVIDENCE (where it lights behavior cells). */
 export function coverageTime(p: PacketDef) {
-  return p.failing ? FAIL.atCoverage : p.launch + 2 * HOP + 0.35;
+  return p.failing ? FAIL.atEvidence : p.launch + 3 * HOP + 0.35;
 }
 
 export function packetOpacity(p: PacketDef): Keyframes {
@@ -167,11 +179,11 @@ export function packetOpacity(p: PacketDef): Keyframes {
   ]);
 }
 
-/** Failing packet colour crossfades: neutral -> orange (violation) -> lime (saved as regression). */
+/** Failing packet colour crossfades: neutral -> orange (violation) -> lime (kept as a regression test). */
 export const FAIL_COLOR = {
   orange: track([
-    [FAIL.atFailure - 0.05, 0],
-    [FAIL.atFailure + 0.15, 1],
+    [FAIL.atVerify - 0.05, 0],
+    [FAIL.atVerify + 0.15, 1],
     [FAIL.atRegression, 1],
     [FAIL.saved, 0],
   ]),
@@ -185,22 +197,23 @@ export const FAIL_COLOR = {
 export const TICK_GAP = 3.4;
 export const TICK_W = 1.6;
 export const TICK_H = 5;
-/** Index of the tick that ddmin removes in the failing scenario. */
-export const REMOVED_TICK = Math.max(
-  0,
-  research.minimization.chips.findIndex((c) => "removed" in c && c.removed),
-);
+/** Fault ticks on the failing scenario before minimization. */
+export const FAIL_TICKS = 6;
+/** Ticks that minimization drops. Conceptual: no real fault counts are depicted. */
+export const REMOVED_TICKS: ReadonlySet<number> = new Set([0, 2, 5]);
+export const KEPT_TICKS = FAIL_TICKS - REMOVED_TICKS.size;
 
 export function tickOffset(index: number, count: number) {
   return (index - (count - 1) / 2) * TICK_GAP;
 }
 
-/** x offset for tick `i` of the failing packet: 6 evenly spaced, collapsing to 5 after ddmin. */
+/** x offset for tick `i` of the failing packet: evenly spaced, closing up after minimization. */
 export function failTickX(i: number): Keyframes {
-  const before = tickOffset(i, 6);
-  if (i === REMOVED_TICK) return track([[0, before]]);
-  const afterIndex = i < REMOVED_TICK ? i : i - 1;
-  const after = tickOffset(afterIndex, 5);
+  const before = tickOffset(i, FAIL_TICKS);
+  if (REMOVED_TICKS.has(i)) return track([[0, before]]);
+  let afterIndex = 0;
+  for (let k = 0; k < i; k++) if (!REMOVED_TICKS.has(k)) afterIndex++;
+  const after = tickOffset(afterIndex, KEPT_TICKS);
   return track([
     [FAIL.dropTick + 0.1, before],
     [FAIL.collapse, after],
@@ -222,48 +235,50 @@ export const REMOVED_TICK_Y = track([
   [LOOP, 0],
 ]);
 
-/** Replay ghost: appears offset, then locks exactly onto the original (1:1). */
-export const GHOST_OPACITY = track([
-  [FAIL.ghostIn - 0.001, 0],
-  [FAIL.ghostIn + 0.2, 0.9],
-  [FAIL.saved, 0.9],
-  [FAIL.saved + 0.4, 0],
-]);
-export const GHOST_SHIFT = track([
-  [FAIL.ghostIn, 1],
-  [FAIL.ghostLock, 0],
-]);
+/* -------------------------------------------------------------------------- */
+/* Reproduction: repeated re-runs, with a measured (not guaranteed) outcome     */
+/* -------------------------------------------------------------------------- */
+
+export const RERUN_COUNT = 8;
+export const RERUN_GAP = 0.1;
+/** Re-runs that did not reproduce. Shown so the stage never reads as an exact replay. */
+export const RERUN_MISSES: ReadonlySet<number> = new Set([2, 6]);
+
+export function rerunTime(i: number) {
+  return FAIL.rerunStart + i * RERUN_GAP;
+}
+
+/** Three outline echoes leave the packet while it is being re-run. */
+export const ECHO_COUNT = 3;
+export function echoTracks(k: number) {
+  const s = FAIL.rerunStart + k * 0.28;
+  return {
+    opacity: track([
+      [s - 0.001, 0],
+      [s + 0.04, 0.75],
+      [s + 0.55, 0],
+    ]),
+    scale: track([
+      [s, 1],
+      [s + 0.55, 1.9],
+    ]),
+  };
+}
 
 /** Readout timings. */
 export const READOUT = {
   violation: persistFrom(FAIL.violation),
+  reproduced: persistFrom(rerunTime(RERUN_COUNT - 1) + 0.15),
   minimized: persistFrom(FAIL.collapse),
-  replay: persistFrom(FAIL.ghostLock),
   saved: persistFrom(FAIL.saved),
-  /** Failure-node highlight. */
-  failureNode: persistFrom(FAIL.atFailure, 0.2),
-  minimizeNode: persistFrom(FAIL.atMinimize, 0.2),
-  replayNode: persistFrom(FAIL.atReplay, 0.2),
+  /** Node highlights. */
+  verifyNode: persistFrom(FAIL.atVerify, 0.2),
+  reproduceNode: persistFrom(FAIL.atReproduce, 0.2),
   regressionNode: persistFrom(FAIL.atRegression, 0.2),
-  /** Placeholder copy shown in the failure readout before anything has failed. */
-  searching: track([
-    [0, 1],
-    [FAIL.violation - 0.2, 1],
-    [FAIL.violation, 0],
-    [FADE_END, 0],
-    [LOOP, 1],
-  ]),
-  faultsSix: track([
-    [0, 1],
-    [FAIL.dropTick + 0.1, 1],
-    [FAIL.collapse, 0],
-    [FADE_END, 0],
-    [LOOP, 1],
-  ]),
 };
 
 /* -------------------------------------------------------------------------- */
-/* Feedback dots (new coverage goes back into the corpus)                      */
+/* Feedback dots (observed behavior goes back to the engines)                  */
 /* -------------------------------------------------------------------------- */
 
 export function feedbackTimes(p: PacketDef) {
@@ -272,13 +287,13 @@ export function feedbackTimes(p: PacketDef) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Coverage cells                                                              */
+/* Behavior cells                                                              */
 /* -------------------------------------------------------------------------- */
 
 export type CellPlan = {
   cols: number;
   rows: number;
-  /** Cells lit before the loop starts (seed corpus). */
+  /** Cells lit before the loop starts (behavior already seen). */
   seeds: number[];
   /** Cell index -> time it lights. */
   lit: Map<number, number>;
@@ -327,26 +342,12 @@ export function cellOpacity(on: number): Keyframes {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Regression naming                                                           */
-/* -------------------------------------------------------------------------- */
-
-export function regressionName(n: number) {
-  return `regression_${String(n).padStart(4, "0")}`;
-}
-
-/** Short illustrative content hash for a stored regression (deterministic). */
-export function regressionHash(n: number) {
-  const h = Math.imul(n * 2654435761, 0x9e3779b1) >>> 0;
-  return h.toString(16).padStart(8, "0").slice(0, 6);
-}
-
-/* -------------------------------------------------------------------------- */
 /* EXECUTE progress bar                                                        */
 /* -------------------------------------------------------------------------- */
 
 /** Time a packet arrives at EXECUTE and how long it dwells there. */
 export function executeWindow(p: PacketDef) {
-  return p.failing ? { at: FAIL.atExecute, dwell: 0.3 } : { at: p.launch + HOP + 0.05, dwell: 0.3 };
+  return p.failing ? { at: FAIL.atExecute, dwell: 0.3 } : { at: p.launch + 2 * HOP + 0.05, dwell: 0.3 };
 }
 
 /** scaleX of the execution bar: sweeps 0 -> 1 while each packet runs, then resets. */
@@ -359,7 +360,7 @@ export function executeBar(packets: PacketDef[]): Keyframes {
   return track(points);
 }
 
-/** Opacity of the "new behavior" flash at COVERAGE for packets that add cells. */
+/** Opacity of the "new behavior" flash at EVIDENCE for packets that add cells. */
 export function coverageFlash(packets: PacketDef[]): Keyframes {
   const points: [number, number][] = [[0, 0]];
   for (const p of packets) {

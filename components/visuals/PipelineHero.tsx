@@ -3,7 +3,7 @@
 import { useInView, useMotionValue, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { hero, research } from "@/lib/content";
+import { hero, platformVision } from "@/lib/content";
 import {
   FailingPacket,
   FeedbackDot,
@@ -14,18 +14,26 @@ import {
   type Geometry,
 } from "./pipeline/marks";
 import {
-  CorpusReadout,
   CoverageReadout,
   ExecuteReadout,
-  FailureReadout,
-  MinimizeReadout,
   RegressionReadout,
-  ReplayReadout,
+  ReproduceReadout,
+  ScenarioReadout,
+  SystemsReadout,
+  VerifyReadout,
+  type SystemSource,
 } from "./pipeline/readouts";
-import { LOOP, PACKETS, STATIC_T, planCells, type CellPlan, type PacketDef } from "./pipeline/script";
+import { LOOP, PACKETS, STAGE, STATIC_T, planCells, type CellPlan, type PacketDef } from "./pipeline/script";
+import { DOMAIN_SHORT, PIPELINE_STAGES as stages } from "./pipeline/stages";
 
-const { stages, ariaLabel, note } = hero.pipeline;
-const { faultsBefore, faultsAfter, invariant } = research.minimization;
+const { ariaLabel, note } = hero.visual;
+
+/** Platform-vision domains with their real status (only robotics is implemented today). */
+const SOURCES: readonly SystemSource[] = platformVision.domains.map((d) => ({
+  id: d.id,
+  name: DOMAIN_SHORT[d.id] ?? d.name,
+  status: d.status,
+}));
 
 /* -------------------------------------------------------------------------- */
 /* Clock                                                                       */
@@ -38,13 +46,9 @@ const { faultsBefore, faultsAfter, invariant } = research.minimization;
  */
 function useLoopClock(active: boolean, reduce: boolean) {
   const clock = useMotionValue(STATIC_T);
-  const [cycle, setCycle] = useState(0);
 
   useEffect(() => {
-    if (reduce) {
-      clock.set(STATIC_T);
-      setCycle(0);
-    }
+    if (reduce) clock.set(STATIC_T);
   }, [reduce, clock]);
 
   useEffect(() => {
@@ -56,10 +60,7 @@ function useLoopClock(active: boolean, reduce: boolean) {
       const dt = last === null ? 0 : Math.min((now - last) / 1000, 0.1);
       last = now;
       let next = clock.get() + dt;
-      if (next >= LOOP) {
-        next -= LOOP;
-        setCycle((c) => (c + 1) % 9998);
-      }
+      if (next >= LOOP) next -= LOOP;
       clock.set(next);
       raf = requestAnimationFrame(step);
     };
@@ -67,7 +68,7 @@ function useLoopClock(active: boolean, reduce: boolean) {
     return () => cancelAnimationFrame(raf);
   }, [active, reduce, clock]);
 
-  return { clock, cycle };
+  return clock;
 }
 
 /** True from `query` once mounted; null on the server and first client render. */
@@ -107,12 +108,14 @@ function WindowBar({
           <i className="block size-[6px] rounded-full border border-subtle/80" />
           <i className="block size-[6px] rounded-full border border-subtle/80" />
         </span>
-        <span className="hidden sm:inline">Fuzzing campaign</span>
-        <span className="text-line-2 max-sm:hidden">/</span>
-        <span>Loop</span>
+        <span className="hidden sm:inline">Verification loop</span>
+        <span className="sm:hidden">Loop</span>
       </span>
       <span className="flex h-full items-center">
-        <span className={cn(label, "pr-4 text-subtle md:pr-5")}>{note}</span>
+        <span className={cn(label, "pr-4 text-subtle md:pr-5")}>
+          <span className="sm:hidden">Conceptual</span>
+          <span className="max-sm:hidden">{note}</span>
+        </span>
         {showToggle && (
           <button
             type="button"
@@ -137,29 +140,28 @@ function WindowBar({
 
 type Readouts = {
   clock: Clock;
-  cycle: number;
   packets: PacketDef[];
   plan: CellPlan;
   compact?: boolean;
 };
 
-function readoutFor(index: number, { clock, cycle, packets, plan, compact }: Readouts): ReactNode {
+function readoutFor(index: number, { clock, packets, plan, compact }: Readouts): ReactNode {
   const align = compact ? "end" : "start";
   switch (index) {
-    case 0:
-      return <CorpusReadout clock={clock} packets={packets} seeds={plan.seeds.length} align={align} />;
-    case 1:
+    case STAGE.systems:
+      return <SystemsReadout sources={SOURCES} compact={compact} align={align} />;
+    case STAGE.engines:
+      return <ScenarioReadout clock={clock} packets={packets} seeds={plan.seeds.length} align={align} />;
+    case STAGE.execute:
       return <ExecuteReadout clock={clock} packets={packets} align={align} />;
-    case 2:
+    case STAGE.evidence:
       return <CoverageReadout clock={clock} plan={plan} cell={compact ? 5 : 6} align={align} />;
-    case 3:
-      return <FailureReadout clock={clock} invariant={invariant} align={align} />;
-    case 4:
-      return <MinimizeReadout clock={clock} before={faultsBefore} after={faultsAfter} align={align} />;
-    case 5:
-      return <ReplayReadout clock={clock} align={align} />;
+    case STAGE.verify:
+      return <VerifyReadout clock={clock} align={align} />;
+    case STAGE.reproduce:
+      return <ReproduceReadout clock={clock} align={align} />;
     default:
-      return <RegressionReadout clock={clock} cycle={cycle} history={compact ? 1 : 2} align={align} />;
+      return <RegressionReadout clock={clock} align={align} />;
   }
 }
 
@@ -191,9 +193,9 @@ const H_W = 980;
 const H_H = 58;
 const H_STEP = H_W / 7;
 const H_GEO: Geometry = { axis: "x", at: (s) => H_STEP / 2 + H_STEP * s, rail: 40, lane: 13 };
-const H_PLAN = planCells(12, 4, 9, PACKETS);
+const H_PLAN = planCells(11, 4, 9, PACKETS);
 
-function Horizontal({ clock, cycle }: { clock: Clock; cycle: number }) {
+function Horizontal({ clock }: { clock: Clock }) {
   return (
     <div className="relative">
       <div className="relative grid grid-cols-7">
@@ -211,10 +213,10 @@ function Horizontal({ clock, cycle }: { clock: Clock; cycle: number }) {
         </svg>
         <span
           aria-hidden="true"
-          className={cn(label, "absolute -translate-x-1/2 -translate-y-1/2 bg-window px-2 text-[9px] text-lime/80")}
-          style={{ left: `${(H_GEO.at(1) / H_W) * 100}%`, top: `${(H_GEO.lane / H_H) * 100}%` }}
+          className={cn(label, "absolute -translate-x-1/2 -translate-y-1/2 bg-window px-2 text-[10px] text-lime")}
+          style={{ left: `${(H_GEO.at(STAGE.execute) / H_W) * 100}%`, top: `${(H_GEO.lane / H_H) * 100}%` }}
         >
-          New coverage → corpus
+          Observed behavior → engines
         </span>
       </div>
 
@@ -225,7 +227,7 @@ function Horizontal({ clock, cycle }: { clock: Clock; cycle: number }) {
             key={s.id}
             className={cn("flex flex-col gap-2 px-4 pt-4 pb-4 xl:px-5", i > 0 && "border-l border-line/70")}
           >
-            <div className="min-h-[74px]">{readoutFor(i, { clock, cycle, packets: PACKETS, plan: H_PLAN })}</div>
+            <div className="min-h-[74px]">{readoutFor(i, { clock, packets: PACKETS, plan: H_PLAN })}</div>
             <p className="font-sans text-[13px] leading-[1.4] tracking-[-0.01em] text-balance text-muted">
               {s.caption}
             </p>
@@ -246,7 +248,7 @@ const V_GEO: Geometry = { axis: "y", at: (s) => ROW / 2 + ROW * s, rail: 20, lan
 const V_PACKETS = PACKETS.filter((p) => p.compact);
 const V_PLAN = planCells(10, 3, 5, V_PACKETS);
 
-function Vertical({ clock, cycle }: { clock: Clock; cycle: number }) {
+function Vertical({ clock }: { clock: Clock }) {
   return (
     <div className="relative">
       <svg
@@ -277,7 +279,7 @@ function Vertical({ clock, cycle }: { clock: Clock; cycle: number }) {
               <p className="mt-1.5 text-[12px] leading-snug text-muted">{s.caption}</p>
             </div>
             <div className="flex max-w-[150px] justify-end">
-              {readoutFor(i, { clock, cycle, packets: V_PACKETS, plan: V_PLAN, compact: true })}
+              {readoutFor(i, { clock, packets: V_PACKETS, plan: V_PLAN, compact: true })}
             </div>
           </li>
         ))}
@@ -291,10 +293,11 @@ function Vertical({ clock, cycle }: { clock: Clock; cycle: number }) {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The Ordinum loop as a product diagram: generated scenarios run, new behavior fills the
- * coverage map and feeds back into the corpus, one run violates an invariant, ddmin
- * shrinks it from six faults to five, a deterministic replay overlays it 1:1, and it
- * settles as a regression test. Illustrative, not live data.
+ * The Ordinum loop as a conceptual product diagram: systems connect through an adapter,
+ * engines generate scenarios with timed faults, supervised runs produce evidence, newly
+ * observed behavior feeds back to the engines, an independent check flags one run, it is
+ * re-run (most re-runs reproduce, not all) and reduced to fewer faults, and it is kept as
+ * a regression test. Labeled CONCEPTUAL: not recorded data, and no claim of exact replay.
  */
 export default function PipelineHero({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -302,15 +305,13 @@ export default function PipelineHero({ className }: { className?: string }) {
   const reduce = useReducedMotion() ?? false;
   // WCAG 2.2.2: the loop runs indefinitely, so visitors get an explicit pause control.
   const [paused, setPaused] = useState(false);
-  const { clock, cycle } = useLoopClock(inView && !paused, reduce || paused);
+  const clock = useLoopClock(inView && !paused, reduce || paused);
 
   // Only the visible layout follows the live clock; the hidden one stays on a frozen frame.
   const isDesktop = useMedia("(min-width: 1024px)");
   const frozen = useMotionValue(STATIC_T);
   const hClock = isDesktop === false ? frozen : clock;
   const vClock = isDesktop === true ? frozen : clock;
-  const hCycle = isDesktop === false ? 0 : cycle;
-  const vCycle = isDesktop === true ? 0 : cycle;
 
   return (
     <div
@@ -323,10 +324,10 @@ export default function PipelineHero({ className }: { className?: string }) {
       <WindowBar paused={paused} onTogglePause={() => setPaused((p) => !p)} showToggle={!reduce} />
       <div role="img" aria-label={ariaLabel}>
         <div className="hidden lg:block">
-          <Horizontal clock={hClock} cycle={hCycle} />
+          <Horizontal clock={hClock} />
         </div>
         <div className="lg:hidden">
-          <Vertical clock={vClock} cycle={vCycle} />
+          <Vertical clock={vClock} />
         </div>
       </div>
     </div>

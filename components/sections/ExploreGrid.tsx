@@ -31,7 +31,7 @@ export default function ExploreGrid() {
             >
               <Link
                 href={page.href}
-                className="group flex h-full min-h-[220px] flex-col justify-between bg-surface p-7 transition-colors duration-200 hover:bg-[#19211f] md:min-h-[250px] md:p-9"
+                className="group flex h-full min-h-[220px] flex-col justify-start bg-surface p-7 transition-colors duration-200 hover:bg-[#19211f] md:min-h-[250px] md:p-9"
               >
                 <span className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.08em] text-lime">
                   <span>{String(i + 1).padStart(2, "0")}</span>
@@ -42,7 +42,7 @@ export default function ExploreGrid() {
                     →
                   </span>
                 </span>
-                <span className="mt-10 block">
+                <span className="mt-14 block md:mt-16">
                   <span className="block text-[23px] font-[550] leading-tight tracking-[-0.04em] text-text">
                     {page.label}
                   </span>

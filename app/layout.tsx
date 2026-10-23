@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Mono, Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import MotionProvider from "@/components/providers/MotionProvider";
+import { seo, site } from "@/lib/content";
 import "./globals.css";
 
 const inter = Inter({
@@ -18,36 +19,33 @@ const dmMono = DM_Mono({
   display: "swap",
 });
 
-const SITE_URL = "https://ordinum.org";
-const TITLE = "Ordinum — Coverage-guided fuzzing for autonomous systems";
-const DESCRIPTION =
-  "Ordinum breaks autonomous systems before reality does. Coverage-guided fuzzing and verification infrastructure for robotics and autonomous software.";
-const SOCIALS = [
-  "https://x.com/OrdinumAI",
-  "https://www.instagram.com/ordinumai",
-  "https://www.linkedin.com/company/ordinum-ai",
-];
+const SOCIALS = [site.x, site.instagram, site.linkedinCompany];
 
+/*
+ * Root metadata. openGraph/twitter deliberately carry no title, description or url:
+ * every route inherits this object, and Next fills og:title / og:description /
+ * twitter:* from each page's own resolved title and description (see
+ * postProcessMetadata in next/dist/lib/metadata/resolve-metadata.js). Setting them
+ * here would stamp the home page's title and URL onto every inner page.
+ * og:image / twitter:image come from app/opengraph-image.tsx and app/twitter-image.tsx.
+ * A page that defines its own `openGraph` replaces this object, so it must repeat
+ * type/siteName/locale and keep `images` unset (the file-based image is then re-applied).
+ */
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: { default: TITLE, template: "%s · Ordinum" },
-  description: DESCRIPTION,
-  applicationName: "Ordinum",
+  metadataBase: new URL(site.url),
+  title: { default: seo.home.title, template: "%s · Ordinum" },
+  description: seo.home.description,
+  applicationName: site.name,
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
-    url: "/",
-    siteName: "Ordinum",
-    title: TITLE,
-    description: DESCRIPTION,
+    siteName: site.name,
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
     site: "@OrdinumAI",
     creator: "@OrdinumAI",
-    title: TITLE,
-    description: DESCRIPTION,
   },
   // Icons come from app/icon.png and app/apple-icon.png (file conventions);
   // public/favicon.ico remains for clients that request it directly.
@@ -59,15 +57,30 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-const organizationJsonLd = {
+/* Organization + WebSite structured data. No founders/people: the co-founder profile is pending confirmation. */
+const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "Ordinum",
-  url: SITE_URL,
-  logo: `${SITE_URL}/icon.png`,
-  email: "armaan@ordinum.org",
-  description: DESCRIPTION,
-  sameAs: SOCIALS,
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${site.url}/#organization`,
+      name: site.name,
+      url: site.url,
+      logo: `${site.url}/icon.png`,
+      email: site.email,
+      description: seo.organizationDescription,
+      sameAs: SOCIALS,
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${site.url}/#website`,
+      name: site.name,
+      url: site.url,
+      description: seo.home.description,
+      publisher: { "@id": `${site.url}/#organization` },
+      inLanguage: "en",
+    },
+  ],
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -83,7 +96,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationJsonLd).replace(/</g, "\\u003c"),
+            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
           }}
         />
         <a

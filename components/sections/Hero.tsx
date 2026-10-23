@@ -4,24 +4,14 @@ import Container from "@/components/ui/Container";
 import Kicker from "@/components/ui/Kicker";
 import { hero } from "@/lib/content";
 
-/** "BUILD 0.1 / RESEARCH PREVIEW" -> lime "BUILD 0.1" + rest. */
-function MetaItem({ text }: { text: string }) {
-  const [head, ...rest] = text.split(" / ");
-  if (rest.length === 0) return <>{text}</>;
-  return (
-    <>
-      <span className="text-lime">{head}</span>
-      <span aria-hidden="true" className="text-line-2">
-        {" / "}
-      </span>
-      <span className="sr-only">, </span>
-      {rest.join(" / ")}
-    </>
-  );
-}
+/**
+ * "Research-stage platform · First implemented integration: ROS 2 / Nav2" -> two mono items.
+ * The stage gets a hollow marker; the implemented integration gets the solid lime "implemented" marker.
+ */
+const statusItems = hero.status.split(" · ");
 
 /**
- * Hero: thesis, plain-language lede, CTAs, build status, and the PipelineHero loop.
+ * Hero: thesis, plain-language lede, CTAs, honest build status, and the conceptual PipelineHero loop.
  * Desktop: copy on top, the pipeline band anchored to the bottom of a viewport-high
  * (capped) frame. Mobile: copy first, then the vertical pipeline.
  */
@@ -74,20 +64,24 @@ export default function Hero() {
 
             <ul
               aria-label="Status"
-              className="flex flex-wrap items-center gap-x-3 gap-y-2.5 font-mono text-[11px] leading-none tracking-[0.09em] text-[#889591] uppercase sm:text-[10px]"
+              className="flex flex-wrap items-center gap-x-5 gap-y-3 font-mono text-[11px] leading-[1.3] tracking-[0.09em] text-[#889591] uppercase sm:text-[10px]"
             >
-              {hero.meta.map((item, i) => (
-                <li key={item} className="flex items-center gap-3">
-                  {i > 0 && (
-                    <span aria-hidden="true" className="text-line-2">
-                      ·
-                    </span>
-                  )}
-                  <span>
-                    <MetaItem text={item} />
-                  </span>
-                </li>
-              ))}
+              {statusItems.map((item, i) => {
+                const last = i === statusItems.length - 1;
+                return (
+                  <li key={item} className="flex items-center gap-2.5">
+                    <span
+                      aria-hidden="true"
+                      className={
+                        last
+                          ? "inline-block size-[7px] shrink-0 bg-lime"
+                          : "inline-block size-[7px] shrink-0 border border-subtle"
+                      }
+                    />
+                    <span className={last ? "text-[#b9c2c0]" : undefined}>{item}</span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>

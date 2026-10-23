@@ -3,7 +3,8 @@ import CtaBand from "@/components/sections/CtaBand";
 import NextPage from "@/components/sections/NextPage";
 import PageHeader from "@/components/sections/PageHeader";
 import Vision from "@/components/sections/Vision";
-import WhyNow from "@/components/sections/WhyNow";
+import Applications from "@/components/sections/vision/Applications";
+import Mission from "@/components/sections/vision/Mission";
 import { pages } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -16,8 +17,9 @@ export default function VisionPage() {
   return (
     <>
       <PageHeader page="vision" />
-      <WhyNow />
-      <Vision variant="default" />
+      <Mission />
+      <Vision variant="charcoal" />
+      <Applications />
       <NextPage current="vision" />
       <CtaBand />
     </>

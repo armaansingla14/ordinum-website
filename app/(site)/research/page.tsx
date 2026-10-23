@@ -17,7 +17,7 @@ export default function ResearchPage() {
       <PageHeader page="research" />
       <Research />
       <NextPage current="research" />
-      <CtaBand />
+      <CtaBand current="research" />
     </>
   );
 }

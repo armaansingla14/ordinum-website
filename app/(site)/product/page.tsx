@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import CtaBand from "@/components/sections/CtaBand";
-import Differentiation from "@/components/sections/Differentiation";
 import NextPage from "@/components/sections/NextPage";
 import PageHeader from "@/components/sections/PageHeader";
-import Pillars from "@/components/sections/Pillars";
+import Approaches from "@/components/sections/product/Approaches";
+import EngineerOutputs from "@/components/sections/product/EngineerOutputs";
+import PlatformLayers from "@/components/sections/product/PlatformLayers";
+import ProductIntro from "@/components/sections/product/ProductIntro";
 import { pages } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -16,8 +18,10 @@ export default function ProductPage() {
   return (
     <>
       <PageHeader page="product" />
-      <Pillars variant="charcoal" />
-      <Differentiation />
+      <ProductIntro />
+      <PlatformLayers />
+      <EngineerOutputs />
+      <Approaches />
       <NextPage current="product" />
       <CtaBand />
     </>

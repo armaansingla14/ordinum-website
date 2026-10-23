@@ -3,7 +3,7 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import OrdinumMark from "@/components/brand/OrdinumMark";
 import Container from "@/components/ui/Container";
 import { cn } from "@/lib/cn";
-import { footer } from "@/lib/content";
+import { FACT_SOURCE, footer } from "@/lib/content";
 import { resolveHref } from "@/lib/nav";
 
 type FooterProps = {
@@ -13,7 +13,6 @@ type FooterProps = {
    */
   onHome?: boolean;
 };
-
 
 function isExternal(href: string) {
   return /^https?:\/\//.test(href);
@@ -105,10 +104,11 @@ export default function Footer({ onHome = true }: FooterProps) {
               {footer.thesis}
             </p>
 
-            <p className="label-mono mt-8 flex items-center gap-2.5 text-subtle">
-              <span aria-hidden="true" className="inline-block size-[6px] bg-lime" />
-              Research-stage verification infrastructure
+            <p className="label-mono mt-8 flex items-start gap-2.5 text-subtle">
+              <span aria-hidden="true" className="mt-[0.45em] inline-block size-[6px] shrink-0 bg-lime" />
+              {footer.status}
             </p>
+            <p className="mt-4 max-w-[420px] text-[12px] leading-[1.6] text-subtle">{FACT_SOURCE.note}</p>
           </div>
 
           {/* Link columns */}
