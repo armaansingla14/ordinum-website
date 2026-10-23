@@ -203,15 +203,15 @@ export const hero = {
   pipeline: {
     stages: [
       { id: "scenario", label: "SCENARIO", caption: "Faults in time" },
-      { id: "execute", label: "EXECUTE", caption: "Deterministic run" },
+      { id: "execute", label: "EXECUTE", caption: "Supervised run" },
       { id: "coverage", label: "COVERAGE", caption: "New behavior kept" },
       { id: "failure", label: "FAILURE", caption: "Invariant violated" },
-      { id: "minimize", label: "MINIMIZE", caption: "ddmin: 6 faults to 5" },
+      { id: "minimize", label: "MINIMIZE", caption: "ddmin: fewer faults" },
       { id: "replay", label: "REPLAY", caption: "Seeded replay" },
       { id: "regression", label: "REGRESSION", caption: "Permanent test" },
     ],
     ariaLabel:
-      "Illustrative animation of the Ordinum loop: generated scenarios execute, new behavior is recorded as coverage, a failing run is minimized from six faults to five, replayed deterministically, and saved as a regression test.",
+      "Illustrative animation of the Ordinum loop: generated scenarios execute, new behavior is recorded as coverage, a failing run is reduced to a smaller fault set, reproduced, and saved as a regression test. Not real data.",
     note: "ILLUSTRATIVE / NOT LIVE DATA",
   },
 } as const satisfies {
@@ -531,7 +531,7 @@ export const pillars = {
     {
       id: "replay",
       title: "Deterministic replay",
-      body: "Every run is seeded and recorded. A failure replays identically, every time.",
+      body: "Runs are seeded and traced. Deterministic targets replay exactly; stochastic targets are re-run on fresh seeds and reported as a reproduction rate.",
       icon: "replay",
     },
     {
@@ -566,123 +566,65 @@ export const pillars = {
 
 export const research = {
   kicker: "ENGINEERING EVIDENCE / 001",
-  title: "A measurable starting point.",
-  titleMuted: "More to prove.",
-  lede: "We built the engine and measured it against random fault injection and a scripted test suite on a controlled simulated target. Feedback guidance reaches substantially more behavior. It does not yet find more failure classes than random. We report both.",
+  title: "Evidence over claims.",
+  titleMuted: "Measured, with the limitations stated.",
+  lede: "What the current engine does, what we measured, and what the data does not show. Earlier v1 benchmark results were withdrawn after an internal audit and are no longer published.",
+  asOf: "Product repository, branch ordinum-2, commit c25ba4f (October 23, 2026)",
   status: [
-    "BUILT / Zero-dependency core engine with 10 fault kinds and 7 invariants",
-    "BUILT / Automatic replay, ddmin minimization and regression-test emission",
-    "NEXT / ROS2 and MuJoCo adapters, independent validation on systems we did not build, then design-partner pilots",
+    "BUILT / Target-agnostic scenario execution with timed fault injection and a supervised execution loop",
+    "BUILT / ROS 2 / Nav2 adapter (Docker, simplified loopback simulation) and a controlled toy target",
+    "BUILT / Invariant checks on ground truth, kept separate from search; statistical reproduction; delta-debugging minimization; regression artifacts; HTML trace reports",
+    "MEASURED / Test suite: 268 passing, 1 skipped (requires Docker)",
+    "NEXT / More realistic targets and fault generation, evaluations on independently maintained systems",
   ],
-  metrics: [
+  studies: [
     {
-      label: "Behavioral coverage",
-      value: "+35%",
-      caption: "Feedback-guided vs. random fault injection. 139.1 vs. 103.1 coverage keys.",
-      footnote: "CONTROLLED SIMULATED TARGET / 8 SEEDS / 6,000 EXECUTIONS PER CAMPAIGN",
+      label: "Toy benchmark (pre-registered)",
+      setup: "An 8×8 grid robot we wrote, with 11 planted failure classes. 5 search strategies × 30 seeds × 5,000 executions, analysis locked before any campaign ran.",
+      results: [
+        { label: "Full feedback vs random", value: "9.00 vs 8.63 classes", verdict: "Not significant (Holm p = 0.18)" },
+        { label: "Feedback vs same mutator without feedback", value: "8.77 vs 8.47 classes", verdict: "Not significant (Holm p = 0.20)" },
+        { label: "Full feedback vs scripted catalog", value: "9.00 vs 6.00 classes", verdict: "Supported (Holm p < 0.001)" },
+      ],
+      supports: "The loop works end to end on a target we built: search, judge on ground truth, minimize, replay, emit a regression case. Search beats a fixed scripted catalog.",
+      notSupported: "No general advantage of feedback-guided search over random search. A non-significant result is not evidence that the two are equivalent.",
     },
     {
-      label: "Unique trajectories",
-      value: "+23%",
-      caption: "Feedback-guided vs. random fault injection. 996.6 vs. 807.8 trajectories.",
-      footnote: "CONTROLLED SIMULATED TARGET / 8 SEEDS / 6,000 EXECUTIONS PER CAMPAIGN",
-    },
-    {
-      label: "Failure classes found",
-      value: "6/7",
-      caption: "Feedback-guided and random tie at six of seven. The scripted suite finds four.",
-      footnote: "NO DISCOVERY LEAD OVER RANDOM YET / CONTROLLED SIMULATED TARGET",
+      label: "Nav2 pilot (exploratory)",
+      setup: "Stock ROS 2 Jazzy + Nav2 in a simplified loopback simulation (no physics, no state estimator). 4 search strategies × 3 seeds: 12 campaigns, 464 executions.",
+      results: [
+        { label: "Invariant violations reproduced", value: "3 classes", verdict: "Replayed 8/10, 9/10 and 10/10 on fresh seeds" },
+        { label: "Classification", value: "0 Nav2 defects", verdict: "All three traced to the harness, configuration or oracle; upheld by independent review" },
+        { label: "Which strategy found them", value: "Random: 3 · feedback: 0", verdict: "Low-powered (n = 3 per arm); not evidence that random is generally better" },
+      ],
+      supports: "The engine runs a real autonomy stack in a container, injects timed faults, and reproduces and minimizes what it finds under nondeterminism, reporting reproduction rates rather than exact replay.",
+      notSupported: "No confirmed Nav2 defect. The loopback simulation is far simpler than a physical robot.",
     },
   ],
-  charts: {
-    coverage: {
-      title: "Behavioral coverage keys",
-      caption: "Mean ± standard deviation across 8 seeds. Higher is better.",
-    },
-    trajectories: {
-      title: "Unique trajectories",
-      caption: "Mean ± standard deviation across 8 seeds. Scripted suite: n/a.",
-    },
-  },
-  bars: {
-    coverage: [
-      { label: "Feedback-guided", mean: 139.1, sd: 2.0, strategy: "feedback" },
-      { label: "Random", mean: 103.1, sd: 4.2, strategy: "random" },
-      { label: "Scripted suite", mean: 51, strategy: "scripted" },
-    ],
-    trajectories: [
-      { label: "Feedback-guided", mean: 996.6, sd: 69.7, strategy: "feedback" },
-      { label: "Random", mean: 807.8, sd: 14.8, strategy: "random" },
-    ],
-  },
-  campaign: { seeds: "8", executionsPerCampaign: "6,000", totalExecutions: "192,000" },
-  methodology:
-    "Controlled, deterministic simulated 2D grid robot: perception → A* planner → state machine → controller → actuator. 10 fault kinds, 7 invariants. Feedback-guided fuzzing and random fault injection were each run in two experiments across 8 seeds at 6,000 executions per campaign: 192,000 executions in total. The scripted test suite is a fixed, hand-written baseline.",
-  caveats: [
-    "Random reaches its first failure sooner than feedback-guided.",
-    "This is a small, controlled simulated target we built. It is not yet an external system, ROS2 stack or real robot.",
+  limitations: [
+    "No demonstrated general advantage over random search.",
+    "No independently confirmed defect in Nav2 or any external system.",
+    "The ROS 2 environment is a simplified loopback simulation, not physical hardware.",
+    "Adapters beyond the toy target and ROS 2 / Nav2 do not exist yet.",
+    "No customers or design partners yet.",
   ],
-  minimization: {
-    title: "One failure, start to finish",
-    faultsBefore: 6,
-    faultsAfter: 5,
-    foundIn: "once in 4,000 executions",
-    replay: "100% deterministic replay",
-    chips: [
-      { kind: "env_obstacle", tick: 3 },
-      { kind: "sensor_noise", tick: 4 },
-      { kind: "obs_delay", tick: 6 },
-      { kind: "controller_retry", tick: 8, removed: true },
-      { kind: "env_obstacle", tick: 10 },
-      { kind: "actuator_fail", tick: 11 },
-    ],
-    summary:
-      "A blind collision found once in 4,000 executions. ddmin removed one unnecessary fault, leaving five. It replays deterministically every time and is saved as a regression test.",
-    invariant: "no_collision",
-    regressionLabel: "regression_0001",
-    note: "Illustrative composition / fault kinds and timings are representative",
-  },
-  faultPath: {
-    title: "FAULT PATH / GRID WORLD",
-    events: [
-      { t: 0, layer: "PERCEPTION", text: "Valid observation. Path clear." },
-      { t: 3, layer: "ENVIRONMENT", text: "Obstacle appears on the planned path." },
-      { t: 4, layer: "SENSORS", text: "Range reading degraded by noise." },
-      { t: 6, layer: "TIMING", text: "Observation delayed. Planner acts on old state." },
-      { t: 10, layer: "ENVIRONMENT", text: "Second obstacle appears on the path." },
-      { t: 11, layer: "ACTUATION", text: "Actuator stalls mid-maneuver." },
-      { t: 12, layer: "INVARIANT", text: "no_collision violated.", problem: true },
-    ],
-    note: "Illustrative visualization in a simulated grid world. Fault kinds and timings are representative, not a recorded trace, and not a ROS2, real-robot or customer failure.",
-  },
+  withdrawn: "Withdrawn: v1 results. Benchmark figures published on earlier versions of this site came from a v1 experiment that an internal audit found to be invalid. They have been removed and replaced by the pre-registered results above.",
 } as const satisfies {
   kicker: string;
   title: string;
   titleMuted?: string;
   lede: string;
+  asOf: string;
   status: readonly string[];
-  metrics: readonly Metric[];
-  charts: {
-    coverage: { title: string; caption: string };
-    trajectories: { title: string; caption: string };
-  };
-  bars: { coverage: readonly Bar[]; trajectories: readonly Bar[] };
-  campaign: { seeds: string; executionsPerCampaign: string; totalExecutions: string };
-  methodology: string;
-  caveats: readonly string[];
-  minimization: {
-    title: string;
-    faultsBefore: number;
-    faultsAfter: number;
-    foundIn: string;
-    replay: string;
-    chips: readonly FaultChip[];
-    summary: string;
-    invariant: Invariant;
-    regressionLabel: string;
-    note: string;
-  };
-  faultPath: { title: string; events: readonly FaultEvent[]; note: string };
+  studies: readonly {
+    label: string;
+    setup: string;
+    results: readonly { label: string; value: string; verdict: string }[];
+    supports: string;
+    notSupported: string;
+  }[];
+  limitations: readonly string[];
+  withdrawn: string;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -992,7 +934,7 @@ export const pages = {
     meta: {
       title: "Product",
       description:
-        "Behavioral coverage, stateful fault injection, deterministic replay, failure minimization and regression generation for robotics and autonomous software.",
+        "Behavioral coverage, stateful fault injection, reproduction, failure minimization and regression generation, starting with robotics and autonomous software.",
     },
   },
   technology: {
@@ -1007,7 +949,7 @@ export const pages = {
     meta: {
       title: "Technology",
       description:
-        "How Ordinum works: coverage-guided fault injection, behavioral coverage, ddmin minimization, deterministic replay and regression generation across the autonomy stack.",
+        "How Ordinum works: guided fault injection, behavioral signals, ddmin minimization, reproduction and regression generation.",
     },
   },
   research: {
@@ -1017,12 +959,12 @@ export const pages = {
       kicker: "Research",
       title: "Measured, with the caveats.",
       titleMuted: "Early results from the prototype.",
-      lede: "Feedback-guided fuzzing against random fault injection and a scripted suite, on a controlled simulated robot. What it shows, what it does not, and what we are testing next.",
+      lede: "Pre-registered benchmarks on a controlled toy target, an exploratory pilot on ROS 2 / Nav2, and what the data does not show.",
     },
     meta: {
       title: "Research",
       description:
-        "Early benchmark results from the Ordinum prototype on a controlled simulated robot: +35% behavioral coverage over random fault injection, with methodology and caveats.",
+        "Pre-registered benchmark results, a Nav2 pilot and explicit limitations from the Ordinum prototype.",
     },
   },
   vision: {
@@ -1092,7 +1034,7 @@ export const explore = {
     },
     {
       page: "research",
-      summary: "Benchmarks from the prototype: +35% behavioral coverage over random fault injection, with methodology and caveats.",
+      summary: "Pre-registered results, an exploratory Nav2 pilot, and what the data does not show.",
     },
     {
       page: "vision",

@@ -248,19 +248,15 @@ export function FailureReadout({
 /* MINIMIZE: ddmin 6 -> 5 faults. */
 export function MinimizeReadout({
   clock,
-  before,
-  after,
   align = "start",
 }: {
   clock: Clock;
-  before: number;
-  after: number;
   align?: "start" | "end";
 }) {
   const six = useTrack(clock, READOUT.faultsSix);
   const active = useTrack(clock, READOUT.minimizeNode);
   const done = useTrack(clock, READOUT.minimized);
-  // Three layers, never two at once: idle -> "6 faults" -> "6 -> 5 faults".
+  // Three layers, never two at once: idle -> "fault set" -> "reduced". Illustrative, no real counts.
   const sixOpacity = useTransform([six, active, done], ([s, a, d]: number[]) =>
     Math.min(s, fadeIn(a), fadeOut(d)),
   );
@@ -285,11 +281,11 @@ export function MinimizeReadout({
           style={{ opacity: sixOpacity }}
           className={cn(tag, "text-muted")}
         >
-          {before} faults
+          Fault set
         </motion.span>
         <motion.span style={{ opacity: doneOpacity }} className={cn(tag, "text-text")}>
-          {before} <span className="text-subtle">→</span>{" "}
-          <span className="text-lime">{after}</span> faults
+          Fault set <span className="text-subtle">→</span>{" "}
+          <span className="text-lime">reduced</span>
         </motion.span>
       </Stack>
     </div>

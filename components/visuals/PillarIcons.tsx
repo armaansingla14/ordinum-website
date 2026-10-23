@@ -56,7 +56,7 @@ const icons: Record<PillarIconName, ReactNode> = {
     </>
   ),
 
-  /* Failure minimization (ddmin): six faults in, the necessary set out. */
+  /* Failure minimization (ddmin): a larger fault set in, the necessary subset out. */
   minimize: (
     <>
       <path d="M5 16.75h38" strokeOpacity="0.4" />

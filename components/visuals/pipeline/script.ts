@@ -9,7 +9,6 @@
  * This is an illustrative composition, not recorded data.
  */
 
-import { research } from "@/lib/content";
 
 /** Loop length in seconds. */
 export const LOOP = 16;
@@ -186,16 +185,13 @@ export const TICK_GAP = 3.4;
 export const TICK_W = 1.6;
 export const TICK_H = 5;
 /** Index of the tick that ddmin removes in the failing scenario. */
-export const REMOVED_TICK = Math.max(
-  0,
-  research.minimization.chips.findIndex((c) => "removed" in c && c.removed),
-);
+export const REMOVED_TICK = 3;
 
 export function tickOffset(index: number, count: number) {
   return (index - (count - 1) / 2) * TICK_GAP;
 }
 
-/** x offset for tick `i` of the failing packet: 6 evenly spaced, collapsing to 5 after ddmin. */
+/** x offset for tick `i` of the failing packet: evenly spaced, closing the gap after ddmin drops one. */
 export function failTickX(i: number): Keyframes {
   const before = tickOffset(i, 6);
   if (i === REMOVED_TICK) return track([[0, before]]);

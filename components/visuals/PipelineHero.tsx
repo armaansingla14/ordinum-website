@@ -3,7 +3,7 @@
 import { useInView, useMotionValue, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { hero, research } from "@/lib/content";
+import { hero } from "@/lib/content";
 import {
   FailingPacket,
   FeedbackDot,
@@ -25,7 +25,8 @@ import {
 import { LOOP, PACKETS, STATIC_T, planCells, type CellPlan, type PacketDef } from "./pipeline/script";
 
 const { stages, ariaLabel, note } = hero.pipeline;
-const { faultsBefore, faultsAfter, invariant } = research.minimization;
+/** Illustrative only: the hero loop shows a generic invariant and a reduced fault set, not a real result. */
+const invariant = "safety invariant";
 
 /* -------------------------------------------------------------------------- */
 /* Clock                                                                       */
@@ -155,7 +156,7 @@ function readoutFor(index: number, { clock, cycle, packets, plan, compact }: Rea
     case 3:
       return <FailureReadout clock={clock} invariant={invariant} align={align} />;
     case 4:
-      return <MinimizeReadout clock={clock} before={faultsBefore} after={faultsAfter} align={align} />;
+      return <MinimizeReadout clock={clock} align={align} />;
     case 5:
       return <ReplayReadout clock={clock} align={align} />;
     default:
@@ -293,7 +294,7 @@ function Vertical({ clock, cycle }: { clock: Clock; cycle: number }) {
 /**
  * The Ordinum loop as a product diagram: generated scenarios run, new behavior fills the
  * coverage map and feeds back into the corpus, one run violates an invariant, ddmin
- * shrinks it from six faults to five, a deterministic replay overlays it 1:1, and it
+ * shrinks its fault set, a reproduction run overlays it, and it
  * settles as a regression test. Illustrative, not live data.
  */
 export default function PipelineHero({ className }: { className?: string }) {
