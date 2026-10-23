@@ -67,7 +67,7 @@ export default function Hero() {
               <Button href={hero.primaryCta.href} icon="→">
                 {hero.primaryCta.label}
               </Button>
-              <Button href={hero.secondaryCta.href} variant="secondary" icon="↓">
+              <Button href={hero.secondaryCta.href} variant="secondary" icon="→">
                 {hero.secondaryCta.label}
               </Button>
             </div>

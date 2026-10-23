@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Footer from "@/components/layout/Footer";
-import Navbar from "@/components/layout/Navbar";
 import Container from "@/components/ui/Container";
 import Kicker from "@/components/ui/Kicker";
 
@@ -165,9 +163,7 @@ const CONTACT_LEAD = "If you have any questions about these Terms, please contac
 
 export default function TermsPage() {
   return (
-    <>
-      <Navbar />
-      <main id="main" tabIndex={-1} className="relative focus:outline-none">
+    <div className="relative">
         <Container className="py-[79px] md:py-[125px]">
           <div className="mx-auto max-w-[72ch]">
             <Kicker>Legal / Terms</Kicker>
@@ -219,8 +215,6 @@ export default function TermsPage() {
             </footer>
           </div>
         </Container>
-      </main>
-      <Footer onHome={false} />
-    </>
+    </div>
   );
 }

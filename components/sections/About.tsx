@@ -1,3 +1,4 @@
+import type { SectionVariant } from "@/components/ui/Section";
 import type { ReactNode } from "react";
 import Heading from "@/components/ui/Heading";
 import Kicker from "@/components/ui/Kicker";
@@ -216,13 +217,13 @@ function FounderCard() {
 /* Section                                                                     */
 /* -------------------------------------------------------------------------- */
 
-export default function About() {
+export default function About({ variant = "default" }: { variant?: SectionVariant } = {}) {
   const [kickerLabel, kickerIndex] = splitSlash(about.kicker);
   const [toplineIndex, toplineLabel] = splitSlash(topline[8]);
   const disciplines = about.edge.map((e) => e.title);
 
   return (
-    <Section id="about" aria-labelledby="about-heading" contained={false} className="pt-0 md:pt-0">
+    <Section id="about" variant={variant} aria-labelledby="about-heading" contained={false} className="pt-0 md:pt-0">
       <Container>
         <Topline index={toplineIndex} contained={false}>
           {toplineLabel}

@@ -32,11 +32,10 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   async redirects() {
     return [
+      // Legacy routes from the previous site.
       { source: "/problem", destination: "/#problem", permanent: true },
-      { source: "/solution", destination: "/#product", permanent: true },
-      { source: "/how-it-works", destination: "/#technology", permanent: true },
-      { source: "/about", destination: "/#about", permanent: true },
-      { source: "/contact", destination: "/#contact", permanent: true },
+      { source: "/solution", destination: "/product", permanent: true },
+      { source: "/how-it-works", destination: "/technology", permanent: true },
     ];
   },
   async headers() {

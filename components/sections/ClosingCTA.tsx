@@ -13,7 +13,8 @@ function splitKicker(kicker: string): [string, string | undefined] {
 
 const HEADING_ID = "contact-heading";
 
-export default function ClosingCTA() {
+/** `asPageHeading`: render the headline as the page's h1 (the /contact page). */
+export default function ClosingCTA({ asPageHeading = false }: { asPageHeading?: boolean } = {}) {
   const [kickerLabel, kickerIndex] = splitKicker(cta.kicker);
   const emailPrefix = cta.emailFallback.replace(site.email, "").trim();
 
@@ -32,6 +33,7 @@ export default function ClosingCTA() {
           </Kicker>
 
           <Heading
+            as={asPageHeading ? "h1" : "h2"}
             id={HEADING_ID}
             size="lg"
             tone="sage"

@@ -1,3 +1,4 @@
+import type { SectionVariant } from "@/components/ui/Section";
 import Heading from "@/components/ui/Heading";
 import Kicker from "@/components/ui/Kicker";
 import Reveal, { RevealItem } from "@/components/ui/Reveal";
@@ -14,13 +15,13 @@ function splitLabel(s: string): [string, string | undefined] {
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-export default function Pillars() {
+export default function Pillars({ variant = "default" }: { variant?: SectionVariant } = {}) {
   const [kicker, index] = splitLabel(pillars.kicker);
   const [lineIndex, lineLabel] = topline[4].split(" / ") as [string, string];
   const total = pillars.items.length;
 
   return (
-    <Section id="product" aria-labelledby="product-title" className="pt-0 md:pt-0">
+    <Section id="product" variant={variant} aria-labelledby="product-title" className="pt-0 md:pt-0">
       <Topline index={lineIndex} contained={false}>
         {lineLabel}
       </Topline>

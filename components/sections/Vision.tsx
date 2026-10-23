@@ -1,3 +1,4 @@
+import type { SectionVariant } from "@/components/ui/Section";
 import Heading from "@/components/ui/Heading";
 import Kicker from "@/components/ui/Kicker";
 import Reveal, { RevealItem } from "@/components/ui/Reveal";
@@ -42,14 +43,14 @@ function Marker({ label }: { label: PhaseLabel }) {
   );
 }
 
-export default function Vision() {
+export default function Vision({ variant = "charcoal" }: { variant?: SectionVariant } = {}) {
   const [kicker, index] = splitLabel(vision.kicker);
   const [lineIndex, lineLabel] = topline[7].split(" / ") as [string, string];
   const [closingLabel, closingText] = splitClosing(vision.closing);
   const count = vision.phases.length;
 
   return (
-    <Section id="vision" variant="charcoal" aria-labelledby="vision-title" className="pt-0 md:pt-0">
+    <Section id="vision" variant={variant} aria-labelledby="vision-title" className="pt-0 md:pt-0">
       <Topline index={lineIndex} contained={false}>
         {lineLabel}
       </Topline>

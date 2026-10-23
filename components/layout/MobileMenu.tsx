@@ -55,7 +55,7 @@ function lockScroll() {
 type MobileMenuProps = {
   /** On the home page links are in-page hashes; elsewhere they are prefixed with "/". */
   onHome: boolean;
-  /** Section id currently in view (from the Navbar's observer). */
+  /** Nav href of the current page, if any. */
   active: string | null;
 };
 
@@ -193,14 +193,14 @@ export default function MobileMenu({ onHome, active }: MobileMenuProps) {
           <Container className="relative flex flex-1 flex-col pb-[max(28px,env(safe-area-inset-bottom))] pt-7">
             <p className="label-mono flex items-center justify-between text-subtle">
               <span>Index</span>
-              <span aria-hidden="true">{String(nav.links.length).padStart(2, "0")} sections</span>
+              <span aria-hidden="true">{String(nav.links.length).padStart(2, "0")} pages</span>
             </p>
 
             <nav aria-label="Mobile" className="mt-4">
               <ul className="border-t border-line">
                 {nav.links.map((link, i) => {
                   const href = resolveHref(link.href, onHome);
-                  const isActive = active === link.href.replace(/^#/, "");
+                  const isActive = active === link.href;
                   return (
                     <motion.li
                       key={link.href}
@@ -212,7 +212,7 @@ export default function MobileMenu({ onHome, active }: MobileMenuProps) {
                       <NavAnchor
                         href={href}
                         onClick={(event) => onLinkClick(event, href)}
-                        aria-current={isActive ? "location" : undefined}
+                        aria-current={isActive ? "page" : undefined}
                         className="group flex items-center justify-between gap-6 py-[19px] focus-visible:outline-offset-[-2px]"
                       >
                         <span

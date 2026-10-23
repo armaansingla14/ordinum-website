@@ -170,14 +170,14 @@ export const site = {
 
 export const nav = {
   links: [
-    { label: "Product", href: "#product" },
-    { label: "Technology", href: "#technology" },
-    { label: "Vision", href: "#vision" },
-    { label: "Research", href: "#research" },
-    { label: "About", href: "#about" },
+    { label: "Product", href: "/product" },
+    { label: "Technology", href: "/technology" },
+    { label: "Research", href: "/research" },
+    { label: "Vision", href: "/vision" },
+    { label: "About", href: "/about" },
   ],
   bookCall: { label: "Book a call", href: site.calUrl },
-  demo: { label: "Get a demo", href: "#contact" },
+  demo: { label: "Get a demo", href: "/contact" },
 } as const satisfies {
   links: readonly Link[];
   bookCall: Link;
@@ -193,8 +193,8 @@ export const hero = {
   titleLine1: "Break autonomous systems.",
   titleLine2: "Before reality does.",
   lede: "Ordinum injects faults across sensors, timing, planners and controllers, steers toward behavior no one has exercised yet, and turns every failure it finds into a minimized, deterministic regression test.",
-  primaryCta: { label: "Get a demo", href: "#contact" },
-  secondaryCta: { label: "See how it works", href: "#technology" },
+  primaryCta: { label: "Get a demo", href: "/contact" },
+  secondaryCta: { label: "See how it works", href: "/technology" },
   meta: [
     "BUILD 0.1 / RESEARCH PREVIEW",
     "ROBOTICS FIRST",
@@ -230,21 +230,21 @@ export const hero = {
 };
 
 /* -------------------------------------------------------------------------- */
-/* Section toplines (mono dividers), in page order:                            */
+/* Section toplines (mono dividers). Numbered per page; array order is fixed:  */
 /* problem, technology, stack, why-now, product, research, why-ordinum,        */
 /* vision, about                                                               */
 /* -------------------------------------------------------------------------- */
 
 export const topline = [
   "01 / Systems are not their components",
-  "02 / Fuzzing is the discovery engine",
-  "03 / Start narrow. Go deep.",
-  "04 / Autonomy is leaving the screen",
-  "05 / Evidence, not dashboards",
-  "06 / What we have measured so far",
-  "07 / A different question",
-  "08 / Simulation first. Hardware next.",
-  "09 / The team",
+  "01 / Fuzzing is the discovery engine",
+  "02 / Start narrow. Go deep.",
+  "01 / Autonomy is leaving the screen",
+  "01 / Evidence, not dashboards",
+  "01 / What we have measured so far",
+  "02 / A different question",
+  "02 / Simulation first. Hardware next.",
+  "01 / The team",
 ] as const satisfies readonly string[];
 
 /* -------------------------------------------------------------------------- */
@@ -329,7 +329,7 @@ export const problem = {
 /* -------------------------------------------------------------------------- */
 
 export const howItWorks = {
-  kicker: "THE METHOD / 002",
+  kicker: "THE METHOD / 001",
   title: "Discover. Reproduce. Prevent.",
   lede: "One closed loop turns unexplored execution paths into engineering evidence. Fuzzing finds the failure. Replay proves it. Minimization explains it. A regression test keeps it fixed.",
   steps: [
@@ -391,7 +391,7 @@ export const howItWorks = {
 /* -------------------------------------------------------------------------- */
 
 export const whatWeTest = {
-  kicker: "WHAT WE TEST / 003",
+  kicker: "WHAT WE TEST / 002",
   title: "The whole loop, not one box in it.",
   lede: "Autonomous failures cross layers, so verification has to as well. Today Ordinum exercises a complete robotics loop in simulation. The architecture is built to extend down the stack.",
   layers: [
@@ -469,7 +469,7 @@ export const whatWeTest = {
 /* -------------------------------------------------------------------------- */
 
 export const whyNow = {
-  kicker: "WHY NOW / 004",
+  kicker: "WHY NOW / 001",
   title: "Autonomy is outpacing its testing.",
   points: [
     {
@@ -512,7 +512,7 @@ export const whyNow = {
 /* -------------------------------------------------------------------------- */
 
 export const pillars = {
-  kicker: "THE PRODUCT / 005",
+  kicker: "THE PRODUCT / 001",
   title: "Failures you can hand to an engineer.",
   lede: "A failure is only useful if someone can reproduce it, understand it and keep it fixed. Every part of Ordinum is built around that.",
   items: [
@@ -565,7 +565,7 @@ export const pillars = {
 /* -------------------------------------------------------------------------- */
 
 export const research = {
-  kicker: "ENGINEERING EVIDENCE / 006",
+  kicker: "ENGINEERING EVIDENCE / 001",
   title: "A measurable starting point.",
   titleMuted: "More to prove.",
   lede: "We built the engine and measured it against random fault injection and a scripted test suite on a controlled simulated target. Feedback guidance reaches substantially more behavior. It does not yet find more failure classes than random. We report both.",
@@ -690,7 +690,7 @@ export const research = {
 /* -------------------------------------------------------------------------- */
 
 export const differentiation = {
-  kicker: "WHY ORDINUM / 007",
+  kicker: "WHY ORDINUM / 002",
   title: "Everyone else answers a different question.",
   lede: "Existing tools are good at what they were built for. Most check the cases someone wrote down. Few search for the interactions between components that nobody anticipated.",
   columns: [
@@ -742,7 +742,7 @@ export const differentiation = {
 /* -------------------------------------------------------------------------- */
 
 export const vision = {
-  kicker: "THE VISION / 008",
+  kicker: "THE VISION / 002",
   title: "From one robot loop to the full physical stack.",
   lede: "We are starting where failures are cheapest to find and easiest to prove: robotics software in simulation. Each phase moves one layer closer to the machine.",
   phases: [
@@ -793,7 +793,7 @@ export const vision = {
 /* -------------------------------------------------------------------------- */
 
 export const about = {
-  kicker: "THE TEAM / 009",
+  kicker: "THE TEAM / 001",
   title: "Built by an engineer who builds fuzzers.",
   lede: "Ordinum sits at the intersection of three disciplines: security fuzzing, multi-agent AI and production observability. The founder has worked in all three.",
   founder: {
@@ -861,7 +861,7 @@ export const about = {
 /* -------------------------------------------------------------------------- */
 
 export const cta = {
-  kicker: "WORK WITH US / 010",
+  kicker: "WORK WITH US / 001",
   title: "Building autonomous systems?",
   titleLine2: "Let's break them safely.",
   body: "We want to hear from robotics and autonomy engineers about the failures that are hardest to find, reproduce and keep fixed. Tell us what you are building.",
@@ -910,17 +910,17 @@ export const footer = {
     {
       title: "Company",
       links: [
-        { label: "Product", href: "#product" },
-        { label: "Technology", href: "#technology" },
-        { label: "Research", href: "#research" },
-        { label: "Vision", href: "#vision" },
-        { label: "About", href: "#about" },
+        { label: "Product", href: "/product" },
+        { label: "Technology", href: "/technology" },
+        { label: "Research", href: "/research" },
+        { label: "Vision", href: "/vision" },
+        { label: "About", href: "/about" },
       ],
     },
     {
       title: "Contact",
       links: [
-        { label: "Get a demo", href: "#contact" },
+        { label: "Get a demo", href: "/contact" },
         { label: "Book a call", href: site.calUrl, external: true },
         { label: site.email, href: `mailto:${site.email}` },
       ],
@@ -952,11 +952,171 @@ export const notFound = {
   title: "No trajectory reaches this page.",
   body: "The page you are looking for does not exist or has moved.",
   cta: { label: "Back to Ordinum", href: "/" },
-  secondaryCta: { label: "Get a demo", href: "/#contact" },
+  secondaryCta: { label: "Get a demo", href: "/contact" },
 } as const satisfies {
   headline: string;
   title: string;
   body: string;
   cta: Link;
   secondaryCta: Link;
+};
+
+/* -------------------------------------------------------------------------- */
+/* Pages: inner-page headers, metadata, reading order                          */
+/* -------------------------------------------------------------------------- */
+
+export type PageKey = "product" | "technology" | "research" | "vision" | "about" | "contact";
+
+type PageCopy = {
+  readonly href: string;
+  readonly label: string;
+  readonly header: {
+    readonly kicker: string;
+    readonly title: string;
+    readonly titleMuted?: string;
+    readonly lede: string;
+  };
+  readonly meta: { readonly title: string; readonly description: string };
+};
+
+export const pages = {
+  product: {
+    href: "/product",
+    label: "Product",
+    header: {
+      kicker: "Product",
+      title: "Fuzzing for the behavior of autonomous systems.",
+      titleMuted: "Not just their code.",
+      lede: "Ordinum searches the space of faults, timings and states your tests never reach, then hands every failure back as a minimized, replayable regression test.",
+    },
+    meta: {
+      title: "Product",
+      description:
+        "Behavioral coverage, stateful fault injection, deterministic replay, failure minimization and regression generation for robotics and autonomous software.",
+    },
+  },
+  technology: {
+    href: "/technology",
+    label: "Technology",
+    header: {
+      kicker: "Technology",
+      title: "One closed loop.",
+      titleMuted: "From unexplored behavior to a permanent test.",
+      lede: "Instrument the system, inject structured faults, measure behavioral coverage, and steer toward states no run has reached. When an invariant breaks, replay it, minimize it and keep it.",
+    },
+    meta: {
+      title: "Technology",
+      description:
+        "How Ordinum works: coverage-guided fault injection, behavioral coverage, ddmin minimization, deterministic replay and regression generation across the autonomy stack.",
+    },
+  },
+  research: {
+    href: "/research",
+    label: "Research",
+    header: {
+      kicker: "Research",
+      title: "Measured, with the caveats.",
+      titleMuted: "Early results from the prototype.",
+      lede: "Feedback-guided fuzzing against random fault injection and a scripted suite, on a controlled simulated robot. What it shows, what it does not, and what we are testing next.",
+    },
+    meta: {
+      title: "Research",
+      description:
+        "Early benchmark results from the Ordinum prototype on a controlled simulated robot: +35% behavioral coverage over random fault injection, with methodology and caveats.",
+    },
+  },
+  vision: {
+    href: "/vision",
+    label: "Vision",
+    header: {
+      kicker: "Vision",
+      title: "Verification for the machines",
+      titleMuted: "that will run the world.",
+      lede: "AI is moving from chat to action. We start with robotics software in simulation and move one layer closer to the machine at a time.",
+    },
+    meta: {
+      title: "Vision",
+      description:
+        "Why autonomous systems need new verification infrastructure now, and Ordinum's path from robotics software in simulation to full-stack verification for physical AI.",
+    },
+  },
+  about: {
+    href: "/about",
+    label: "About",
+    header: {
+      kicker: "About",
+      title: "Security fuzzing, multi-agent AI",
+      titleMuted: "and production reliability.",
+      lede: "Ordinum is built by an engineer who builds fuzzing agents professionally, applying that discipline to systems that act in the physical world.",
+    },
+    meta: {
+      title: "About",
+      description:
+        "The team behind Ordinum: security fuzzing, multi-agent AI systems and production observability, applied to autonomous systems.",
+    },
+  },
+  contact: {
+    href: "/contact",
+    label: "Contact",
+    header: {
+      kicker: "Contact",
+      title: "Get a demo",
+      lede: "Tell us what you are building, or book a call.",
+    },
+    meta: {
+      title: "Get a demo",
+      description:
+        "Talk to Ordinum about fuzzing and verification for robotics and autonomous software. Request a demo or book a 30-minute call.",
+    },
+  },
+} as const satisfies Record<PageKey, PageCopy>;
+
+/** Reading order for the "Next" link at the bottom of each inner page. */
+export const pageOrder = ["product", "technology", "research", "vision", "about"] as const satisfies readonly PageKey[];
+
+/* -------------------------------------------------------------------------- */
+/* Home: explore grid + CTA band                                               */
+/* -------------------------------------------------------------------------- */
+
+export const explore = {
+  kicker: "EXPLORE / 002",
+  title: "Go deeper.",
+  cards: [
+    {
+      page: "product",
+      summary: "Six capabilities that turn a hidden failure into a fixed one, and how that differs from testing, pentesting and observability.",
+    },
+    {
+      page: "technology",
+      summary: "The closed loop from fault injection to regression test, and the layers of the autonomy stack it reaches today.",
+    },
+    {
+      page: "research",
+      summary: "Benchmarks from the prototype: +35% behavioral coverage over random fault injection, with methodology and caveats.",
+    },
+    {
+      page: "vision",
+      summary: "Why verification for physical AI is becoming foundational, and the path from simulation to hardware.",
+    },
+    {
+      page: "about",
+      summary: "Why a security fuzzing engineer is building this, and the experience behind it.",
+    },
+  ],
+} as const satisfies {
+  kicker: string;
+  title: string;
+  cards: readonly { page: PageKey; summary: string }[];
+};
+
+export const ctaBand = {
+  title: "Building autonomous systems?",
+  titleMuted: "Let's break them safely.",
+  demo: { label: "Get a demo", href: "/contact" },
+  bookCall: { label: "Book a call", href: site.calUrl },
+} as const satisfies {
+  title: string;
+  titleMuted: string;
+  demo: Link;
+  bookCall: Link;
 };
