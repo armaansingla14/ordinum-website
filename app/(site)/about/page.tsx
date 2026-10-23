@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import About from "@/components/sections/About";
 import CtaBand from "@/components/sections/CtaBand";
 import PageHeader from "@/components/sections/PageHeader";
+import Story from "@/components/sections/about/Story";
 import { pages } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -14,6 +15,7 @@ export default function AboutPage() {
   return (
     <>
       <PageHeader page="about" />
+      <Story />
       <About variant="charcoal" />
       <CtaBand />
     </>

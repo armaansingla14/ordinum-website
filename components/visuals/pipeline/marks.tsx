@@ -1,6 +1,6 @@
 /**
  * SVG marks for the hero pipeline: rail, stage nodes, scenario packets, the failing
- * packet and the coverage feedback lane. Every moving part is a pure function of one
+ * packet and the behavior feedback lane (EVIDENCE -> ENGINES). Every moving part is a pure function of one
  * looping clock (see ./script.ts) and only animates transform and opacity.
  *
  * The same marks render in two orientations through a small geometry object:
@@ -10,21 +10,24 @@
 import { motion, useTransform, type MotionValue } from "motion/react";
 import { useMemo } from "react";
 import {
+  ECHO_COUNT,
   FAIL,
   FAIL_COLOR,
   FAIL_PACKET,
-  GHOST_OPACITY,
-  GHOST_SHIFT,
+  FAIL_TICKS,
+  KEPT_TICKS,
   LOOP,
   READOUT,
-  REMOVED_TICK,
+  REMOVED_TICKS,
   REMOVED_TICK_OPACITY,
   REMOVED_TICK_Y,
+  STAGE,
   STAGE_COUNT,
   TICK_GAP,
   TICK_H,
   TICK_W,
   coverageFlash,
+  echoTracks,
   executeBar,
   failTickX,
   feedbackTimes,
@@ -45,7 +48,7 @@ export type Geometry = {
   at: (stage: number) => number;
   /** Cross-axis coordinate of the rail. */
   rail: number;
-  /** Cross-axis coordinate of the feedback lane (COVERAGE -> SCENARIO). */
+  /** Cross-axis coordinate of the feedback lane (EVIDENCE -> ENGINES). */
   lane: number;
 };
 
@@ -57,8 +60,8 @@ export function useTrack(clock: Clock, kf: Keyframes) {
 const NS = "non-scaling-stroke" as const;
 const PACKET_H = 9;
 const packetWidth = (faults: number) => faults * TICK_GAP + 4;
-const W6 = packetWidth(6);
-const W5 = packetWidth(5);
+const W_FULL = packetWidth(FAIL_TICKS);
+const W_MIN = packetWidth(KEPT_TICKS);
 
 /** [along, cross] -> [x, y] for the active orientation. */
 function pt(geo: Geometry, along: number, cross: number): [number, number] {
@@ -69,7 +72,7 @@ function pt(geo: Geometry, along: number, cross: number): [number, number] {
 /* Static structure                                                            */
 /* -------------------------------------------------------------------------- */
 
-/** The rail, a fine ruler along it, and the dashed feedback lane back to SCENARIO. */
+/** The rail, a fine ruler along it, and the dashed feedback lane back to ENGINES. */
 export function RailStructure({ geo }: { geo: Geometry }) {
   const start = geo.at(0);
   const end = geo.at(STAGE_COUNT - 1);
@@ -88,9 +91,9 @@ export function RailStructure({ geo }: { geo: Geometry }) {
     ruler.push(`M${rx1} ${ry1}L${rx2} ${ry2}`);
   }
 
-  // Feedback lane: COVERAGE -> lane -> SCENARIO, ending just short of the rail.
-  const c = geo.at(2);
-  const s = geo.at(0);
+  // Feedback lane: EVIDENCE -> lane -> ENGINES, ending just short of the rail.
+  const c = geo.at(STAGE.evidence);
+  const s = geo.at(STAGE.engines);
   const gap = 8 * Math.sign(geo.lane - geo.rail);
   const p0 = pt(geo, c, geo.rail + gap);
   const p1 = pt(geo, c, geo.lane);
@@ -98,7 +101,7 @@ export function RailStructure({ geo }: { geo: Geometry }) {
   const p3 = pt(geo, s, geo.rail + gap);
   const lane = `M${p0[0]} ${p0[1]}L${p1[0]} ${p1[1]}L${p2[0]} ${p2[1]}L${p3[0]} ${p3[1]}`;
 
-  // Arrowhead pointing from the lane into SCENARIO.
+  // Arrowhead pointing from the lane into ENGINES.
   const dir = -Math.sign(geo.lane - geo.rail);
   const a0 = pt(geo, s - 2.5, geo.rail + gap - dir * 3);
   const a1 = pt(geo, s + 2.5, geo.rail + gap - dir * 3);
@@ -133,18 +136,16 @@ export function StageNodes({ geo, clock, packets }: { geo: Geometry; clock: Cloc
     useMemo(() => executeBar(packets), [packets]),
   );
   const execOn = useTransform(execBar, (v): number => (v > 0.02 ? 1 : 0));
-  const failOn = useTrack(clock, READOUT.failureNode);
-  const minOn = useTrack(clock, READOUT.minimizeNode);
-  const replayOn = useTrack(clock, READOUT.replayNode);
+  const verifyOn = useTrack(clock, READOUT.verifyNode);
+  const reproOn = useTrack(clock, READOUT.reproduceNode);
   const regOn = useTrack(clock, READOUT.regressionNode);
 
   const overlays: Record<number, { opacity: MotionValue<number>; tone: "lime" | "orange" }> = {
-    1: { opacity: execOn, tone: "lime" },
-    2: { opacity: covFlash, tone: "lime" },
-    3: { opacity: failOn, tone: "orange" },
-    4: { opacity: minOn, tone: "lime" },
-    5: { opacity: replayOn, tone: "lime" },
-    6: { opacity: regOn, tone: "lime" },
+    [STAGE.execute]: { opacity: execOn, tone: "lime" },
+    [STAGE.evidence]: { opacity: covFlash, tone: "lime" },
+    [STAGE.verify]: { opacity: verifyOn, tone: "orange" },
+    [STAGE.reproduce]: { opacity: reproOn, tone: "lime" },
+    [STAGE.regress]: { opacity: regOn, tone: "lime" },
   };
 
   // Desktop band is scaled ~1.25x, so 10 units renders ~12px with a ~24px halo.
@@ -158,6 +159,20 @@ export function StageNodes({ geo, clock, packets }: { geo: Geometry; clock: Cloc
         const tone = overlay?.tone === "orange" ? "fill-orange stroke-orange" : "fill-lime stroke-lime";
         return (
           <g key={s} transform={`translate(${x} ${y})`}>
+            {s === STAGE.systems &&
+              // Stacked outlines: several kinds of systems enter through the same adapter contract.
+              [4, 2].map((o) => (
+                <rect
+                  key={o}
+                  x={-size / 2 - o}
+                  y={-size / 2 - o}
+                  width={size}
+                  height={size}
+                  className="fill-window stroke-line-2"
+                  strokeWidth={1}
+                  vectorEffect={NS}
+                />
+              ))}
             <rect
               x={-size / 2}
               y={-size / 2}
@@ -208,7 +223,7 @@ function usePacketMotion(clock: Clock, geo: Geometry, p: PacketDef) {
   return geo.axis === "x" ? { x: pos, y: geo.rail, opacity } : { x: geo.rail, y: pos, opacity };
 }
 
-/** A generated scenario: a square frame carrying 1-6 fault ticks. */
+/** A generated scenario: a square frame carrying a few fault ticks. */
 export function Packet({ p, clock, geo }: { p: PacketDef; clock: Clock; geo: Geometry }) {
   const style = usePacketMotion(clock, geo, p);
   const w = packetWidth(p.faults);
@@ -239,8 +254,8 @@ export function Packet({ p, clock, geo }: { p: PacketDef; clock: Clock; geo: Geo
 
 const COLLAPSE = track([
   [FAIL.dropTick + 0.1, 1],
-  [FAIL.collapse, W5 / W6],
-  [LOOP - 0.01, W5 / W6],
+  [FAIL.collapse, W_MIN / W_FULL],
+  [LOOP - 0.01, W_MIN / W_FULL],
   [LOOP, 1],
 ]);
 const RING_SCALE = track([
@@ -258,7 +273,7 @@ function FailTick({ i, clock, className }: { i: number; clock: Clock; className:
   const x = useTrack(clock, kf);
   const removedOpacity = useTrack(clock, REMOVED_TICK_OPACITY);
   const removedY = useTrack(clock, REMOVED_TICK_Y);
-  const removed = i === REMOVED_TICK;
+  const removed = REMOVED_TICKS.has(i);
   return (
     <motion.rect
       x={-TICK_W / 2}
@@ -286,26 +301,46 @@ function FailLayer({
   return (
     <motion.g style={{ opacity }}>
       <motion.rect
-        x={-W6 / 2}
+        x={-W_FULL / 2}
         y={-PACKET_H / 2}
-        width={W6}
+        width={W_FULL}
         height={PACKET_H}
         className={frame}
         strokeWidth={1}
         vectorEffect={NS}
         style={{ scaleX }}
       />
-      {Array.from({ length: 6 }, (_, i) => (
+      {Array.from({ length: FAIL_TICKS }, (_, i) => (
         <FailTick key={i} i={i} clock={clock} className={tick} />
       ))}
     </motion.g>
   );
 }
 
+/** One outline echo: a re-run of the failing scenario leaving the packet. */
+function Echo({ k, clock }: { k: number; clock: Clock }) {
+  const kfs = useMemo(() => echoTracks(k), [k]);
+  const opacity = useTrack(clock, kfs.opacity);
+  const scale = useTrack(clock, kfs.scale);
+  return (
+    <motion.rect
+      x={-W_FULL / 2 - 2.5}
+      y={-PACKET_H / 2 - 2.5}
+      width={W_FULL + 5}
+      height={PACKET_H + 5}
+      fill="none"
+      className="stroke-lime"
+      strokeWidth={1}
+      strokeDasharray="2 2"
+      vectorEffect={NS}
+      style={{ opacity, scale }}
+    />
+  );
+}
+
 /**
- * The one scenario that violates an invariant: turns orange at FAILURE, sheds one fault
- * at MINIMIZE (6 -> 5), is overlaid 1:1 by its replay at REPLAY and settles in lime at
- * REGRESSION.
+ * The one scenario that violates a property: turns orange at VERIFY, is re-run several
+ * times and sheds faults at REPRODUCE, and settles in lime at REGRESS.
  */
 export function FailingPacket({ clock, geo }: { clock: Clock; geo: Geometry }) {
   const style = usePacketMotion(clock, geo, FAIL_PACKET);
@@ -315,10 +350,6 @@ export function FailingPacket({ clock, geo }: { clock: Clock; geo: Geometry }) {
   const scaleX = useTrack(clock, COLLAPSE);
   const ringScale = useTrack(clock, RING_SCALE);
   const ringOpacity = useTrack(clock, RING_OPACITY);
-  const ghostOpacity = useTrack(clock, GHOST_OPACITY);
-  const shift = useTrack(clock, GHOST_SHIFT);
-  const ghostX = useTransform(shift, (v) => v * 9);
-  const ghostY = useTransform(shift, (v) => v * -7);
 
   return (
     <motion.g style={style}>
@@ -334,11 +365,15 @@ export function FailingPacket({ clock, geo }: { clock: Clock; geo: Geometry }) {
         vectorEffect={NS}
         style={{ scale: ringScale, opacity: ringOpacity }}
       />
+      {/* Re-run echoes */}
+      {Array.from({ length: ECHO_COUNT }, (_, k) => (
+        <Echo key={k} k={k} clock={clock} />
+      ))}
       {/* Opaque base so the rail does not show through */}
       <motion.rect
-        x={-W6 / 2}
+        x={-W_FULL / 2}
         y={-PACKET_H / 2}
-        width={W6}
+        width={W_FULL}
         height={PACKET_H}
         className="fill-window"
         style={{ scaleX }}
@@ -346,37 +381,23 @@ export function FailingPacket({ clock, geo }: { clock: Clock; geo: Geometry }) {
       <FailLayer clock={clock} opacity={neutral} frame="fill-surface-2 stroke-text" tick="fill-text" />
       <FailLayer clock={clock} opacity={orange} frame="fill-orange/15 stroke-orange" tick="fill-orange" />
       <FailLayer clock={clock} opacity={lime} frame="fill-lime/15 stroke-lime" tick="fill-lime" />
-      {/* Replay ghost: arrives offset, locks exactly onto the original */}
-      <motion.g style={{ opacity: ghostOpacity, x: ghostX, y: ghostY }}>
-        <rect
-          x={-W5 / 2 - 2.5}
-          y={-PACKET_H / 2 - 2.5}
-          width={W5 + 5}
-          height={PACKET_H + 5}
-          fill="none"
-          className="stroke-lime"
-          strokeWidth={1}
-          strokeDasharray="2 2"
-          vectorEffect={NS}
-        />
-      </motion.g>
     </motion.g>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/* Coverage feedback                                                           */
+/* Behavior feedback                                                           */
 /* -------------------------------------------------------------------------- */
 
-/** New coverage travels back along the lane to SCENARIO, where it becomes a corpus entry. */
+/** Newly observed behavior travels back along the lane to ENGINES, where it shapes the next scenarios. */
 export function FeedbackDot({ p, clock, geo }: { p: PacketDef; clock: Clock; geo: Geometry }) {
   const kfs = useMemo(() => {
     const f = feedbackTimes(p);
     return {
       along: track([
-        [f.start, geo.at(2)],
-        [f.down, geo.at(2)],
-        [f.across, geo.at(0)],
+        [f.start, geo.at(STAGE.evidence)],
+        [f.down, geo.at(STAGE.evidence)],
+        [f.across, geo.at(STAGE.engines)],
       ]),
       cross: track([
         [f.start, geo.rail],

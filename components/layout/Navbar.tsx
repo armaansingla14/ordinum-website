@@ -93,6 +93,7 @@ export default function Navbar() {
             href={resolveHref(nav.demo.href, onHome)}
             size="sm"
             icon="→"
+            aria-current={pathname === nav.demo.href ? "page" : undefined}
             className="hidden px-4 py-[11px] sm:inline-flex lg:px-[18px] lg:py-[13px]"
           >
             {nav.demo.label}

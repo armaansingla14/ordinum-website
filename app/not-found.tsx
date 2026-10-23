@@ -11,123 +11,93 @@ export const metadata: Metadata = {
   alternates: { canonical: null },
 };
 
-/* ---------- Illustrative coverage map: a field of visited states with one unreached cell ---------- */
+/* ---------- Illustrative route check: a three-lane timeline ending in a failed property ---------- */
 
-const COLS = 9;
-const ROWS = 7;
-const CELL = 30;
-const GAP = 4;
-const PITCH = CELL + GAP;
-const TARGET = { c: 7, r: 1 }; // the "404" state nobody reaches
-const START = { c: 1, r: 5 };
+type Mark = { at: number; label: string; kind: "event" | "lookup" | "missing" | "fail" };
 
-/** Deterministic visit intensity per cell (0 = never visited). Fixed so server output is stable. */
-function intensity(c: number, r: number) {
-  if (c === TARGET.c && r === TARGET.r) return -1;
-  const d = Math.hypot(c - START.c, r - START.r);
-  const noise = ((c * 73 + r * 151 + c * r * 17) % 11) / 11;
-  const v = 1 - d / 7.2 + (noise - 0.5) * 0.55;
-  if (v < 0.12) return 0;
-  return Math.min(1, v);
-}
+const LANES: { name: string; marks: Mark[] }[] = [
+  {
+    name: "Browser",
+    marks: [
+      { at: 14, label: "Request", kind: "event" },
+      { at: 84, label: "404", kind: "fail" },
+    ],
+  },
+  { name: "Router", marks: [{ at: 38, label: "Lookup", kind: "lookup" }] },
+  { name: "Page", marks: [{ at: 62, label: "None", kind: "missing" }] },
+];
 
-const CELLS = Array.from({ length: COLS * ROWS }, (_, i) => {
-  const c = i % COLS;
-  const r = Math.floor(i / COLS);
-  return { c, r, v: intensity(c, r) };
-});
+const MARK_CLASS: Record<Mark["kind"], string> = {
+  event: "bg-text border-text",
+  lookup: "bg-window border-text",
+  missing: "border-dashed border-lime bg-transparent",
+  fail: "bg-orange border-orange",
+};
 
-const W = COLS * PITCH - GAP;
-const H = ROWS * PITCH - GAP;
-const cx = (c: number) => c * PITCH + CELL / 2;
-const cy = (r: number) => r * PITCH + CELL / 2;
+const LABEL_CLASS: Record<Mark["kind"], string> = {
+  event: "text-muted",
+  lookup: "text-muted",
+  missing: "text-lime",
+  fail: "text-orange",
+};
 
-/* Search frontier: a trajectory that stalls two cells short of the target. */
-const PATH = [
-  [START.c, START.r],
-  [3, 5],
-  [3, 3],
-  [5, 3],
-  [5, 2],
-]
-  .map(([c, r], i) => `${i === 0 ? "M" : "L"}${cx(c)} ${cy(r)}`)
-  .join(" ");
-
-function CoverageMap() {
+function RouteCheck() {
   return (
     <figure className="w-full max-w-[460px] lg:ml-auto">
       <div className="border border-line-2 bg-window shadow-[0_28px_70px_rgb(0_0_0/0.34)]">
         <div className="flex h-11 items-center justify-between border-b border-line px-4 font-mono text-[10px] uppercase tracking-[0.08em] text-[#a5b1ad]">
-          <span>Coverage map / route lookup</span>
-          <span aria-hidden="true" className="flex gap-1.5">
-            <i className="block size-[7px] rounded-full border border-[#798982]" />
-            <i className="block size-[7px] rounded-full border border-[#798982]" />
-            <i className="block size-[7px] rounded-full border border-[#798982]" />
-          </span>
+          <span>Route check</span>
+          <span className="text-subtle">Illustrative</span>
         </div>
 
         <div className="p-5 sm:p-6">
-          <svg
-            viewBox={`-2 -2 ${W + 4} ${H + 4}`}
-            className="h-auto w-full"
-            role="img"
-            aria-label="Illustration: a grid of explored states lit in lime, with a search path that stops short of one dashed, unreached cell."
-          >
-            {CELLS.map(({ c, r, v }) =>
-              v === -1 ? null : (
-                <rect
-                  key={`${c}-${r}`}
-                  x={c * PITCH}
-                  y={r * PITCH}
-                  width={CELL}
-                  height={CELL}
-                  fill={v > 0 ? "#c1e29e" : "transparent"}
-                  fillOpacity={v > 0 ? 0.08 + v * 0.42 : 0}
-                  stroke={v > 0 ? "#c1e29e" : "#2a3235"}
-                  strokeOpacity={v > 0 ? 0.18 + v * 0.3 : 1}
-                />
-              ),
-            )}
+          <p className="sr-only">
+            Illustration: the browser sends a request, the router looks up the address, no page exists, and the
+            browser receives a 404. The property &ldquo;every link resolves to a page&rdquo; is violated.
+          </p>
+          <ol aria-hidden="true" className="border-t border-line">
+            {LANES.map((lane) => (
+              <li key={lane.name} className="grid grid-cols-[64px_minmax(0,1fr)] items-center border-b border-line sm:grid-cols-[76px_minmax(0,1fr)]">
+                <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-subtle">{lane.name}</span>
+                <span className="relative block h-14">
+                  <span className="absolute inset-x-0 top-1/2 h-px bg-line" />
+                  {lane.marks.map((mark) => (
+                    <span
+                      key={mark.label}
+                      className="absolute top-1/2 flex -translate-x-1/2 flex-col items-center"
+                      style={{ left: `${mark.at}%` }}
+                    >
+                      <span className={`block size-[9px] -translate-y-1/2 border ${MARK_CLASS[mark.kind]}`} />
+                      <span
+                        className={`mt-1 whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.08em] ${LABEL_CLASS[mark.kind]}`}
+                      >
+                        {mark.label}
+                      </span>
+                    </span>
+                  ))}
+                </span>
+              </li>
+            ))}
+          </ol>
+          <p aria-hidden="true" className="mt-2 flex justify-end font-mono text-[9px] uppercase tracking-[0.1em] text-subtle">
+            Time →
+          </p>
 
-            <path d={PATH} fill="none" stroke="#f2f3f0" strokeOpacity="0.75" strokeWidth="1.5" strokeDasharray="5 4" />
-            <circle cx={cx(START.c)} cy={cy(START.r)} r="5" fill="#f2f3f0" />
-            <circle cx={cx(5)} cy={cy(2)} r="3.5" fill="#0c1113" stroke="#f2f3f0" strokeWidth="1.5" />
-
-            {/* Unreached target */}
-            <rect
-              x={TARGET.c * PITCH + 0.5}
-              y={TARGET.r * PITCH + 0.5}
-              width={CELL - 1}
-              height={CELL - 1}
-              fill="none"
-              stroke="#c1e29e"
-              strokeWidth="1"
-              strokeDasharray="3 3"
-            />
-            <text
-              x={cx(TARGET.c)}
-              y={cy(TARGET.r) + 4}
-              textAnchor="middle"
-              fill="#c1e29e"
-              fontSize="11"
-              fontFamily="var(--font-dm-mono), monospace"
-            >
-              ?
-            </text>
-          </svg>
-
-          <dl className="mt-5 grid grid-cols-3 border-t border-line pt-4 font-mono text-[10px] uppercase tracking-[0.1em]">
+          <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-line pt-4 font-mono text-[10px] uppercase tracking-[0.1em]">
             <div>
               <dt className="text-subtle">Status</dt>
               <dd className="mt-1.5 text-text">404</dd>
             </div>
             <div>
-              <dt className="text-subtle">Coverage key</dt>
-              <dd className="mt-1.5 text-text">None</dd>
+              <dt className="text-subtle">Property</dt>
+              <dd className="mt-1.5 text-text">Route resolves</dd>
             </div>
             <div>
-              <dt className="text-subtle">Trajectories</dt>
-              <dd className="mt-1.5 text-text">0 reach</dd>
+              <dt className="text-subtle">Verdict</dt>
+              <dd className="mt-1.5 flex items-center gap-1.5 text-orange">
+                <span aria-hidden="true" className="inline-block size-[6px] bg-orange" />
+                Violated
+              </dd>
             </div>
           </dl>
         </div>
@@ -160,7 +130,7 @@ export default function NotFound() {
               <span aria-hidden="true" className="mx-2 text-line-2">
                 /
               </span>
-              No such state
+              No such route
             </p>
 
             <h1 className="mt-7 max-w-[760px] text-[clamp(40px,5.4vw,76px)] font-semibold leading-[1.04] tracking-hero text-text">
@@ -182,7 +152,7 @@ export default function NotFound() {
             </div>
           </div>
 
-          <CoverageMap />
+          <RouteCheck />
         </Container>
       </main>
       <Footer onHome={false} />

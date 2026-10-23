@@ -36,11 +36,12 @@ export default function Heading({
         className,
       )}
     >
-      {children}
+      {/* Own block so text-wrap: balance applies to the first line set, not an anonymous box. */}
+      <span className="block text-balance">{children}</span>
       {muted && (
         <>
           {" "}
-          <span className={cn("block", tone === "dark" ? "text-quiet" : "text-sage-muted")}>{muted}</span>
+          <span className={cn("block text-balance", tone === "dark" ? "text-quiet" : "text-sage-muted")}>{muted}</span>
         </>
       )}
     </Tag>

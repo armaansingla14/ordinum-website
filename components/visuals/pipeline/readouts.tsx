@@ -6,15 +6,18 @@
 import { motion, useTransform } from "motion/react";
 import { useMemo, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { hero, type Status } from "@/lib/content";
 import { useTrack, type Clock } from "./marks";
 import {
   FAIL,
   READOUT,
+  RERUN_COUNT,
+  RERUN_MISSES,
   cellOpacity,
   executeBar,
   feedbackTimes,
   persistFrom,
-  regressionName,
+  rerunTime,
   track,
   type CellPlan,
   type PacketDef,
@@ -61,8 +64,68 @@ function Idle({
   );
 }
 
-/* SCENARIO: the corpus grows by one entry each time new coverage feeds back. */
-export function CorpusReadout({
+/* SYSTEMS: the kinds of systems the platform is meant to connect, with honest status. */
+export type SystemSource = { id: string; name: string; status: Status };
+
+function SourceMark({ status }: { status: Status }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "inline-block size-[6px] shrink-0",
+        status === "implemented" && "bg-lime",
+        status === "in-development" && "border border-dashed border-lime",
+        status === "planned" && "border border-dashed border-subtle",
+      )}
+    />
+  );
+}
+
+export function SystemsReadout({
+  sources,
+  compact = false,
+  align = "start",
+}: {
+  sources: readonly SystemSource[];
+  compact?: boolean;
+  align?: "start" | "end";
+}) {
+  const built = sources.filter((d) => d.status === "implemented").length;
+  if (compact) {
+    return (
+      <div className={cn("flex flex-col gap-2", align === "end" && "items-end")}>
+        <span className="flex gap-[4px]">
+          {sources.map((d) => (
+            <SourceMark key={d.id} status={d.status} />
+          ))}
+        </span>
+        <span className={cn(tag, "text-subtle")}>
+          <span className="text-lime">{built} built</span> · {sources.length - built} planned
+        </span>
+      </div>
+    );
+  }
+  return (
+    <ul className={cn("flex flex-wrap gap-x-2.5 gap-y-[5px]", align === "end" && "justify-end")}>
+      {sources.map((d) => (
+        <li
+          key={d.id}
+          className={cn(
+            tag,
+            "flex items-center gap-1.5 text-[9.5px] tracking-[0.1em]",
+            d.status === "implemented" ? "text-lime" : "text-subtle",
+          )}
+        >
+          <SourceMark status={d.status} />
+          {d.name}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/* ENGINES: the scenario pool grows by one entry each time new behavior feeds back. */
+export function ScenarioReadout({
   clock,
   packets,
   seeds,
@@ -76,7 +139,7 @@ export function CorpusReadout({
   const fed = packets.filter((p) => p.newCells > 0);
   return (
     <div className={cn("flex flex-col gap-2", align === "end" && "items-end")}>
-      <span className={cn(tag, "text-subtle")}>Corpus</span>
+      <span className={cn(tag, "text-subtle")}>Scenarios</span>
       <div
         className={cn(
           "flex max-w-[112px] flex-wrap gap-[3px]",
@@ -87,14 +150,14 @@ export function CorpusReadout({
           <span key={`s${i}`} className="size-[5px] bg-muted/70" />
         ))}
         {fed.map((p) => (
-          <CorpusEntry key={p.id} p={p} clock={clock} />
+          <ScenarioEntry key={p.id} p={p} clock={clock} />
         ))}
       </div>
     </div>
   );
 }
 
-function CorpusEntry({ p, clock }: { p: PacketDef; clock: Clock }) {
+function ScenarioEntry({ p, clock }: { p: PacketDef; clock: Clock }) {
   const kf = useMemo(() => persistFrom(feedbackTimes(p).up, 0.15), [p]);
   const opacity = useTrack(clock, kf);
   return (
@@ -123,7 +186,7 @@ export function ExecuteReadout({
         align === "end" && "items-end",
       )}
     >
-      <span className={cn(tag, "text-subtle")}>Sim / seeded</span>
+      <span className={cn(tag, "text-subtle")}>Supervised</span>
       <div className="relative h-[3px] w-full bg-line">
         <motion.div
           style={{ scaleX }}
@@ -134,7 +197,7 @@ export function ExecuteReadout({
   );
 }
 
-/* COVERAGE: a behavior map that fills as new behavior is found. */
+/* EVIDENCE: a behavior map that fills as new behavior is observed. */
 export function CoverageReadout({
   clock,
   plan,
@@ -154,7 +217,7 @@ export function CoverageReadout({
   const seedSet = useMemo(() => new Set(seeds), [seeds]);
   return (
     <div className={cn("flex flex-col gap-2", align === "end" && "items-end")}>
-      <span className={cn(tag, "text-subtle")}>Behavior map</span>
+      <span className={cn(tag, "text-subtle")}>Observed</span>
       <svg
         width={w}
         height={h}
@@ -195,14 +258,12 @@ function Cell({ clock, on, size }: { clock: Clock; on: number; size: number }) {
   );
 }
 
-/* FAILURE: searching -> INVARIANT VIOLATION (orange is reserved for this). */
-export function FailureReadout({
+/* VERIFY: checking -> PROPERTY VIOLATED (orange is reserved for this). */
+export function VerifyReadout({
   clock,
-  invariant,
   align = "start",
 }: {
   clock: Clock;
-  invariant: string;
   align?: "start" | "end";
 }) {
   const shown = useTrack(clock, READOUT.violation);
@@ -215,11 +276,11 @@ export function FailureReadout({
       )}
     >
       {align === "start" && (
-        <span className={cn(tag, "text-subtle")}>Invariants</span>
+        <span className={cn(tag, "text-subtle")}>Properties</span>
       )}
       <Stack className={cn(align === "end" && "justify-items-end")}>
         <Idle clock={clock} until={READOUT.violation}>
-          Searching
+          Checking
         </Idle>
         <motion.div
           style={{ opacity: resultOpacity }}
@@ -231,13 +292,13 @@ export function FailureReadout({
           <span
             className={cn(
               tag,
-              "border border-orange/70 bg-orange/10 px-1.5 py-[3px] text-orange",
+              "border border-orange/70 bg-orange/10 px-1.5 py-[3px] whitespace-nowrap text-orange",
             )}
           >
-            Invariant violation
+            Violation
           </span>
-          <span className="font-mono text-[10px] tracking-[0.04em] text-orange/80">
-            {invariant}
+          <span className="font-mono text-[10px] tracking-[0.04em] whitespace-nowrap text-orange/80">
+            claimed ≠ actual
           </span>
         </motion.div>
       </Stack>
@@ -245,83 +306,57 @@ export function FailureReadout({
   );
 }
 
-/* MINIMIZE: ddmin 6 -> 5 faults. */
-export function MinimizeReadout({
+/* REPRODUCE: repeated re-runs (most, not all, reproduce), then a smaller fault schedule. */
+export function ReproduceReadout({
   clock,
   align = "start",
 }: {
   clock: Clock;
   align?: "start" | "end";
 }) {
-  const six = useTrack(clock, READOUT.faultsSix);
-  const active = useTrack(clock, READOUT.minimizeNode);
+  const active = useTrack(clock, READOUT.reproduceNode);
   const done = useTrack(clock, READOUT.minimized);
-  // Three layers, never two at once: idle -> "fault set" -> "reduced". Illustrative, no real counts.
-  const sixOpacity = useTransform([six, active, done], ([s, a, d]: number[]) =>
-    Math.min(s, fadeIn(a), fadeOut(d)),
-  );
-  const doneOpacity = useTransform(done, fadeIn);
   const idle = useTransform(active, fadeOut);
+  const doneOpacity = useTransform(done, fadeIn);
   return (
     <div
       className={cn(
-        "flex flex-col gap-1.5",
+        "flex flex-col gap-2",
         align === "end" && "items-end text-right",
       )}
     >
-      <span className={cn(tag, "text-subtle")}>ddmin</span>
+      <span className={cn(tag, "text-subtle")}>Re-runs</span>
+      <span className="flex gap-[3px]">
+        {Array.from({ length: RERUN_COUNT }, (_, i) => (
+          <Rerun key={i} i={i} clock={clock} />
+        ))}
+      </span>
       <Stack className={cn(align === "end" && "justify-items-end")}>
-        <motion.span
-          style={{ opacity: idle }}
-          className={cn(tag, "text-subtle")}
-        >
+        <motion.span style={{ opacity: idle }} className={cn(tag, "text-subtle")}>
           —
         </motion.span>
         <motion.span
-          style={{ opacity: sixOpacity }}
-          className={cn(tag, "text-muted")}
+          style={{ opacity: doneOpacity }}
+          className={cn(tag, "whitespace-nowrap text-text")}
         >
-          Fault set
-        </motion.span>
-        <motion.span style={{ opacity: doneOpacity }} className={cn(tag, "text-text")}>
-          Fault set <span className="text-subtle">→</span>{" "}
-          <span className="text-lime">reduced</span>
+          Fewer faults
         </motion.span>
       </Stack>
     </div>
   );
 }
 
-/* REPLAY: the re-run overlays the original exactly. */
-export function ReplayReadout({
-  clock,
-  align = "start",
-}: {
-  clock: Clock;
-  align?: "start" | "end";
-}) {
-  const shown = useTrack(clock, READOUT.replay);
-  const resultOpacity = useTransform(shown, fadeIn);
+function Rerun({ i, clock }: { i: number; clock: Clock }) {
+  const kf = useMemo(() => persistFrom(rerunTime(i), 0.08), [i]);
+  const opacity = useTrack(clock, kf);
+  const miss = RERUN_MISSES.has(i);
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-1.5",
-        align === "end" && "items-end text-right",
-      )}
-    >
-      <span className={cn(tag, "text-subtle")}>Trace</span>
-      <Stack className={cn(align === "end" && "justify-items-end")}>
-        <Idle clock={clock} until={READOUT.replay}>
-          —
-        </Idle>
-        <motion.span
-          style={{ opacity: resultOpacity }}
-          className={cn(tag, "text-lime")}
-        >
-          Replay 1:1
-        </motion.span>
-      </Stack>
-    </div>
+    <span className="relative size-[5px] bg-line">
+      <motion.span
+        style={{ opacity }}
+        className={cn("absolute inset-0", miss ? "border border-muted bg-window" : "bg-lime")}
+      />
+    </span>
   );
 }
 
@@ -353,40 +388,26 @@ function Check({ className }: { className?: string }) {
   );
 }
 
-/* REGRESSION: the minimized failure becomes a permanent test. Earlier ones stay in the suite. */
+/*
+ * REGRESS: the reduced failure is kept as a regression case. A fixed, generic label: no
+ * numbered IDs and nothing that counts up between loops (this figure is conceptual).
+ */
 export function RegressionReadout({
   clock,
-  cycle,
-  history = 2,
   align = "start",
 }: {
   clock: Clock;
-  /** Completed loops; the newest row is regression_{cycle + 1}. */
-  cycle: number;
-  /** How many earlier rows to keep visible. */
-  history?: number;
   align?: "start" | "end";
 }) {
   const opacity = useTrack(clock, NEWEST);
   const y = useTrack(clock, NEWEST_Y);
-  const n = cycle + 1;
-  const earlier = Array.from(
-    { length: Math.min(history, n - 1) },
-    (_, k) => n - 1 - k,
-  ).reverse();
-  const row = cn(
-    "flex items-center gap-1.5 font-mono text-[10px] leading-[1.35] tracking-[0.04em]",
-  );
   return (
-    <div className={cn("flex flex-col gap-1", align === "end" && "items-end")}>
-      {earlier.map((k) => (
-        <span key={k} className={cn(row, "text-subtle")}>
-          {regressionName(k)}
-          <Check className="text-subtle" />
-        </span>
-      ))}
-      <motion.span style={{ opacity, y }} className={cn(row, "text-text")}>
-        {regressionName(n)}
+    <div className={cn("flex min-w-0 flex-col gap-1", align === "end" && "items-end")}>
+      <motion.span
+        style={{ opacity, y }}
+        className="flex items-center gap-1.5 font-mono text-[10px] leading-[1.35] tracking-[0.04em] whitespace-nowrap text-text"
+      >
+        {hero.visual.regressionLabel}
         <Check className="text-lime" />
       </motion.span>
     </div>
