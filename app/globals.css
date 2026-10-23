@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+/*
+ * Ordinum design tokens.
+ * Every token below becomes a Tailwind utility, e.g. --color-lime -> bg-lime / text-lime / border-lime,
+ * --font-mono -> font-mono, --tracking-display -> tracking-display.
+ */
+@theme static {
+  /* Surfaces */
+  --color-bg: #0b0e10;
+  --color-surface: #111619;
+  --color-surface-2: #161c20;
+  --color-charcoal: #101517; /* alternate section band */
+  --color-window: #0c1113; /* inset "app window" panels */
+
+  /* Hairlines */
+  --color-line: #2a3235;
+  --color-line-2: #3b474b;
+
+  /* Text */
+  --color-text: #f2f3f0;
+  --color-muted: #a8b1b0;
+  --color-subtle: #7d8c8a;
+  --color-quiet: #9aaba5; /* muted second line of display headings */
+
+  /* Signal colors */
+  --color-lime: #c1e29e; /* accent: labels, coverage, active, focus */
+  --color-orange: #ffa779; /* ONLY failures / invariant violations */
+
+  /* Light CTA band */
+  --color-sage: #d5e4d6;
+  --color-sage-ink: #0b1714;
+  --color-sage-muted: #465c50;
+  --color-sage-accent: #355341;
+
+  /* Tracking */
+  --tracking-hero: -0.075em;
+  --tracking-display: -0.06em;
+  --tracking-title: -0.04em;
+  --tracking-label: 0.14em;
+
+  /* Layout */
+  --container-site: 1320px;
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    min-height: 100dvh;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  [id] {
+    scroll-margin-top: 88px;
+  }
+
+  ::selection {
+    background: var(--color-lime);
+    color: var(--color-bg);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-lime);
+    outline-offset: 3px;
+    border-radius: 0;
+  }
+
+  /* Sage band needs a dark focus ring for contrast */
+  .on-sage :focus-visible {
+    outline-color: var(--color-sage-ink);
+  }
+}
+
+/* Faint 48px hairline grid, fading in from the left. Put on an absolutely positioned layer. */
+@utility grid-bg {
+  background-image:
+    linear-gradient(to right, rgb(178 196 181 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(178 196 181 / 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(90deg, transparent, black 50%);
+}
+
+/* Same grid, uniform (no mask). */
+@utility grid-bg-flat {
+  background-image:
+    linear-gradient(to right, rgb(178 196 181 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(178 196 181 / 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Hairline-joined grid: children get 1px separators. Children should set bg-surface. */
+@utility hairline-grid {
+  display: grid;
+  gap: 1px;
+  background-color: var(--color-line);
+  border: 1px solid var(--color-line);
+}
+
+/* Mono uppercase label text (no color). */
+@utility label-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+/* Scripted-suite bar: 45° hatch so it never reads as a dimmer "random" bar (>= 3:1 on surface). */
+@utility bar-scripted {
+  background-color: #5d6b6c;
+  background-image: repeating-linear-gradient(135deg, #7a898a 0 1.5px, transparent 1.5px 5px);
+}
