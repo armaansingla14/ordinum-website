@@ -8,7 +8,7 @@ Marketing site for [ordinum.org](https://ordinum.org). Ordinum builds adversaria
 - home
 - `/demo`: a step-by-step walkthrough of a real Nav2 run. It is not in the main nav; the hero and calls to action link to it.
 - `/product`, `/technology`, `/research`, `/vision`, `/about`, `/contact`
-- `/terms` and `/privacy`: interim drafts (see [Legal pages](#legal-pages))
+- `/terms` and `/privacy`: interim legal pages (see [Legal pages](#legal-pages))
 
 All copy lives in `lib/content.ts`. See [`CLAUDE.md`](CLAUDE.md) for the project structure, conventions and the rules for technical claims.
 
@@ -86,9 +86,9 @@ Apply the `inquiries` migration to the Supabase project before deploying the for
 
 ## Legal pages
 
-`/terms` (Website Terms) and `/privacy` (Privacy Notice) are **interim drafts, pending founder approval**. Each page shows that status at the top, and both are linked from the footer and the contact form. The text lives in `legal` in `lib/content.ts`, and it replaces the old Terms of Service, which remain in git history.
+`/terms` (Website Terms) and `/privacy` (Privacy Notice) are **interim pages, approved by the founders on 25 October 2026**, pending legal review. Each page shows that status at the top, and both are linked from the footer and the contact form. The text lives in `legal` in `lib/content.ts`, and it replaces the old Terms of Service, which remain in git history.
 
-Do not publish either page to production, or change its wording, without founder approval (ideally after legal review).
+Do not change their wording without founder approval (ideally after legal review).
 
 ## Evidence and provenance
 

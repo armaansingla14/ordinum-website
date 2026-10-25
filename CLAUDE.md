@@ -1,6 +1,6 @@
 # Ordinum Website
 
-Marketing site for ordinum.org. It has a home page plus /demo, /product, /technology, /research, /vision, /about and /contact, and the legal drafts /terms and /privacy. Stack: Next.js 15 (App Router), React 19, TypeScript (strict), Tailwind CSS v4 and Motion (`motion/react`), deployed on Vercel. The repo is public.
+Marketing site for ordinum.org. It has a home page plus /demo, /product, /technology, /research, /vision, /about and /contact, and the interim legal pages /terms and /privacy. Stack: Next.js 15 (App Router), React 19, TypeScript (strict), Tailwind CSS v4 and Motion (`motion/react`), deployed on Vercel. The repo is public.
 
 Positioning: Ordinum is building continuous adversarial testing and verification infrastructure for interconnected software and hardware (software, AI, infrastructure, firmware, hardware, robotics). The headline is "Find failures that only appear when systems interact." It is research-stage.
 - **ROS 2 / Nav2 (simulation)** is the first integration that is Built & validated.
@@ -118,7 +118,7 @@ Positioning: Ordinum is building continuous adversarial testing and verification
 - **Video:** there is no demo video yet. Do not write "Watch the demo" or call anything a video. The CTA is "See Ordinum in action" → /demo.
 - **Private repo:** do not copy files, reports, traces or logs from the private product repo into this repo or `public/` without separate founder authorization.
 - **Team:** two co-founders, Armaan Singla and Aarav Singla. Both profiles, including Aarav's LinkedIn (`/in/aaravsinglaa`), were approved for publication on 2026-10-24, so `ABOUT_PROFILES_PENDING` is false. Any profile with `pendingConfirmation: true` must not be rendered.
-- **Legal:** /terms (Website Terms) and /privacy (Privacy Notice) are interim drafts marked "Draft — pending founder approval". Do not change their text, or publish them to production, without founder (ideally legal) approval.
+- **Legal:** /terms (Website Terms) and /privacy (Privacy Notice) are interim pages approved by the founders on 25 October 2026, pending legal review. Do not change their text without founder (ideally legal) approval.
 
 ## Deployment
 - Pushing to `main` deploys to production on Vercel; other branches get preview URLs. No production deploy without founder approval.

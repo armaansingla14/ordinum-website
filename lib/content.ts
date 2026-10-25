@@ -181,8 +181,8 @@ export const seo = {
     vision: "Vision — From working targets to a shared verification layer",
     about: "About — The founders building Ordinum",
     contact: "Contact — Talk to the founders",
-    terms: "Website Terms (Draft)",
-    privacy: "Privacy Notice (Draft)",
+    terms: "Website Terms",
+    privacy: "Privacy Notice",
   },
 } as const;
 
@@ -2348,13 +2348,13 @@ export type LegalDoc = {
  * only via outbound link. No analytics or advertising cookies: verified in code (no analytics
  * packages, no cookie or storage writes, CSP connect-src 'self'); Vercel dashboard settings are
  * a founder check. Based on internal legal drafts (not published).
- * Production publication requires founder approval of the exact text.
+ * Approved by the founders as interim pages on 25 October 2026; may be revised after legal review.
  */
 export const legal = {
-  status: "Draft — pending founder approval",
+  status: "Interim version, approved 25 October 2026. May be revised after legal review.",
   terms: {
     title: "Website Terms",
-    status: "Draft — pending founder approval",
+    status: "Interim version, approved 25 October 2026. May be revised after legal review.",
     lastUpdated: "24 October 2026",
     intro: "These terms cover your use of ordinum.org. They are short because the site is informational.",
     sections: [
@@ -2417,7 +2417,7 @@ export const legal = {
   },
   privacy: {
     title: "Privacy Notice",
-    status: "Draft — pending founder approval",
+    status: "Interim version, approved 25 October 2026. May be revised after legal review.",
     lastUpdated: "24 October 2026",
     intro: "How ordinum.org handles personal information.",
     sections: [
@@ -2522,7 +2522,7 @@ export const footer = {
       ],
     },
   ],
-  /** Both pages are interim drafts; production publication needs founder approval. */
+  /** Interim legal pages, approved by the founders 25 October 2026. */
   legal: [
     { label: "Terms", href: "/terms" },
     { label: "Privacy", href: "/privacy" },
@@ -2678,10 +2678,10 @@ export const pages = {
     header: {
       kicker: "Legal",
       title: "Website Terms",
-      lede: "Draft — pending founder approval.",
+      lede: "Terms of use for ordinum.org.",
     },
     meta: {
-      title: "Website Terms (Draft)",
+      title: "Website Terms",
       description: "Terms of use for ordinum.org.",
     },
   },
@@ -2691,10 +2691,10 @@ export const pages = {
     header: {
       kicker: "Legal",
       title: "Privacy Notice",
-      lede: "Draft — pending founder approval.",
+      lede: "How ordinum.org handles personal information.",
     },
     meta: {
-      title: "Privacy Notice (Draft)",
+      title: "Privacy Notice",
       description: "How ordinum.org handles personal information, including contact-form submissions.",
     },
   },

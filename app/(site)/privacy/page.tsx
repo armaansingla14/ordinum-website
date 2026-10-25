@@ -10,8 +10,7 @@ const page = pages.privacy;
 const sections: readonly LegalSection[] = doc.sections;
 const related = { href: pages.terms.href, label: legal.terms.title };
 
-/** Draft text pending founder approval: kept out of search indexes and the sitemap until approved. */
-export const metadata: Metadata = { ...pageMetadata("privacy"), robots: { index: false, follow: true } };
+export const metadata: Metadata = pageMetadata("privacy");
 
 const linkClass =
   "text-text underline decoration-line-2 underline-offset-4 transition-colors hover:text-lime hover:decoration-lime";
@@ -19,8 +18,8 @@ const linkClass =
 /**
  * Interim Privacy Notice (text in lib/content.ts `legal.privacy`): contact-form disclosure,
  * processor inventory, cookies/analytics inventory, retention and access/deletion requests.
- * Production publication needs founder approval of the exact text; the draft status line
- * stays visible until then. Same layout as app/(site)/terms/page.tsx.
+ * Interim text approved by the founders (25 October 2026); the status line notes it may be
+ * revised after legal review. Same layout as app/(site)/terms/page.tsx.
  */
 export default function PrivacyPage() {
   return (

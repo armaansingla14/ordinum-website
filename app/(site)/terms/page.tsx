@@ -10,8 +10,7 @@ const page = pages.terms;
 const sections: readonly LegalSection[] = doc.sections;
 const related = { href: pages.privacy.href, label: legal.privacy.title };
 
-/** Draft text pending founder approval: kept out of search indexes and the sitemap until approved. */
-export const metadata: Metadata = { ...pageMetadata("terms"), robots: { index: false, follow: true } };
+export const metadata: Metadata = pageMetadata("terms");
 
 const linkClass =
   "text-text underline decoration-line-2 underline-offset-4 transition-colors hover:text-lime hover:decoration-lime";
@@ -19,8 +18,8 @@ const linkClass =
 /**
  * Interim Website Terms (text in lib/content.ts `legal.terms`). Replaces the retired
  * AI-governance Terms of Service completely (that text remains only in git history).
- * Production publication needs founder approval of the exact text; the draft status line
- * stays visible until then. Same layout as app/(site)/privacy/page.tsx.
+ * Interim text approved by the founders (25 October 2026); the status line notes it may be
+ * revised after legal review. Same layout as app/(site)/privacy/page.tsx.
  */
 export default function TermsPage() {
   return (

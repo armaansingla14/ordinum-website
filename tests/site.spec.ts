@@ -193,15 +193,11 @@ test("JSON-LD names the organization and both co-founders", async ({ page }) => 
   expect((org?.founder ?? []).map((f) => f.name).sort()).toEqual(["Aarav Singla", "Armaan Singla"]);
 });
 
-/** Legal pages are drafts pending founder approval: noindex and not in the sitemap. */
-const DRAFT_ROUTES = ["/terms", "/privacy"] as const;
-
-test("sitemap lists every public page except the draft legal pages; robots points at it", async ({ request }) => {
+test("sitemap lists every public page; robots points at it", async ({ request }) => {
   const xml = await (await request.get("/sitemap.xml")).text();
   for (const route of ROUTES) {
     const url = route === "/" ? site.url : `${site.url}${route}`;
-    if ((DRAFT_ROUTES as readonly string[]).includes(route)) expect(xml, route).not.toContain(`<loc>${url}</loc>`);
-    else expect(xml, route).toContain(`<loc>${url}</loc>`);
+    expect(xml, route).toContain(`<loc>${url}</loc>`);
   }
   const robots = await (await request.get("/robots.txt")).text();
   expect(robots).toContain(`${site.url}/sitemap.xml`);
@@ -252,13 +248,13 @@ test("unknown route returns 404", async ({ page }) => {
 });
 
 for (const key of ["terms", "privacy"] as const) {
-  test(`/${key} renders the draft inside the site chrome`, async ({ page }) => {
+  test(`/${key} renders the interim legal page inside the site chrome`, async ({ page }) => {
     const res = await page.goto(pages[key].href);
     expect(res?.status()).toBe(200);
     await expect(page.getByRole("heading", { level: 1, name: legal[key].title })).toBeVisible();
     await expect(page.locator("main")).toContainText(legal.status);
     await expect(page.locator("main")).not.toContainText("AI governance");
-    await expect(page.locator("meta[name='robots']")).toHaveAttribute("content", /noindex/);
+    await expect(page.locator("meta[name='robots'][content*='noindex']")).toHaveCount(0);
     await expect(page.locator("header").first()).toBeVisible();
     await expect(page.getByRole("contentinfo").last()).toBeVisible();
   });
