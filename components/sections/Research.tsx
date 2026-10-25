@@ -1,26 +1,29 @@
-import EngineeringStatus from "./research/EngineeringStatus";
+import CrossSystem from "./research/CrossSystem";
+import Limitations from "./research/Limitations";
+import Methodology from "./research/Methodology";
+import Mqtt from "./research/Mqtt";
 import Nav2Pilot from "./research/Nav2Pilot";
-import NotProven from "./research/NotProven";
-import ResearchRoadmap from "./research/ResearchRoadmap";
+import Reproducibility from "./research/Reproducibility";
+import Summary from "./research/Summary";
 import ToyBenchmark from "./research/ToyBenchmark";
-import TraceDemo from "./research/TraceDemo";
-import WithdrawnNote from "./research/WithdrawnNote";
 
 /**
- * /research body (BRIEF section 7): A status, B toy benchmark, C Nav2 pilot, D real trace,
- * E what we have not proven, F roadmap, then the withdrawn-v1 history note.
- * Copy from lib/content.ts (research.*); numbers and traces from lib/evidence.ts.
+ * /research body (BRIEF section 6): executive summary first, then one section per experiment,
+ * limitations, reproducibility, and methodology (with the withdrawn-v1 note) last.
+ * Copy from lib/content.ts (research.*); numbers from lib/evidence.ts. Every result carries an
+ * evidence label. The real trace is on /demo only, so this page renders no heavy client visual.
  */
 export default function Research() {
   return (
     <>
-      <EngineeringStatus />
-      <ToyBenchmark />
+      <Summary />
       <Nav2Pilot />
-      <TraceDemo />
-      <NotProven />
-      <ResearchRoadmap />
-      <WithdrawnNote />
+      <ToyBenchmark />
+      <CrossSystem />
+      <Mqtt />
+      <Limitations />
+      <Reproducibility />
+      <Methodology />
     </>
   );
 }

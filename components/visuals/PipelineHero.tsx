@@ -3,37 +3,20 @@
 import { useInView, useMotionValue, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { hero, platformVision } from "@/lib/content";
+import { hero } from "@/lib/content";
 import {
   FailingPacket,
-  FeedbackDot,
   Packet,
   RailStructure,
   StageNodes,
   type Clock,
   type Geometry,
 } from "./pipeline/marks";
-import {
-  CoverageReadout,
-  ExecuteReadout,
-  RegressionReadout,
-  ReproduceReadout,
-  ScenarioReadout,
-  SystemsReadout,
-  VerifyReadout,
-  type SystemSource,
-} from "./pipeline/readouts";
-import { LOOP, PACKETS, STAGE, STATIC_T, planCells, type CellPlan, type PacketDef } from "./pipeline/script";
-import { DOMAIN_SHORT, PIPELINE_STAGES as stages } from "./pipeline/stages";
+import { ReproduceReadout, StressReadout, SystemsReadout, VerifyReadout } from "./pipeline/readouts";
+import { LOOP, PACKETS, STAGE, STAGE_COUNT, STATIC_T, type PacketDef } from "./pipeline/script";
+import { PIPELINE_STAGES as stages } from "./pipeline/stages";
 
 const { ariaLabel, note } = hero.visual;
-
-/** Platform-vision domains with their real status (only robotics is implemented today). */
-const SOURCES: readonly SystemSource[] = platformVision.domains.map((d) => ({
-  id: d.id,
-  name: DOMAIN_SHORT[d.id] ?? d.name,
-  status: d.status,
-}));
 
 /* -------------------------------------------------------------------------- */
 /* Clock                                                                       */
@@ -108,8 +91,7 @@ function WindowBar({
           <i className="block size-[6px] rounded-full border border-subtle/80" />
           <i className="block size-[6px] rounded-full border border-subtle/80" />
         </span>
-        <span className="hidden sm:inline">Verification loop</span>
-        <span className="sm:hidden">Loop</span>
+        <span>Four stages</span>
       </span>
       <span className="flex h-full items-center">
         <span className={cn(label, "pr-4 text-subtle md:pr-5")}>
@@ -141,27 +123,20 @@ function WindowBar({
 type Readouts = {
   clock: Clock;
   packets: PacketDef[];
-  plan: CellPlan;
   compact?: boolean;
 };
 
-function readoutFor(index: number, { clock, packets, plan, compact }: Readouts): ReactNode {
+function readoutFor(index: number, { clock, packets, compact }: Readouts): ReactNode {
   const align = compact ? "end" : "start";
   switch (index) {
-    case STAGE.systems:
-      return <SystemsReadout sources={SOURCES} compact={compact} align={align} />;
-    case STAGE.engines:
-      return <ScenarioReadout clock={clock} packets={packets} seeds={plan.seeds.length} align={align} />;
-    case STAGE.execute:
-      return <ExecuteReadout clock={clock} packets={packets} align={align} />;
-    case STAGE.evidence:
-      return <CoverageReadout clock={clock} plan={plan} cell={compact ? 5 : 6} align={align} />;
+    case STAGE.connect:
+      return <SystemsReadout targets={hero.visual.targets} align={align} />;
+    case STAGE.stress:
+      return <StressReadout clock={clock} packets={packets} align={align} />;
     case STAGE.verify:
       return <VerifyReadout clock={clock} align={align} />;
-    case STAGE.reproduce:
-      return <ReproduceReadout clock={clock} align={align} />;
     default:
-      return <RegressionReadout clock={clock} align={align} />;
+      return <ReproduceReadout clock={clock} align={align} />;
   }
 }
 
@@ -169,11 +144,6 @@ function Marks({ geo, clock, packets }: { geo: Geometry; clock: Clock; packets: 
   return (
     <>
       <RailStructure geo={geo} />
-      {packets
-        .filter((p) => p.newCells > 0)
-        .map((p) => (
-          <FeedbackDot key={`f-${p.id}`} p={p} clock={clock} geo={geo} />
-        ))}
       <StageNodes geo={geo} clock={clock} packets={packets} />
       {packets
         .filter((p) => !p.failing)
@@ -190,15 +160,14 @@ function Marks({ geo, clock, packets }: { geo: Geometry; clock: Clock; packets: 
 /* -------------------------------------------------------------------------- */
 
 const H_W = 980;
-const H_H = 58;
-const H_STEP = H_W / 7;
-const H_GEO: Geometry = { axis: "x", at: (s) => H_STEP / 2 + H_STEP * s, rail: 40, lane: 13 };
-const H_PLAN = planCells(11, 4, 9, PACKETS);
+const H_H = 34;
+const H_STEP = H_W / STAGE_COUNT;
+const H_GEO: Geometry = { axis: "x", at: (s) => H_STEP / 2 + H_STEP * s, rail: 17 };
 
 function Horizontal({ clock }: { clock: Clock }) {
   return (
     <div className="relative">
-      <div className="relative grid grid-cols-7">
+      <div className="relative grid grid-cols-4">
         {stages.map((s, i) => (
           <div key={s.id} className="flex items-center justify-center gap-2 px-2 pt-4">
             <span className={cn(label, "text-lime")}>{pad(i)}</span>
@@ -207,30 +176,16 @@ function Horizontal({ clock }: { clock: Clock }) {
         ))}
       </div>
 
-      <div className="relative">
-        <svg viewBox={`0 0 ${H_W} ${H_H}`} className="block h-auto w-full overflow-visible" aria-hidden="true">
-          <Marks geo={H_GEO} clock={clock} packets={PACKETS} />
-        </svg>
-        <span
-          aria-hidden="true"
-          className={cn(label, "absolute -translate-x-1/2 -translate-y-1/2 bg-window px-2 text-[10px] text-lime")}
-          style={{ left: `${(H_GEO.at(STAGE.execute) / H_W) * 100}%`, top: `${(H_GEO.lane / H_H) * 100}%` }}
-        >
-          Observed behavior → engines
-        </span>
-      </div>
+      <svg viewBox={`0 0 ${H_W} ${H_H}`} className="block h-auto w-full overflow-visible" aria-hidden="true">
+        <Marks geo={H_GEO} clock={clock} packets={PACKETS} />
+      </svg>
 
       {/* Column dividers live only in the readout band, so the rail reads as one continuous flow. */}
-      <div className="relative grid grid-cols-7 border-t border-line/70">
+      <div className="relative grid grid-cols-4 border-t border-line/70">
         {stages.map((s, i) => (
-          <div
-            key={s.id}
-            className={cn("flex flex-col gap-2 px-4 pt-4 pb-4 xl:px-5", i > 0 && "border-l border-line/70")}
-          >
-            <div className="min-h-[74px]">{readoutFor(i, { clock, packets: PACKETS, plan: H_PLAN })}</div>
-            <p className="font-sans text-[13px] leading-[1.4] tracking-[-0.01em] text-balance text-muted">
-              {s.caption}
-            </p>
+          <div key={s.id} className={cn("flex flex-col gap-3 px-5 pt-4 pb-4 xl:px-6", i > 0 && "border-l border-line/70")}>
+            <div className="min-h-[62px]">{readoutFor(i, { clock, packets: PACKETS })}</div>
+            <p className="font-sans text-[13px] leading-[1.4] tracking-[-0.01em] text-balance text-muted">{s.caption}</p>
           </div>
         ))}
       </div>
@@ -242,19 +197,18 @@ function Horizontal({ clock }: { clock: Clock }) {
 /* Mobile / tablet: vertical column                                            */
 /* -------------------------------------------------------------------------- */
 
-const ROW = 76;
-const V_W = 52;
-const V_GEO: Geometry = { axis: "y", at: (s) => ROW / 2 + ROW * s, rail: 20, lane: 44 };
+const ROW = 84;
+const V_W = 40;
+const V_GEO: Geometry = { axis: "y", at: (s) => ROW / 2 + ROW * s, rail: 20 };
 const V_PACKETS = PACKETS.filter((p) => p.compact);
-const V_PLAN = planCells(10, 3, 5, V_PACKETS);
 
 function Vertical({ clock }: { clock: Clock }) {
   return (
     <div className="relative">
       <svg
-        viewBox={`0 0 ${V_W} ${ROW * 7}`}
+        viewBox={`0 0 ${V_W} ${ROW * STAGE_COUNT}`}
         width={V_W}
-        height={ROW * 7}
+        height={ROW * STAGE_COUNT}
         className="absolute top-0 left-1 overflow-visible sm:left-3"
         aria-hidden="true"
       >
@@ -265,7 +219,7 @@ function Vertical({ clock }: { clock: Clock }) {
           <li
             key={s.id}
             className={cn(
-              "grid items-center gap-3 pr-4 pl-[64px] sm:pr-5 sm:pl-[80px]",
+              "grid items-center gap-3 pr-4 pl-[52px] sm:pr-5 sm:pl-[68px]",
               "grid-cols-[minmax(0,1fr)_auto]",
               i > 0 && "border-t border-line/60",
             )}
@@ -278,8 +232,8 @@ function Vertical({ clock }: { clock: Clock }) {
               </p>
               <p className="mt-1.5 text-[12px] leading-snug text-muted">{s.caption}</p>
             </div>
-            <div className="flex max-w-[150px] justify-end">
-              {readoutFor(i, { clock, packets: V_PACKETS, plan: V_PLAN, compact: true })}
+            <div className="flex max-w-[132px] justify-end">
+              {readoutFor(i, { clock, packets: V_PACKETS, compact: true })}
             </div>
           </li>
         ))}
@@ -293,11 +247,11 @@ function Vertical({ clock }: { clock: Clock }) {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The Ordinum loop as a conceptual product diagram: systems connect through an adapter,
- * engines generate scenarios with timed faults, supervised runs produce evidence, newly
- * observed behavior feeds back to the engines, an independent check flags one run, it is
- * re-run (most re-runs reproduce, not all) and reduced to fewer faults, and it is kept as
- * a regression test. Labeled CONCEPTUAL: not recorded data, and no claim of exact replay.
+ * Ordinum's four stages as a conceptual product diagram: systems connect through a target
+ * adapter (the adapters that exist today are named; maturity is in the hero status line), scenarios run with injected faults, independent
+ * checks pass most runs and flag one, which is re-run (most re-runs reproduce, not all),
+ * reduced to fewer faults and kept as a regression case. Labeled CONCEPTUAL: not recorded
+ * data, and no claim of exact replay.
  */
 export default function PipelineHero({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);

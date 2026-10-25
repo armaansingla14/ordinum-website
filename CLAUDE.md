@@ -1,57 +1,142 @@
 # Ordinum Website
 
-Marketing site for ordinum.org: a home page plus /product, /technology, /research, /vision, /about, /contact and /terms. Next.js 15 (App Router) + React 19 + TypeScript (strict) + Tailwind CSS v4 + Motion (`motion/react`), deployed on Vercel. Repo is public.
+Marketing site for ordinum.org. It has a home page plus /demo, /product, /technology, /research, /vision, /about and /contact, and the legal drafts /terms and /privacy. Stack: Next.js 15 (App Router), React 19, TypeScript (strict), Tailwind CSS v4 and Motion (`motion/react`), deployed on Vercel. The repo is public.
 
-Positioning: Ordinum is building continuous adversarial testing and verification infrastructure for interconnected software and hardware (software, AI, infrastructure, firmware, hardware, robotics). It is research-stage. ROS 2 / Nav2 is the first implemented integration, not the whole company; do not describe Ordinum as a robotics-only or "coverage-guided fuzzing for autonomous systems" company.
+Positioning: Ordinum is building continuous adversarial testing and verification infrastructure for interconnected software and hardware (software, AI, infrastructure, firmware, hardware, robotics). The headline is "Find failures that only appear when systems interact." It is research-stage.
+- **ROS 2 / Nav2 (simulation)** is the first integration that is Built & validated.
+- **The MQTT (Eclipse Mosquitto) adapter and the four-process cross-system testbed** are Built, experimental.
+- **The NanoMQ bridge** is In progress.
+- Do not describe Ordinum as a robotics-only or "coverage-guided fuzzing for autonomous systems" company.
 
 ## Commands
 - `npm run dev`: dev server on http://localhost:8080
-- `npm run build`: production build (run before committing to catch type/build errors; every page must stay static)
+- `npm run build`: production build. Run it before committing to catch type and build errors. Every page must stay static.
 - `npm run start`: serve the production build (`-- -p 3000` for Playwright)
 - `npm run lint`: ESLint (should report 0 errors)
 - `npm run typecheck`: `tsc --noEmit`
-- `npm test`: Playwright smoke tests (starts `next start` on port 3000; run `npm run build` first). If Chromium's system libraries live outside the default path, set `PLAYWRIGHT_CHROMIUM_LIBS` (see `playwright.config.ts`)
-- `npm run screenshots`: full-page + per-section screenshots of every page at 1440/768/390, reduced and full motion; output dir via `SHOTS_DIR`
+- `npm test`: Playwright tests. It starts `next start` on port 3000, so run `npm run build` first. If Chromium's system libraries live outside the default path, set `PLAYWRIGHT_CHROMIUM_LIBS` (see `playwright.config.ts`).
+  - `tests/site.spec.ts`:
+    - all routes at 320–1920 px: one h1, no overflow, no console errors
+    - nav, CTA, redirects and hash forwarding
+    - canonical, OG and JSON-LD, sitemap
+    - form labels
+    - `/demo` steps, without JS and by keyboard
+    - the homepage word budget: at most 960 words, 60% of the 1,600-word pre-focus baseline
+  - `tests/claims.site.spec.ts`: the forbidden-claims guard over rendered text, head, sitemap and source, plus the LinkedIn allowlist for client JS.
+- `npm run screenshots`: full-page and per-section screenshots of every page at 320–1920, with reduced and full motion. Set the output directory with `SHOTS_DIR`.
 
 ## Structure
-- `app/`: `layout.tsx` (fonts, root metadata from `seo` in `lib/content.ts`, Organization + WebSite JSON-LD), `globals.css` (Tailwind v4 `@theme` tokens), `not-found.tsx`, `opengraph-image.tsx` (generated at build; `twitter-image.tsx` re-exports it), `sitemap.ts`, `robots.ts`, `actions/request-demo.ts` (server action)
-- Root metadata sets no OG/Twitter title, description or url, so every page's og:title/description fall back to its own `title`/`description`. A page that defines its own `openGraph` replaces the root object: repeat `type`/`siteName`/`locale` and leave `images` unset so the generated image is re-applied.
-- `app/(site)/`: route group; `layout.tsx` renders Navbar + `<main>` + Footer for every page; `page.tsx` (home) and one folder per page (`product/`, `technology/`, `research/`, `vision/`, `about/`, `contact/`, `terms/`) composing sections
-- `components/sections/`: shared and home sections at the top level; page-specific sections in `about/`, `product/`, `research/`, `technology/`, `vision/`. `PageHeader` (inner-page h1, optional `children` under the lede), `NextPage`, `CtaBand` (sage design-partnership band closing each page; pass `current="research"` on /research) and `ExploreGrid` (home) tie the pages together
-- `components/visuals/`: diagram/animated client components. Key visuals: `PlatformMap` (cross-system architecture, conceptual), `Lifecycle` (Define → Generate → Execute → Observe → Verify → Reproduce → Regress), `TraceTimeline` and `EvidenceReport` (real Nav2 trace and report data from `lib/evidence.ts`)
-- `components/layout/`: Navbar (active item from the current route; primary CTA "Talk to us" → /contact, plus "Book a call"), MobileMenu, Footer, HashRedirect (forwards old `/#section` links to their pages)
-- `components/ui/`: primitives (Section, Container, Topline, Kicker, Heading, Button, Reveal); reuse these
-- `components/brand/OrdinumMark.tsx`: the Saturn logo as a single SVG path (do not modify)
-- `components/forms/DemoForm.tsx`: contact form (works without JS)
-- `lib/content.ts`: ALL site copy and numbers live here (including `seo`, `pages` headers/metadata, `pageOrder`, `STATUS_LABELS`, `REQUEST_TYPES`, `TECHNOLOGY_CATEGORIES`); edit copy here, not in components. `FACT_SOURCE` records the product repo commit the technical statements were checked against
-- `lib/evidence.ts`: typed data copied from real artifacts in the product repo (`armaansingla14/ordinum`, branch `ordinum-2`; commit and source files listed in its header). Do not edit a value without re-checking the source file
-- `lib/schema.ts`: zod schema shared by form and server action (option allowlists come from `lib/content.ts`); `lib/supabase/`: server client + DB types
-- `supabase/migrations/`: database schema (the `waitlist` table, anonymous insert-only via RLS)
-- `tests/`: Playwright specs; `playwright.config.ts` at root
-- `@/*` is aliased to the repo root (`@/components/...`, `@/lib/...`)
+- `app/`:
+  - `layout.tsx`: fonts, root metadata from `seo` in `lib/content.ts`, and Organization + WebSite JSON-LD. The founders in the JSON-LD come from `about.founders`.
+  - `globals.css`: Tailwind v4 `@theme` tokens
+  - `not-found.tsx`
+  - `opengraph-image.tsx`: generated at build, with a maturity strip from `platformVision.domains`. `twitter-image.tsx` re-exports it.
+  - `sitemap.ts`: iterates `pages`, so it includes /demo, /terms and /privacy
+  - `robots.ts`
+  - `actions/request-demo.ts`: the server action that writes to `inquiries`
+- **Page metadata:** use `pageMetadata(key)` and `homeMetadata` from `components/layout/metadata.ts`. They set the short title, description, own canonical, and full OG/Twitter titles from `seo.pages`.
+  - Root metadata sets no OG/Twitter title, description or url, so it never stamps the home title onto inner pages.
+  - A page that defines its own `openGraph` replaces the root object. It must repeat `type`/`siteName`/`locale`, and it loses the file-based image, so it must reference `/opengraph-image` and `/twitter-image` explicitly. The helper (`components/layout/metadata.ts`) does both.
+- `app/(site)/`: the route group.
+  - `layout.tsx` renders Navbar + `<main>` + Footer for every page.
+  - `page.tsx` is home.
+  - There is one folder per page: `demo/`, `product/`, `technology/`, `research/`, `vision/`, `about/`, `contact/`, `terms/` and `privacy/`.
+- **Home** has six sections: hero, one conceptual problem example, a real run (links to /demo), the four-stage workflow (Connect, Stress-test, Verify, Reproduce & prevent), progress with maturity labels, and founders followed by the CTA band.
+  - The seven-stage lifecycle (`lifecycle`, anchor `#lifecycle`) lives on /technology only.
+  - Keep home copy within the word budget.
+- `components/sections/`: shared and home sections at the top level, and page-specific sections in subfolders.
+  - `PageHeader`: the inner-page h1, with optional `children` under the lede.
+  - `NextPage`: follows `pageOrder`, which is product → technology → research → vision → about.
+  - `CtaBand`: the sage design-partner band closing each page except /contact.
+    - Pass `current` so a button never links to its own page. On /demo, the secondary button becomes "Book a call".
+    - The optional `copy` prop takes page-specific text, for example `product.cta`.
+- `components/visuals/`: diagram and animated client components. `TraceTimeline` and `EvidenceReport` render real Nav2 trace and report data from `lib/evidence.ts`. Lazy-load heavy interactive visuals below the fold, and keep an accessible SSR fallback.
+- `components/layout/`:
+  - `Navbar`:
+    - Nav items are Product, Technology, Research, Vision and About, with the active item taken from the current route.
+    - The primary CTA is "Talk to us" → `/contact#talk`, plus "Book a call".
+    - /demo is not a nav item.
+  - `MobileMenu`
+  - `Footer`: a one-line thesis, one status line, link columns, and Terms + Privacy links
+  - `HashRedirect`: forwards old `/#section` links to their pages
+  - `metadata.ts`
+- `components/ui/`: primitives (Section, Container, Topline, Kicker, Heading, Button, Reveal). Reuse these.
+- `components/brand/OrdinumMark.tsx`: the Saturn logo as a single SVG path. Do not modify it.
+- `components/forms/DemoForm.tsx`: the contact form, which works without JS.
+  - Visible fields: work email*, company, "What are you working on?" and message.
+  - Technology category and request type sit inside a closed "More details" disclosure.
+  - It links to /privacy.
+- `lib/content.ts`: ALL site copy and numbers live here. Edit copy here, not in components. It includes:
+  - `seo`, `nav`, `pages`, `pageOrder`
+  - `MATURITY_LABELS`, `EVIDENCE_CLASS_LABELS`, `integrations`, `demoWalkthrough`
+  - `contact`, `legal`, `footer`
+  - `FACT_SOURCE`: the product-repo commit the technical statements were checked against (currently `124dde072`, checked 24 October 2026)
+  - `content_contract.md` (outside the repo) documents the shapes.
+- `lib/evidence.ts`: typed data copied from real artifacts in the product repo (`armaansingla14/ordinum`, branch `ordinum-2`, private). The artifacts were copied at `c25ba4f` and are unchanged at `124dde072`; the header lists the source files. Do not edit a value without re-checking the source file.
+- `lib/schema.ts`: the zod schema shared by the form and the server action. Option allowlists come from `lib/content.ts`.
+- `lib/notify.server.ts`: the Resend notification (server-only)
+- `lib/supabase/`: the server client and DB types
+- `supabase/migrations/`: the database schema (see Database)
+- `tests/`: Playwright specs. `playwright.config.ts` is at the root.
+- `@/*` is aliased to the repo root (`@/components/...`, `@/lib/...`).
 
 ## Conventions
-- Server components by default; `"use client"` only for interactive/animated pieces.
-- Respect `prefers-reduced-motion` (MotionConfig `reducedMotion="user"`); animate transform/opacity only.
-- Lime `#c1e29e` is the accent; orange `#ffa779` is reserved for failures/invariant violations.
-- Status must be unambiguous: implemented = solid lime marker; in development = outlined/dashed lime; planned = dashed steel. Conceptual visuals carry a "CONCEPTUAL" tag; visuals built from real data cite the artifact path.
-- Diagrams must be legible at 320px and keyboard-usable if interactive.
+- Server components by default; `"use client"` only for interactive or animated pieces.
+- Respect `prefers-reduced-motion` (MotionConfig `reducedMotion="user"`). Animate transform and opacity only.
+- Lime `#c1e29e` is the accent, used sparingly. Orange `#ffa779` is reserved for failures and invariant violations. Corners are square, with hairlines and numbered mono kickers. Do not add new gradients or glass effects.
+- **Integration maturity:** use exactly `MATURITY_LABELS`. Never write a bare "Implemented".
+
+  | Label | Marker |
+  |---|---|
+  | Built & validated | solid lime |
+  | Built, experimental | outlined lime |
+  | In progress | dashed lime |
+  | Planned | dashed steel |
+
+  Always show an integration's `maturityNote` and scope with its label, for example "simulation only".
+- **Evidence labels:** use exactly `EVIDENCE_CLASS_LABELS`: Real external target, Controlled positive control, Harness artifact, Expected behavior, Unresolved, and Independently verified defect. None of the last kind exist, so never render one.
+- Conceptual visuals carry a "CONCEPTUAL" tag. Visuals built from real data cite the artifact path.
+- Diagrams must be legible at 320px, and keyboard-usable if interactive.
 
 ## Claims
-- Never invent facts, customers, partners, pilots, vulnerabilities, endorsements or metrics. Every technical claim must trace to the product repo or a founder-confirmed fact; planned is not implemented.
-- The v1 benchmark results were withdrawn. None of their numbers may appear as performance claims (only, optionally, in the clearly labeled withdrawn-results note on /research, which currently contains no numbers).
-- No "deterministic replay" claims beyond what the repo supports (exact replay on the deterministic toy target; Nav2 is statistical reproduction). No "first/only/most advanced/guaranteed" language; do not caricature other approaches.
-- Team: two co-founders, Armaan Singla and Aarav Singla. Profiles with `pendingConfirmation: true` in `lib/content.ts` (`ABOUT_PROFILES_PENDING`) must not be rendered until the founder approves them.
-- Legal: do not change the Terms text or add a Privacy link/page without founder and legal approval.
+- Never invent facts, customers, partners, pilots, conversations, vulnerabilities, endorsements or metrics. Every technical claim must trace to the product repo at `FACT_SOURCE.commit`, or to a founder-confirmed fact. Planned is not implemented.
+- Design-partner copy is an invitation. Never claim existing customers, partners, users or ongoing conversations.
+- The v1 benchmark results were withdrawn. None of their numbers may appear. The only exception is the clearly labeled withdrawn-results note on /research inside `[data-withdrawn]`, which currently contains no numbers.
+- Do not use any of these:
+  - "parts built" progress ratios
+  - the test count 764 (the only test figure is "523 passed, 1 skipped", from the validation log)
+  - reuse percentages
+  - "beats random" or superiority over baselines
+  - comparisons with named competitors
+  - "first/only/most advanced/industry-leading/guaranteed" language
+
+  Do not caricature other approaches. `tests/claims.site.spec.ts` enforces the list.
+- **Reproduction:** do not claim "deterministic replay" beyond what the repo supports.
+  - Exact replay works only on deterministic targets: the toy robot, and the testbed's lockstep build.
+  - Nav2 and MQTT use statistical reproduction.
+- **Nav2 violations:** the three reproduced Nav2 violations are harness, oracle or configuration artifacts, not Nav2 defects. Never relabel them.
+- **Video:** there is no demo video yet. Do not write "Watch the demo" or call anything a video. The CTA is "See Ordinum in action" → /demo.
+- **Private repo:** do not copy files, reports, traces or logs from the private product repo into this repo or `public/` without separate founder authorization.
+- **Team:** two co-founders, Armaan Singla and Aarav Singla. Both profiles, including Aarav's LinkedIn (`/in/aaravsinglaa`), were approved for publication on 2026-10-24, so `ABOUT_PROFILES_PENDING` is false. Any profile with `pendingConfirmation: true` must not be rendered.
+- **Legal:** /terms (Website Terms) and /privacy (Privacy Notice) are interim drafts marked "Draft — pending founder approval". Do not change their text, or publish them to production, without founder (ideally legal) approval.
 
 ## Deployment
-- Pushing to `main` deploys to production on Vercel; other branches get preview URLs.
-- `vercel.json` only sets `{"framework":"nextjs"}`; do not add SPA rewrites (they break Next routing).
-- Env vars `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY` are server-only (read by the server action, never exposed to the client). They live in `.env` locally (gitignored, see `.env.example`) and in Vercel project settings.
+- Pushing to `main` deploys to production on Vercel; other branches get preview URLs. No production deploy without founder approval.
+- `vercel.json` only sets `{"framework":"nextjs"}`. Do not add SPA rewrites; they break Next routing.
+- **Env vars** are all server-only: read by the server action, never exposed to the client. They live in `.env` locally (gitignored, see `.env.example`) and in Vercel project settings.
+  - `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`: required.
+  - `RESEND_API_KEY`: optional. Without it, notifications are skipped with one content-free log line.
+  - `INQUIRY_NOTIFY_TO`: defaults to armaan@ordinum.org.
+  - `INQUIRY_NOTIFY_FROM`: use a verified-domain sender in production.
+- **Notifications:** a failed notification never fails a submission. Submission content is never logged. Tests may send only to `delivered@resend.dev`.
 
 ## Database
-- `waitlist` stores contact-form submissions: email (required, case-insensitive unique), company, role, message, plus the optional `technology_category`, `request_type` and `hardest_failure` columns.
-- Those three columns come from `supabase/migrations/20261023000200_contact_form_fields.sql` (additive, nullable, RLS unchanged). Until that migration is applied to the production project, the deployed form must not send them; apply it before deploying the new form.
+- **`inquiries`** (`supabase/migrations/20261024000000_inquiries.sql`) stores contact-form submissions. It is append-only, so repeat inquiries are kept.
+  - **Columns:** `email`, `company`, `working_on`, `message`, `technology_category`, `request_type` and `source`, with CHECK length limits.
+  - **Access:** RLS allows anonymous INSERT only, with no SELECT and with UPDATE and DELETE denied.
+  - **Rate limit:** a BEFORE INSERT trigger rejects more than 5 rows per `lower(email)` per hour with SQLSTATE `P0429`, which the form shows as `contact.form.messages.rateLimited`.
+  - **Deploy order:** apply the migration before deploying the form that writes to it.
+- **`waitlist`** is the previous table: a case-insensitive unique email column, plus the optional `technology_category`, `request_type` and `hardest_failure` columns. It is preserved and untouched, but no longer written to. Never drop its data.
 
 ## Rules
 - Never commit `.env` or any secrets.

@@ -1,9 +1,10 @@
 /**
- * Deterministic timeline for the hero pipeline animation.
+ * Deterministic timeline for the hero pipeline animation (four stages:
+ * Connect -> Stress-test -> Verify -> Reproduce & prevent).
  *
  * Everything is a pure function of one looping clock (seconds, 0..LOOP), so the
  * animation can pause/resume exactly and render a static frame for reduced motion.
- * Positions along the rail are in "stage units" (0 = SYSTEMS ... 6 = REGRESS);
+ * Positions along the rail are in "stage units" (0 = CONNECT ... 3 = REPRODUCE);
  * each layout maps stage units to SVG coordinates.
  *
  * This is a conceptual composition, not recorded data: no counts, rates or fault
@@ -11,14 +12,14 @@
  */
 
 /** Loop length in seconds. */
-export const LOOP = 16;
+export const LOOP = 12;
 /** Frame shown for reduced motion / before the animation starts: every stage resolved. */
-export const STATIC_T = 14.6;
-/** Persistent state (coverage, tags, settled packet) fades out over this window before the loop restarts. */
-export const FADE_START = 15.25;
-export const FADE_END = 15.8;
+export const STATIC_T = 10.9;
+/** Persistent state fades out over this window before the loop restarts. */
+export const FADE_START = 11.2;
+export const FADE_END = 11.75;
 
-export const STAGE_COUNT = 7;
+export const STAGE_COUNT = 4;
 
 export type Keyframes = { input: number[]; output: number[] };
 
@@ -46,19 +47,8 @@ export function persistFrom(on: number, fadeIn = 0.25, to = 1): Keyframes {
   ]);
 }
 
-/** Opacity: 1 until `off`, then fades out. */
-export function visibleUntil(off: number, fadeOut = 0.25): Keyframes {
-  return track([
-    [off, 1],
-    [off + fadeOut, 0],
-    [FADE_END + 0.05, 0],
-    [LOOP - 0.3, 0],
-    [LOOP, 1],
-  ]);
-}
-
 /* -------------------------------------------------------------------------- */
-/* Packets                                                                     */
+/* Packets (scenarios)                                                         */
 /* -------------------------------------------------------------------------- */
 
 export type PacketDef = {
@@ -66,26 +56,21 @@ export type PacketDef = {
   launch: number;
   /** Fault ticks carried by the scenario (1-6). */
   faults: number;
-  /** Number of new behavior cells this packet lights at EVIDENCE. */
-  newCells: number;
   failing: boolean;
   /** Shown in the reduced "mobile" variant. */
   compact: boolean;
 };
 
-const SPACING = 0.95;
+const SPACING = 1;
 const FIRST = 0.3;
-const FAIL_INDEX = 6;
-// 13 scenarios: the last one has left the rail before the resolved STATIC_T frame.
-const FAULTS = [2, 1, 3, 4, 2, 5, 6, 3, 1, 4, 2, 5, 3];
-/** Diminishing returns: new behavior gets rarer as the campaign runs. */
-const NEW_CELLS = [3, 3, 2, 3, 2, 2, 2, 2, 1, 2, 1, 0, 1];
+const FAIL_INDEX = 4;
+// 9 scenarios: the last one has passed VERIFY and faded before the resolved STATIC_T frame.
+const FAULTS = [2, 3, 1, 4, 6, 2, 5, 3, 2];
 
 export const PACKETS: PacketDef[] = FAULTS.map((faults, i) => ({
   id: `p${i}`,
   launch: FIRST + SPACING * i,
   faults,
-  newCells: NEW_CELLS[i],
   failing: i === FAIL_INDEX,
   compact: i === FAIL_INDEX || i % 2 === 0,
 }));
@@ -94,68 +79,56 @@ export const FAIL_PACKET = PACKETS[FAIL_INDEX];
 
 /** Travel time between adjacent stages. */
 export const HOP = 0.5;
+/** Time a scenario spends running under faults at STRESS. */
+export const DWELL = 0.4;
 
 /** Stage indices. */
 export const STAGE = {
-  systems: 0,
-  engines: 1,
-  execute: 2,
-  evidence: 3,
-  verify: 4,
-  reproduce: 5,
-  regress: 6,
+  connect: 0,
+  stress: 1,
+  verify: 2,
+  reproduce: 3,
 } as const;
 
 /** Key moments for the failing scenario. */
 const tF = FAIL_PACKET.launch;
-const atReproduce = tF + 5 * HOP + 1.3;
+const atVerify = tF + 2 * HOP + DWELL;
+const atReproduce = atVerify + 0.9 + HOP;
 export const FAIL = {
-  atEngines: tF + HOP,
-  atExecute: tF + 2 * HOP + 0.05,
-  atEvidence: tF + 3 * HOP + 0.35,
-  atVerify: tF + 4 * HOP + 0.55,
-  violation: tF + 4 * HOP + 0.6,
-  leaveVerify: tF + 4 * HOP + 1.3,
+  atStress: tF + HOP,
+  atVerify,
+  violation: atVerify + 0.05,
+  leaveVerify: atVerify + 0.9,
   atReproduce,
   /** Re-runs start; each one lands RERUN_GAP apart. */
   rerunStart: atReproduce + 0.1,
   dropTick: atReproduce + 1.05,
   collapse: atReproduce + 1.45,
-  leaveReproduce: atReproduce + 1.75,
-  atRegression: atReproduce + 1.75 + HOP,
-  saved: atReproduce + 1.75 + HOP + 0.25,
+  saved: atReproduce + 1.9,
 } as const;
+
+/** Time a passing scenario reaches VERIFY. */
+const verifyTime = (p: PacketDef) => (p.failing ? FAIL.atVerify : p.launch + 2 * HOP + DWELL);
 
 /** Stage position over time (stage units). */
 export function packetStage(p: PacketDef): Keyframes {
   const t0 = p.launch;
   if (!p.failing) {
     return track([
-      [t0, STAGE.systems],
-      [t0 + HOP, STAGE.engines],
-      [t0 + 2 * HOP + 0.05, STAGE.execute],
-      [t0 + 2 * HOP + 0.35, STAGE.execute], // execute dwell
-      [t0 + 3 * HOP + 0.35, STAGE.evidence],
+      [t0, STAGE.connect],
+      [t0 + HOP, STAGE.stress],
+      [t0 + HOP + DWELL, STAGE.stress],
+      [verifyTime(p), STAGE.verify],
     ]);
   }
   return track([
-    [t0, STAGE.systems],
-    [FAIL.atEngines, STAGE.engines],
-    [FAIL.atExecute, STAGE.execute],
-    [FAIL.atExecute + 0.3, STAGE.execute],
-    [FAIL.atEvidence, STAGE.evidence],
-    [FAIL.atEvidence + 0.2, STAGE.evidence],
+    [t0, STAGE.connect],
+    [FAIL.atStress, STAGE.stress],
+    [FAIL.atStress + DWELL, STAGE.stress],
     [FAIL.atVerify, STAGE.verify],
     [FAIL.leaveVerify, STAGE.verify],
     [FAIL.atReproduce, STAGE.reproduce],
-    [FAIL.leaveReproduce, STAGE.reproduce],
-    [FAIL.atRegression, STAGE.regress],
   ]);
-}
-
-/** Time the packet reaches EVIDENCE (where it lights behavior cells). */
-export function coverageTime(p: PacketDef) {
-  return p.failing ? FAIL.atEvidence : p.launch + 3 * HOP + 0.35;
 }
 
 export function packetOpacity(p: PacketDef): Keyframes {
@@ -168,14 +141,13 @@ export function packetOpacity(p: PacketDef): Keyframes {
       [FADE_END, 0],
     ]);
   }
-  const atCov = coverageTime(p);
-  // Packets that add nothing new fade faster and dimmer.
-  const exit = p.newCells > 0 ? 0.45 : 0.25;
+  // Passing scenarios are checked at VERIFY and leave the rail.
+  const at = verifyTime(p);
   return track([
     [t0 - 0.001, 0],
     [t0 + 0.15, 1],
-    [atCov + 0.05, 1],
-    [atCov + exit, 0],
+    [at + 0.05, 1],
+    [at + 0.4, 0],
   ]);
 }
 
@@ -184,11 +156,11 @@ export const FAIL_COLOR = {
   orange: track([
     [FAIL.atVerify - 0.05, 0],
     [FAIL.atVerify + 0.15, 1],
-    [FAIL.atRegression, 1],
+    [FAIL.collapse, 1],
     [FAIL.saved, 0],
   ]),
   lime: track([
-    [FAIL.atRegression, 0],
+    [FAIL.collapse, 0],
     [FAIL.saved, 1],
   ]),
 };
@@ -197,9 +169,9 @@ export const FAIL_COLOR = {
 export const TICK_GAP = 3.4;
 export const TICK_W = 1.6;
 export const TICK_H = 5;
-/** Fault ticks on the failing scenario before minimization. */
+/** Fault ticks on the failing scenario before reduction. */
 export const FAIL_TICKS = 6;
-/** Ticks that minimization drops. Conceptual: no real fault counts are depicted. */
+/** Ticks that reduction drops. Conceptual: no real fault counts are depicted. */
 export const REMOVED_TICKS: ReadonlySet<number> = new Set([0, 2, 5]);
 export const KEPT_TICKS = FAIL_TICKS - REMOVED_TICKS.size;
 
@@ -207,7 +179,7 @@ export function tickOffset(index: number, count: number) {
   return (index - (count - 1) / 2) * TICK_GAP;
 }
 
-/** x offset for tick `i` of the failing packet: evenly spaced, closing up after minimization. */
+/** x offset for tick `i` of the failing packet: evenly spaced, closing up after reduction. */
 export function failTickX(i: number): Keyframes {
   const before = tickOffset(i, FAIL_TICKS);
   if (REMOVED_TICKS.has(i)) return track([[0, before]]);
@@ -268,105 +240,45 @@ export function echoTracks(k: number) {
 /** Readout timings. */
 export const READOUT = {
   violation: persistFrom(FAIL.violation),
-  reproduced: persistFrom(rerunTime(RERUN_COUNT - 1) + 0.15),
-  minimized: persistFrom(FAIL.collapse),
+  reduced: persistFrom(FAIL.collapse),
   saved: persistFrom(FAIL.saved),
   /** Node highlights. */
-  verifyNode: persistFrom(FAIL.atVerify, 0.2),
+  /** Orange while the failing scenario sits at VERIFY; the readout keeps the verdict. */
+  verifyNode: track([
+    [FAIL.atVerify - 0.001, 0],
+    [FAIL.atVerify + 0.2, 1],
+    [FAIL.leaveVerify, 1],
+    [FAIL.leaveVerify + 0.3, 0],
+  ]),
   reproduceNode: persistFrom(FAIL.atReproduce, 0.2),
-  regressionNode: persistFrom(FAIL.atRegression, 0.2),
 };
 
 /* -------------------------------------------------------------------------- */
-/* Feedback dots (observed behavior goes back to the engines)                  */
+/* STRESS progress bar                                                         */
 /* -------------------------------------------------------------------------- */
 
-export function feedbackTimes(p: PacketDef) {
-  const start = coverageTime(p) + 0.1;
-  return { start, down: start + 0.18, across: start + 0.95, up: start + 1.13 };
+/** Time a packet arrives at STRESS. */
+export function stressWindow(p: PacketDef) {
+  return { at: p.launch + HOP, dwell: DWELL };
 }
 
-/* -------------------------------------------------------------------------- */
-/* Behavior cells                                                              */
-/* -------------------------------------------------------------------------- */
-
-export type CellPlan = {
-  cols: number;
-  rows: number;
-  /** Cells lit before the loop starts (behavior already seen). */
-  seeds: number[];
-  /** Cell index -> time it lights. */
-  lit: Map<number, number>;
-};
-
-/** Deterministic shuffle (mulberry32). */
-function seededOrder(n: number, seed: number) {
-  let a = seed >>> 0;
-  const rand = () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-  const order = Array.from({ length: n }, (_, i) => i);
-  for (let i = n - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [order[i], order[j]] = [order[j], order[i]];
-  }
-  return order;
-}
-
-export function planCells(cols: number, rows: number, seedCount: number, packets: PacketDef[]): CellPlan {
-  const order = seededOrder(cols * rows, 7 + cols * 31 + rows);
-  const seeds = order.slice(0, seedCount);
-  const lit = new Map<number, number>();
-  let cursor = seedCount;
-  for (const p of packets) {
-    const at = coverageTime(p);
-    for (let k = 0; k < p.newCells && cursor < order.length; k++) {
-      lit.set(order[cursor++], at + k * 0.09);
-    }
-  }
-  return { cols, rows, seeds, lit };
-}
-
-export function cellOpacity(on: number): Keyframes {
-  return track([
-    [on - 0.001, 0],
-    [on + 0.08, 1],
-    [on + 0.9, 0.62],
-    [FADE_START, 0.62],
-    [FADE_END, 0],
-  ]);
-}
-
-/* -------------------------------------------------------------------------- */
-/* EXECUTE progress bar                                                        */
-/* -------------------------------------------------------------------------- */
-
-/** Time a packet arrives at EXECUTE and how long it dwells there. */
-export function executeWindow(p: PacketDef) {
-  return p.failing ? { at: FAIL.atExecute, dwell: 0.3 } : { at: p.launch + 2 * HOP + 0.05, dwell: 0.3 };
-}
-
-/** scaleX of the execution bar: sweeps 0 -> 1 while each packet runs, then resets. */
-export function executeBar(packets: PacketDef[]): Keyframes {
+/** scaleX of the run bar: sweeps 0 -> 1 while each scenario runs under faults, then resets. */
+export function stressBar(packets: PacketDef[]): Keyframes {
   const points: [number, number][] = [[0, 0]];
   for (const p of packets) {
-    const { at, dwell } = executeWindow(p);
+    const { at, dwell } = stressWindow(p);
     points.push([at, 0], [at + dwell, 1], [at + dwell + 0.12, 1], [at + dwell + 0.2, 0]);
   }
   return track(points);
 }
 
-/** Opacity of the "new behavior" flash at EVIDENCE for packets that add cells. */
-export function coverageFlash(packets: PacketDef[]): Keyframes {
+/** Brief lime flash at VERIFY for each scenario that passes its checks. */
+export function passFlash(packets: PacketDef[]): Keyframes {
   const points: [number, number][] = [[0, 0]];
   for (const p of packets) {
-    if (p.newCells === 0) continue;
-    const at = coverageTime(p);
-    points.push([at - 0.01, 0], [at + 0.06, 1], [at + 0.55, 0]);
+    if (p.failing) continue;
+    const at = verifyTime(p);
+    points.push([at - 0.01, 0], [at + 0.06, 0.7], [at + 0.45, 0]);
   }
   return track(points);
 }

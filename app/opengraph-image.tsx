@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { ORDINUM_MARK_PATH, ORDINUM_MARK_VIEWBOX } from "@/components/brand/OrdinumMark";
-import { STATUS_LABELS, hero, platformVision, type Domain } from "@/lib/content";
+import { MATURITY_LABELS, MATURITY_ORDER, hero, platformVision, type Domain, type Maturity } from "@/lib/content";
 
 export const alt = `Ordinum: ${hero.titleLine1} ${hero.titleLine2} ${hero.eyebrow}. ${hero.status}.`;
 export const size = { width: 1200, height: 630 };
@@ -51,22 +51,42 @@ const KICKER = hero.eyebrow.toUpperCase();
 const FOOTER_LEFT = "ordinum.org";
 const FOOTER_RIGHT = hero.meta.join(" · ");
 
-/* Status panel: the real implementation status of each domain (lib/content.ts platformVision). */
-const PANEL_TITLE = "PLATFORM STATUS";
-const ROWS = (platformVision.domains as readonly Domain[]).map((d) => ({
-  id: d.id,
-  // An implemented row always carries its scope (simulation only), even without the page's notes.
-  label: `${d.name.split(" & ")[0] ?? d.name}${d.scope ? " · Nav2 sim" : ""}`.toUpperCase(),
-  implemented: d.status === "implemented",
-  status: STATUS_LABELS[d.status].toUpperCase(),
-}));
-const CORE_LABEL = platformVision.core.name.toUpperCase();
-/** Not a bare "Implemented": the core exists at research stage, with parts still planned. */
-const CORE_STATUS = "RESEARCH-STAGE";
+/*
+ * Status strip: the real maturity of each platform domain (lib/content.ts platformVision),
+ * grouped by the four maturity labels. Scope is always printed next to a built domain so
+ * "Built & validated" is never read without "simulation only".
+ */
+const GROUPS = MATURITY_ORDER.map((maturity) => {
+  const domains = (platformVision.domains as readonly Domain[]).filter((d) => d.maturity === maturity);
+  return {
+    maturity,
+    label: MATURITY_LABELS[maturity].toUpperCase(),
+    names: domains.map((d) => d.name.split(/ & | /)[0] ?? d.name).join(" · ").toUpperCase(),
+    scope: domains
+      .map((d) => d.scope)
+      .filter((x): x is string => Boolean(x))
+      .join(" · ")
+      .toUpperCase(),
+  };
+}).filter((g) => g.names.length > 0);
+
+/** Marker per CLAUDE.md: validated solid lime, experimental outlined lime, in progress dashed lime, planned dashed steel. */
+function marker(maturity: Maturity) {
+  switch (maturity) {
+    case "validated":
+      return { backgroundColor: C.lime, border: `1px solid ${C.lime}` };
+    case "experimental":
+      return { backgroundColor: "transparent", border: `1px solid ${C.lime}` };
+    case "in-progress":
+      return { backgroundColor: "transparent", border: `1px dashed ${C.lime}` };
+    default:
+      return { backgroundColor: "transparent", border: `1px dashed ${C.steel}` };
+  }
+}
 
 export default async function OpengraphImage() {
   const displayText = `${hero.titleLine1}${hero.titleLine2}Ordinum`;
-  const monoText = [KICKER, FOOTER_LEFT, FOOTER_RIGHT, PANEL_TITLE, CORE_LABEL, CORE_STATUS, ...ROWS.flatMap((r) => [r.label, r.status])].join("");
+  const monoText = [KICKER, FOOTER_LEFT, FOOTER_RIGHT, ...GROUPS.flatMap((g) => [g.label, g.names, g.scope])].join("");
 
   const fonts = (
     await Promise.all([
@@ -115,99 +135,70 @@ export default async function OpengraphImage() {
           <div style={{ fontSize: 32, fontWeight: 600, letterSpacing: -1.3, color: C.text }}>Ordinum</div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40 }}>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 14,
-                marginBottom: 28,
-                fontFamily: mono,
-                fontSize: 17,
-                letterSpacing: 2.2,
-                color: C.lime,
-              }}
-            >
-              <div style={{ width: 9, height: 9, backgroundColor: C.lime }} />
-              {KICKER}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                fontSize: 74,
-                fontWeight: 600,
-                lineHeight: 1.06,
-                letterSpacing: -4.2,
-                whiteSpace: "nowrap",
-              }}
-            >
-              <div style={{ color: C.text }}>{hero.titleLine1}</div>
-              <div style={{ color: C.quiet }}>{hero.titleLine2}</div>
-            </div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              marginBottom: 24,
+              fontFamily: mono,
+              fontSize: 17,
+              letterSpacing: 2.2,
+              color: C.lime,
+            }}
+          >
+            <div style={{ width: 9, height: 9, backgroundColor: C.lime }} />
+            {KICKER}
           </div>
-
-          {/* Status panel: solid lime = implemented, dashed steel = planned. */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              width: 318,
-              flexShrink: 0,
+              fontSize: 64,
+              fontWeight: 600,
+              lineHeight: 1.06,
+              letterSpacing: -3.4,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <div style={{ color: C.text }}>{hero.titleLine1}</div>
+            <div style={{ color: C.quiet }}>{hero.titleLine2}</div>
+          </div>
+
+          {/* Maturity strip, one cell per maturity level that has domains. */}
+          <div
+            style={{
+              display: "flex",
+              marginTop: 36,
               border: `1px solid ${C.line2}`,
               backgroundColor: C.panel,
               fontFamily: mono,
-              fontSize: 13,
-              letterSpacing: 1.3,
+              fontSize: 12,
+              letterSpacing: 1.1,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                padding: "11px 16px",
-                borderBottom: `1px solid ${C.line}`,
-                color: C.subtle,
-              }}
-            >
-              {PANEL_TITLE}
-            </div>
-            {ROWS.map((row) => (
+            {GROUPS.map((g, i) => (
               <div
-                key={row.id}
+                key={g.maturity}
                 style={{
                   display: "flex",
-                  alignItems: "center",
-                  padding: "8px 16px",
-                  borderBottom: `1px solid ${C.line}`,
+                  flexDirection: "column",
+                  flex: 1,
+                  padding: "12px 16px",
+                  borderLeft: i === 0 ? "none" : `1px solid ${C.line}`,
                 }}
               >
-                <div
-                  style={{
-                    width: 9,
-                    height: 9,
-                    marginRight: 12,
-                    backgroundColor: row.implemented ? C.lime : "transparent",
-                    border: row.implemented ? `1px solid ${C.lime}` : `1px dashed ${C.steel}`,
-                  }}
-                />
-                <div style={{ display: "flex", flexGrow: 1, color: row.implemented ? C.text : C.quiet }}>{row.label}</div>
-                <div style={{ display: "flex", color: row.implemented ? C.lime : C.steel }}>{row.status}</div>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <div style={{ width: 9, height: 9, marginRight: 10, ...marker(g.maturity) }} />
+                  <div style={{ display: "flex", color: g.maturity === "planned" ? C.steel : C.lime }}>{g.label}</div>
+                </div>
+                <div style={{ display: "flex", marginTop: 8, color: g.maturity === "planned" ? C.quiet : C.text }}>
+                  {g.names}
+                </div>
+                {g.scope && <div style={{ display: "flex", marginTop: 4, color: C.subtle }}>{g.scope}</div>}
               </div>
             ))}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                margin: 10,
-                padding: "10px 12px",
-                border: `1px solid ${C.lime}`,
-              }}
-            >
-              <div style={{ width: 9, height: 9, marginRight: 12, backgroundColor: C.lime }} />
-              <div style={{ display: "flex", flexGrow: 1, color: C.text }}>{CORE_LABEL}</div>
-              <div style={{ display: "flex", color: C.lime }}>{CORE_STATUS}</div>
-            </div>
           </div>
         </div>
 

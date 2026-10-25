@@ -11,23 +11,24 @@ import {
   type ReactNode,
 } from "react";
 import { useFormStatus } from "react-dom";
-import { requestDemo } from "@/app/actions/request-demo";
+import { submitInquiry } from "@/app/actions/request-demo";
 import Button from "@/components/ui/Button";
-import { cta, site } from "@/lib/content";
+import { contact, site } from "@/lib/content";
 import { cn } from "@/lib/cn";
 import {
-  DEMO_FIELDS,
-  DEMO_LIMITS,
-  demoRequestSchema,
-  initialDemoState,
+  INQUIRY_DETAIL_FIELDS,
+  INQUIRY_FIELDS,
+  INQUIRY_LIMITS,
+  initialInquiryState,
+  inquirySchema,
   toFieldErrors,
   toSchemaInput,
-  type DemoField,
-  type DemoFieldErrors,
-  type DemoFormState,
+  type InquiryField,
+  type InquiryFieldErrors,
+  type InquiryFormState,
 } from "@/lib/schema";
 
-const { form: copy } = cta;
+const { form: copy } = contact;
 
 /* -------------------------------------------------------------------------- */
 /* Field styling (dark ink panel on the sage band)                             */
@@ -130,53 +131,47 @@ function PendingDots() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Confirmation (replaces the form on success / duplicate)                    */
+/* Confirmation (replaces the form once the inquiry is stored)                 */
 /* -------------------------------------------------------------------------- */
 
-function Confirmation({ state }: { state: DemoFormState }) {
+function Confirmation({ state }: { state: InquiryFormState }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const duplicate = state.status === "duplicate";
 
   useEffect(() => {
     headingRef.current?.focus();
   }, []);
 
   return (
-    <div className="flex min-h-[420px] flex-col justify-between gap-12 p-6 md:p-9">
+    <div className="flex min-h-[380px] flex-col justify-between gap-12 p-6 md:p-9">
       <div>
         <svg aria-hidden="true" viewBox="0 0 40 40" className="size-10 text-lime" fill="none">
           <rect x="0.5" y="0.5" width="39" height="39" stroke="currentColor" strokeOpacity="0.45" />
-          {duplicate ? (
-            // Neutral "already have it" mark: not a failure, not a new submission.
-            <path d="M12 16.5h16M12 23.5h16" stroke="currentColor" strokeWidth="1.6" />
-          ) : (
-            <path d="M12 20.5l5.5 5.5L28.5 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" />
-          )}
+          <path d="M12 20.5l5.5 5.5L28.5 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" />
         </svg>
-        <p className="label-mono mt-8 text-lime">{duplicate ? "Already received" : "Message received"}</p>
+        <p className="label-mono mt-8 text-lime">{copy.successKicker}</p>
         <h3
           ref={headingRef}
           tabIndex={-1}
           className="mt-4 max-w-[26ch] text-[clamp(24px,2.6vw,32px)] font-semibold leading-[1.18] tracking-title text-[#f0f5ec] focus:outline-none"
         >
-          {state.message ?? (duplicate ? copy.duplicate : copy.success)}
+          {state.message ?? copy.messages.success}
         </h3>
         <p className="mt-5 max-w-[46ch] text-[15px] leading-[1.75] text-[#a9bdb1]">
-          If you would rather talk now, pick a time that works for you.
+          {copy.successFollowUp}
         </p>
       </div>
       <div className="flex flex-col gap-5 border-t border-[#23352e] pt-6 sm:flex-row sm:items-center sm:justify-between">
         <Button
-          href={cta.bookCall.href}
+          href={contact.talk.calCta.href}
           variant="secondary"
           size="sm"
           className="border-[#4a6157] focus-visible:outline-lime"
         >
-          {cta.bookCall.label}
+          {contact.talk.calCta.label}
         </Button>
         <a
           href={`mailto:${site.email}`}
-          className="font-mono text-[12px] tracking-[0.02em] text-[#a9bdb1] underline decoration-[#41584e] underline-offset-4 transition-colors hover:text-lime hover:decoration-lime focus-visible:outline-lime"
+          className="break-all font-mono text-[12px] tracking-[0.02em] text-[#a9bdb1] underline decoration-[#41584e] underline-offset-4 transition-colors hover:text-lime hover:decoration-lime focus-visible:outline-lime"
         >
           {site.email}
         </a>
@@ -189,21 +184,33 @@ function Confirmation({ state }: { state: DemoFormState }) {
 /* Form                                                                        */
 /* -------------------------------------------------------------------------- */
 
+/** Focus a field, opening the "More details" disclosure first if the field lives inside it. */
+function focusField(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const details = el.closest("details");
+  if (details && !details.open) details.open = true;
+  el.focus();
+}
+
 /**
- * Contact form. Progressive enhancement: it posts to the server action without
- * JavaScript; with JavaScript it validates inline, shows a pending state, and swaps
- * to a confirmation only after the server reports a stored submission.
+ * "Send an inquiry" form. Progressive enhancement: it posts to the server action without
+ * JavaScript; with JavaScript it validates inline, shows a pending state, and swaps to a
+ * confirmation only after the server reports a stored submission.
+ *
+ * Visible fields: work email (required), company, what you are working on, message.
+ * Technology category and request type sit in a closed <details> ("More details (optional)").
  */
 export default function DemoForm({ className }: { className?: string }) {
-  const [state, formAction, isPending] = useActionState(requestDemo, initialDemoState);
+  const [state, formAction, isPending] = useActionState(submitInquiry, initialInquiryState);
   const uid = useId();
-  const ids = Object.fromEntries(DEMO_FIELDS.map((f) => [f, `${uid}-${f}`])) as Record<DemoField, string>;
-  const privacyId = `${uid}-privacy`;
+  const ids = Object.fromEntries(INQUIRY_FIELDS.map((f) => [f, `${uid}-${f}`])) as Record<InquiryField, string>;
+  const noticeId = `${uid}-notice`;
 
   // Client-side validation errors take precedence until the next server response.
-  const [clientErrors, setClientErrors] = useState<DemoFieldErrors | null>(null);
+  const [clientErrors, setClientErrors] = useState<InquiryFieldErrors | null>(null);
   // Fields the visitor has edited since the last validation (their error is hidden).
-  const [edited, setEdited] = useState<ReadonlySet<DemoField>>(new Set());
+  const [edited, setEdited] = useState<ReadonlySet<InquiryField>>(new Set());
   // Bumped on every new server state so uncontrolled fields remount with echoed values.
   const [version, setVersion] = useState(0);
   const [prevState, setPrevState] = useState(state);
@@ -221,21 +228,21 @@ export default function DemoForm({ className }: { className?: string }) {
   }, []);
 
   const rawErrors = clientErrors ?? state.fieldErrors ?? {};
-  const errors: DemoFieldErrors = {};
-  for (const f of DEMO_FIELDS) if (rawErrors[f] && !edited.has(f)) errors[f] = rawErrors[f];
+  const errors: InquiryFieldErrors = {};
+  for (const f of INQUIRY_FIELDS) if (rawErrors[f] && !edited.has(f)) errors[f] = rawErrors[f];
 
   // Move focus to the first invalid field after a server-side validation failure.
   useEffect(() => {
     if (state.status !== "invalid" || !state.fieldErrors) return;
-    const first = DEMO_FIELDS.find((f) => state.fieldErrors?.[f]);
-    if (first) document.getElementById(ids[first])?.focus();
+    const first = INQUIRY_FIELDS.find((f) => state.fieldErrors?.[f]);
+    if (first) focusField(ids[first]);
     // ids are stable for the component's lifetime
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     const data = new FormData(event.currentTarget);
-    const result = demoRequestSchema.safeParse(
+    const result = inquirySchema.safeParse(
       toSchemaInput((f) => {
         const v = data.get(f);
         return typeof v === "string" ? v : null;
@@ -249,48 +256,54 @@ export default function DemoForm({ className }: { className?: string }) {
     event.preventDefault();
     const next = toFieldErrors(result.error);
     setClientErrors(next);
-    const first = DEMO_FIELDS.find((f) => next[f]);
-    if (first) document.getElementById(ids[first])?.focus();
+    const first = INQUIRY_FIELDS.find((f) => next[f]);
+    if (first) focusField(ids[first]);
   }
 
   function handleChange(event: ChangeEvent<HTMLFormElement>) {
-    const name = (event.target as { name?: string }).name as DemoField | undefined;
-    if (name && (DEMO_FIELDS as readonly string[]).includes(name) && rawErrors[name] && !edited.has(name)) {
+    const name = (event.target as { name?: string }).name as InquiryField | undefined;
+    if (name && (INQUIRY_FIELDS as readonly string[]).includes(name) && rawErrors[name] && !edited.has(name)) {
       setEdited((prev) => new Set(prev).add(name));
     }
   }
 
-  const done = state.status === "success" || state.status === "duplicate";
+  const done = state.status === "success";
 
   let statusMessage = "";
   if (!done) {
-    if (clientErrors && Object.keys(errors).length > 0) statusMessage = copy.invalid;
-    else if (!clientErrors && (state.status === "error" || state.status === "invalid")) {
-      statusMessage = state.message ?? copy.invalid;
+    if (clientErrors && Object.keys(errors).length > 0) statusMessage = copy.messages.invalid;
+    else if (!clientErrors && (state.status === "error" || state.status === "invalid" || state.status === "rateLimited")) {
+      statusMessage = state.message ?? copy.messages.error;
     }
   }
 
-  const describedBy = (f: DemoField, ...extra: (string | null | undefined)[]) =>
+  const describedBy = (f: InquiryField, ...extra: (string | null | undefined)[]) =>
     [errors[f] ? `${ids[f]}-error` : null, ...extra].filter(Boolean).join(" ") || undefined;
 
   const values = state.values ?? {};
+  // Server-rendered open state (works without JS): open when a detail field has a value or an error.
+  const detailsOpen = INQUIRY_DETAIL_FIELDS.some((f) => values[f] || errors[f]);
 
   return (
     <div
       id={copy.anchorId}
       className={cn(
-        "relative border border-sage-ink bg-sage-ink text-[#f0f5ec] shadow-[0_40px_90px_-40px_rgba(11,23,20,0.65)]",
+        "relative scroll-mt-[88px] border border-sage-ink bg-sage-ink text-[#f0f5ec] shadow-[0_40px_90px_-40px_rgba(11,23,20,0.65)]",
         className,
       )}
     >
       {/* Window bar */}
-      <div className="flex h-[47px] items-center justify-between gap-4 border-b border-[#23352e] px-5 md:px-6">
+      <div className="flex min-h-[47px] flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-[#23352e] px-5 py-2 md:px-6">
         <p className="flex items-center gap-2.5 font-mono text-[10px] uppercase tracking-[0.13em] text-[#b4c7bb]">
           <span aria-hidden="true" className="size-[6px] bg-lime" />
-          Contact <span aria-hidden="true" className="text-[#5a7268]">/</span> Ordinum
+          Inquiry
+          <span aria-hidden="true" className="hidden text-[#5a7268] sm:inline">
+            /
+          </span>
+          <span className="hidden sm:inline">Ordinum</span>
         </p>
         {!done && (
-          <p className="font-mono text-[10px] uppercase tracking-[0.13em] text-[#7d958a]">
+          <p className="font-mono text-[10px] whitespace-nowrap uppercase tracking-[0.13em] text-[#7d958a]">
             <span aria-hidden="true" className="text-lime">
               *
             </span>{" "}
@@ -309,11 +322,11 @@ export default function DemoForm({ className }: { className?: string }) {
           onChange={handleChange}
           noValidate
           aria-busy={isPending}
-          aria-label="Contact Ordinum"
+          aria-label="Send an inquiry"
           className="p-6 md:p-9"
         >
           <div key={version} className="grid gap-x-5 gap-y-6 sm:grid-cols-2">
-            <FieldShell id={ids.email} label={copy.emailLabel} required error={errors.email} className="sm:col-span-2">
+            <FieldShell id={ids.email} label={copy.emailLabel} required error={errors.email}>
               <input
                 id={ids.email}
                 name="email"
@@ -323,7 +336,7 @@ export default function DemoForm({ className }: { className?: string }) {
                 spellCheck={false}
                 autoCapitalize="none"
                 required
-                maxLength={DEMO_LIMITS.email}
+                maxLength={INQUIRY_LIMITS.email}
                 placeholder="name@company.com"
                 defaultValue={values.email}
                 aria-invalid={errors.email ? true : undefined}
@@ -338,7 +351,7 @@ export default function DemoForm({ className }: { className?: string }) {
                 name="company"
                 type="text"
                 autoComplete="organization"
-                maxLength={DEMO_LIMITS.company}
+                maxLength={INQUIRY_LIMITS.company}
                 defaultValue={values.company}
                 aria-invalid={errors.company ? true : undefined}
                 aria-describedby={describedBy("company")}
@@ -346,72 +359,78 @@ export default function DemoForm({ className }: { className?: string }) {
               />
             </FieldShell>
 
-            <FieldShell id={ids.role} label={copy.roleLabel} error={errors.role}>
-              <input
-                id={ids.role}
-                name="role"
-                type="text"
-                autoComplete="organization-title"
-                maxLength={DEMO_LIMITS.role}
-                defaultValue={values.role}
-                aria-invalid={errors.role ? true : undefined}
-                aria-describedby={describedBy("role")}
-                className={controlClass}
-              />
-            </FieldShell>
-
-            <SelectField
-              id={ids.technologyCategory}
-              name="technologyCategory"
-              label={copy.technologyCategoryLabel}
-              placeholder={copy.technologyCategoryPlaceholder}
-              options={copy.technologyCategories}
-              defaultValue={values.technologyCategory}
-              error={errors.technologyCategory}
-              describedBy={describedBy("technologyCategory")}
-            />
-
-            <SelectField
-              id={ids.requestType}
-              name="requestType"
-              label={copy.requestTypeLabel}
-              placeholder={copy.requestTypePlaceholder}
-              options={copy.requestTypes}
-              defaultValue={values.requestType}
-              error={errors.requestType}
-              describedBy={describedBy("requestType")}
-            />
-
-            {/* Shown before the free-text fields so it is read before anyone types details. */}
-            <p
-              id={privacyId}
-              className="border-l border-[#5a7268] py-0.5 pl-4 text-[13px] leading-[1.6] text-[#a9bdb1] sm:col-span-2"
-            >
-              {copy.confidentialityWarning}
-            </p>
-
             <TextareaField
-              id={ids.hardestFailure}
-              name="hardestFailure"
-              label={copy.hardestFailureLabel}
-              hint={copy.hardestFailureHint}
-              max={DEMO_LIMITS.hardestFailure}
-              rows={3}
-              error={errors.hardestFailure}
-              defaultValue={values.hardestFailure}
-              describedBy={(countId) => describedBy("hardestFailure", `${ids.hardestFailure}-hint`, privacyId, countId)}
+              id={ids.workingOn}
+              name="workingOn"
+              label={copy.workingOnLabel}
+              hint={copy.workingOnHint}
+              max={INQUIRY_LIMITS.workingOn}
+              singleLine
+              rows={1}
+              error={errors.workingOn}
+              defaultValue={values.workingOn}
+              describedBy={(countId) => describedBy("workingOn", `${ids.workingOn}-hint`, noticeId, countId)}
             />
 
             <TextareaField
               id={ids.message}
               name="message"
               label={copy.messageLabel}
-              max={DEMO_LIMITS.message}
+              max={INQUIRY_LIMITS.message}
               rows={3}
               error={errors.message}
               defaultValue={values.message}
-              describedBy={(countId) => describedBy("message", privacyId, countId)}
+              describedBy={(countId) => describedBy("message", noticeId, countId)}
             />
+
+            <details open={detailsOpen || undefined} className="group/details w-full border-y border-[#23352e] sm:col-span-2">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 py-3 font-mono text-[11px] uppercase tracking-[0.13em] text-[#b4c7bb] transition-colors hover:text-[#f0f5ec] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime [&::-webkit-details-marker]:hidden">
+                {copy.moreDetails.summary}
+                <span
+                  aria-hidden="true"
+                  className="text-[14px] leading-none text-lime transition-transform duration-200 group-open/details:rotate-45 motion-reduce:transition-none"
+                >
+                  +
+                </span>
+              </summary>
+              <div className="grid gap-x-5 gap-y-6 pb-6 pt-3 sm:grid-cols-2">
+                <SelectField
+                  id={ids.technologyCategory}
+                  name="technologyCategory"
+                  label={copy.moreDetails.technologyCategoryLabel}
+                  placeholder={copy.moreDetails.technologyCategoryPlaceholder}
+                  options={copy.technologyCategories}
+                  defaultValue={values.technologyCategory}
+                  error={errors.technologyCategory}
+                  describedBy={describedBy("technologyCategory")}
+                />
+                <SelectField
+                  id={ids.requestType}
+                  name="requestType"
+                  label={copy.moreDetails.requestTypeLabel}
+                  placeholder={copy.moreDetails.requestTypePlaceholder}
+                  options={copy.requestTypes}
+                  defaultValue={values.requestType}
+                  error={errors.requestType}
+                  describedBy={describedBy("requestType")}
+                />
+              </div>
+            </details>
+
+            {/* One notice block, read before Send: what not to include, and how submissions are handled. */}
+            <div className="space-y-2 border-l border-[#5a7268] py-0.5 pl-4 text-[13px] leading-[1.6] text-[#a9bdb1] sm:col-span-2">
+              <p id={noticeId}>{copy.confidentialityWarning}</p>
+              <p>
+                {copy.privacy.text}{" "}
+                <a
+                  href={copy.privacy.link.href}
+                  className="text-[#f0f5ec] underline decoration-[#5a7268] underline-offset-4 transition-colors hover:text-lime hover:decoration-lime focus-visible:outline-lime"
+                >
+                  {copy.privacy.link.label}
+                </a>
+                .
+              </p>
+            </div>
           </div>
 
           {/* Honeypot: hidden from people and assistive tech; bots tend to fill it. */}
@@ -421,21 +440,20 @@ export default function DemoForm({ className }: { className?: string }) {
           </div>
           <input type="hidden" name="startedAt" value={startedAt} />
 
-          <div className="mt-8 border-t border-[#23352e] pt-7">
+          <div className="mt-7">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <SubmitButton />
               <p
                 role="status"
                 aria-live="polite"
                 className={cn(
-                  "min-h-[1.5em] text-[13px] leading-[1.55] sm:max-w-[46%] sm:text-right",
+                  "min-h-[1.5em] text-[13px] leading-[1.55] sm:max-w-[52%] sm:text-right",
                   statusMessage ? "text-orange" : "text-[#7d958a]",
                 )}
               >
                 {statusMessage}
               </p>
             </div>
-            <p className="mt-5 font-mono text-[11px] leading-[1.7] tracking-[0.02em] text-[#8fa699]">{copy.dataNote}</p>
           </div>
         </form>
       )}
@@ -458,7 +476,7 @@ function SelectField({
   describedBy,
 }: {
   id: string;
-  name: DemoField;
+  name: InquiryField;
   label: string;
   placeholder: string;
   options: readonly { value: string; label: string }[];
@@ -511,16 +529,19 @@ function TextareaField({
   hint,
   max,
   rows,
+  singleLine = false,
   error,
   defaultValue,
   describedBy,
 }: {
   id: string;
-  name: DemoField;
+  name: InquiryField;
   label: string;
   hint?: string;
   max: number;
   rows: number;
+  /** Render a one-line input (same name, limit and counter) instead of a textarea. */
+  singleLine?: boolean;
   error?: string;
   defaultValue?: string;
   describedBy: (countId: string) => string | undefined;
@@ -541,26 +562,43 @@ function TextareaField({
           id={countId}
           className={cn("label-mono shrink-0 whitespace-nowrap text-[10px] tabular-nums", over ? "text-orange" : "text-[#7d958a]")}
         >
-          <span className="sr-only">{copy.optional}. </span>
-          <span aria-hidden="true" className="hidden sm:inline">
-            {copy.optional} ·{" "}
-          </span>
-          {count.toLocaleString("en-US")} / {max.toLocaleString("en-US")}
-          <span className="sr-only"> characters</span>
+          {copy.optional}
+          {/* The counter appears once typing starts. */}
+          {count > 0 && (
+            <>
+              {" · "}
+              {count.toLocaleString("en-US")} / {max.toLocaleString("en-US")}
+              <span className="sr-only"> characters</span>
+            </>
+          )}
         </span>
       }
     >
-      <textarea
-        id={id}
-        name={name}
-        rows={rows}
-        maxLength={max}
-        defaultValue={defaultValue}
-        onInput={(e) => setCount(e.currentTarget.value.length)}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy(countId)}
-        className={cn(controlClass, "min-h-[108px] resize-y")}
-      />
+      {singleLine ? (
+        <input
+          id={id}
+          name={name}
+          type="text"
+          maxLength={max}
+          defaultValue={defaultValue}
+          onInput={(e) => setCount(e.currentTarget.value.length)}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy(countId)}
+          className={controlClass}
+        />
+      ) : (
+        <textarea
+          id={id}
+          name={name}
+          rows={rows}
+          maxLength={max}
+          defaultValue={defaultValue}
+          onInput={(e) => setCount(e.currentTarget.value.length)}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy(countId)}
+          className={cn(controlClass, "min-h-[108px] resize-y")}
+        />
+      )}
     </FieldShell>
   );
 }

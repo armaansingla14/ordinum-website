@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Mono, Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import MotionProvider from "@/components/providers/MotionProvider";
-import { seo, site } from "@/lib/content";
+import { about, seo, site } from "@/lib/content";
 import "./globals.css";
 
 const inter = Inter({
@@ -28,8 +28,9 @@ const SOCIALS = [site.x, site.instagram, site.linkedinCompany];
  * postProcessMetadata in next/dist/lib/metadata/resolve-metadata.js). Setting them
  * here would stamp the home page's title and URL onto every inner page.
  * og:image / twitter:image come from app/opengraph-image.tsx and app/twitter-image.tsx.
- * A page that defines its own `openGraph` replaces this object, so it must repeat
- * type/siteName/locale and keep `images` unset (the file-based image is then re-applied).
+ * A page that defines its own `openGraph` / `twitter` replaces these objects AND loses the
+ * file-based images, so it must repeat type/siteName/locale and reference /opengraph-image and
+ * /twitter-image explicitly (components/layout/metadata.ts does this for every page).
  */
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -57,7 +58,11 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-/* Organization + WebSite structured data. No founders/people: the co-founder profile is pending confirmation. */
+/*
+ * Organization + WebSite structured data, from `site` and `seo` in lib/content.ts.
+ * Founders come from `about.founders` (both approved for publication on 2026-10-24); a profile
+ * with pendingConfirmation is left out. Name and LinkedIn only: no employer or title.
+ */
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
@@ -70,6 +75,9 @@ const jsonLd = {
       email: site.email,
       description: seo.organizationDescription,
       sameAs: SOCIALS,
+      founder: about.founders
+        .filter((f) => !f.pendingConfirmation)
+        .map((f) => ({ "@type": "Person", name: f.name, ...(f.linkedin ? { sameAs: [f.linkedin] } : {}) })),
     },
     {
       "@type": "WebSite",

@@ -1,21 +1,14 @@
-import { hero, lifecycle, type LifecycleStageId } from "@/lib/content";
+import { hero, type WorkflowStageId } from "@/lib/content";
 
 /**
- * Stage labels and captions for the hero loop, read from lib/content.ts. The labels are the
- * lifecycle's verbs (Define, Generate, Execute, Observe, Verify, Reproduce, Regress), so the
- * home page uses one vocabulary for the loop.
+ * Stage labels and captions for the hero loop, read from lib/content.ts (WORKFLOW_STAGES):
+ * Connect, Stress-test, Verify, Reproduce & prevent. The hero visual is the home page's only
+ * statement of the four stages. The seven-stage lifecycle lives on /technology only.
  */
 export type PipelineStage = {
-  readonly id: LifecycleStageId;
+  readonly id: WorkflowStageId;
   readonly label: string;
   readonly caption: string;
 };
 
-export const PIPELINE_STAGES: readonly PipelineStage[] = hero.visual.stages.map((s) => ({
-  id: s.id,
-  label: lifecycle.stages.find((l) => l.id === s.id)?.short ?? s.id,
-  caption: s.caption,
-}));
-
-/** Short names for the platform-vision domains, keyed by `platformVision.domains[].id`. */
-export const DOMAIN_SHORT: Readonly<Record<string, string>> = hero.visual.domainShort;
+export const PIPELINE_STAGES: readonly PipelineStage[] = hero.visual.stages;

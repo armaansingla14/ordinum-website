@@ -1,25 +1,22 @@
 /**
- * Per-stage readouts under (desktop) or beside (mobile) each pipeline node.
+ * Per-stage readouts under (desktop) or beside (mobile) each of the four pipeline nodes.
  * Text is HTML so it stays crisp at any width; all state changes are opacity/transform.
  */
 
-import { motion, useTransform } from "motion/react";
+import { motion, useReducedMotion, useTransform } from "motion/react";
 import { useMemo, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { hero, type Status } from "@/lib/content";
+import { hero } from "@/lib/content";
 import { useTrack, type Clock } from "./marks";
 import {
   FAIL,
   READOUT,
   RERUN_COUNT,
   RERUN_MISSES,
-  cellOpacity,
-  executeBar,
-  feedbackTimes,
   persistFrom,
   rerunTime,
+  stressBar,
   track,
-  type CellPlan,
   type PacketDef,
 } from "./script";
 
@@ -64,111 +61,24 @@ function Idle({
   );
 }
 
-/* SYSTEMS: the kinds of systems the platform is meant to connect, with honest status. */
-export type SystemSource = { id: string; name: string; status: Status };
-
-function SourceMark({ status }: { status: Status }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        "inline-block size-[6px] shrink-0",
-        status === "implemented" && "bg-lime",
-        status === "in-development" && "border border-dashed border-lime",
-        status === "planned" && "border border-dashed border-subtle",
-      )}
-    />
-  );
-}
-
+/* CONNECT: the adapters that exist today, by name (their maturity is in the hero status line). */
 export function SystemsReadout({
-  sources,
-  compact = false,
+  targets,
   align = "start",
 }: {
-  sources: readonly SystemSource[];
-  compact?: boolean;
+  targets: string;
   align?: "start" | "end";
 }) {
-  const built = sources.filter((d) => d.status === "implemented").length;
-  if (compact) {
-    return (
-      <div className={cn("flex flex-col gap-2", align === "end" && "items-end")}>
-        <span className="flex gap-[4px]">
-          {sources.map((d) => (
-            <SourceMark key={d.id} status={d.status} />
-          ))}
-        </span>
-        <span className={cn(tag, "text-subtle")}>
-          <span className="text-lime">{built} built</span> · {sources.length - built} planned
-        </span>
-      </div>
-    );
-  }
   return (
-    <ul className={cn("flex flex-wrap gap-x-2.5 gap-y-[5px]", align === "end" && "justify-end")}>
-      {sources.map((d) => (
-        <li
-          key={d.id}
-          className={cn(
-            tag,
-            "flex items-center gap-1.5 text-[9.5px] tracking-[0.1em]",
-            d.status === "implemented" ? "text-lime" : "text-subtle",
-          )}
-        >
-          <SourceMark status={d.status} />
-          {d.name}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-/* ENGINES: the scenario pool grows by one entry each time new behavior feeds back. */
-export function ScenarioReadout({
-  clock,
-  packets,
-  seeds,
-  align = "start",
-}: {
-  clock: Clock;
-  packets: PacketDef[];
-  seeds: number;
-  align?: "start" | "end";
-}) {
-  const fed = packets.filter((p) => p.newCells > 0);
-  return (
-    <div className={cn("flex flex-col gap-2", align === "end" && "items-end")}>
-      <span className={cn(tag, "text-subtle")}>Scenarios</span>
-      <div
-        className={cn(
-          "flex max-w-[112px] flex-wrap gap-[3px]",
-          align === "end" && "justify-end",
-        )}
-      >
-        {Array.from({ length: seeds }, (_, i) => (
-          <span key={`s${i}`} className="size-[5px] bg-muted/70" />
-        ))}
-        {fed.map((p) => (
-          <ScenarioEntry key={p.id} p={p} clock={clock} />
-        ))}
-      </div>
+    <div className={cn("flex flex-col gap-1.5", align === "end" && "items-end text-right")}>
+      <span className={cn(tag, "text-subtle")}>Adapters</span>
+      <span className="font-mono text-[11px] leading-[1.35] tracking-[0.04em] text-text">{targets}</span>
     </div>
   );
 }
 
-function ScenarioEntry({ p, clock }: { p: PacketDef; clock: Clock }) {
-  const kf = useMemo(() => persistFrom(feedbackTimes(p).up, 0.15), [p]);
-  const opacity = useTrack(clock, kf);
-  return (
-    <span className="relative size-[5px] bg-line">
-      <motion.span style={{ opacity }} className="absolute inset-0 bg-lime" />
-    </span>
-  );
-}
-
-/* EXECUTE: a run bar that sweeps while each scenario executes. */
-export function ExecuteReadout({
+/* STRESS-TEST: a run bar that sweeps while each scenario runs under injected faults. */
+export function StressReadout({
   clock,
   packets,
   align = "start",
@@ -177,84 +87,18 @@ export function ExecuteReadout({
   packets: PacketDef[];
   align?: "start" | "end";
 }) {
-  const kf = useMemo(() => executeBar(packets), [packets]);
-  const scaleX = useTrack(clock, kf);
+  const kf = useMemo(() => stressBar(packets), [packets]);
+  const tracked = useTrack(clock, kf);
+  // Reduced motion freezes the loop on a frame between scenarios; show the bar full instead of empty.
+  const reduce = useReducedMotion();
+  const scaleX = reduce ? 1 : tracked;
   return (
-    <div
-      className={cn(
-        "flex w-full max-w-[112px] flex-col gap-2",
-        align === "end" && "items-end",
-      )}
-    >
-      <span className={cn(tag, "text-subtle")}>Supervised</span>
+    <div className={cn("flex w-full max-w-[112px] flex-col gap-2", align === "end" && "items-end")}>
+      <span className={cn(tag, "text-subtle")}>Faults injected</span>
       <div className="relative h-[3px] w-full bg-line">
-        <motion.div
-          style={{ scaleX }}
-          className="absolute inset-0 origin-left bg-lime"
-        />
+        <motion.div style={{ scaleX }} className="absolute inset-0 origin-left bg-lime" />
       </div>
     </div>
-  );
-}
-
-/* EVIDENCE: a behavior map that fills as new behavior is observed. */
-export function CoverageReadout({
-  clock,
-  plan,
-  cell = 6,
-  gap = 2,
-  align = "start",
-}: {
-  clock: Clock;
-  plan: CellPlan;
-  cell?: number;
-  gap?: number;
-  align?: "start" | "end";
-}) {
-  const { cols, rows, seeds, lit } = plan;
-  const w = cols * cell + (cols - 1) * gap;
-  const h = rows * cell + (rows - 1) * gap;
-  const seedSet = useMemo(() => new Set(seeds), [seeds]);
-  return (
-    <div className={cn("flex flex-col gap-2", align === "end" && "items-end")}>
-      <span className={cn(tag, "text-subtle")}>Observed</span>
-      <svg
-        width={w}
-        height={h}
-        viewBox={`0 0 ${w} ${h}`}
-        aria-hidden="true"
-        className="block shrink-0"
-      >
-        {Array.from({ length: cols * rows }, (_, i) => {
-          const x = (i % cols) * (cell + gap);
-          const y = Math.floor(i / cols) * (cell + gap);
-          const on = lit.get(i);
-          return (
-            <g key={i} transform={`translate(${x} ${y})`}>
-              <rect
-                width={cell}
-                height={cell}
-                className={seedSet.has(i) ? "fill-lime/45" : "fill-line/70"}
-              />
-              {on !== undefined && <Cell clock={clock} on={on} size={cell} />}
-            </g>
-          );
-        })}
-      </svg>
-    </div>
-  );
-}
-
-function Cell({ clock, on, size }: { clock: Clock; on: number; size: number }) {
-  const kf = useMemo(() => cellOpacity(on), [on]);
-  const opacity = useTrack(clock, kf);
-  return (
-    <motion.rect
-      width={size}
-      height={size}
-      className="fill-lime"
-      style={{ opacity }}
-    />
   );
 }
 
@@ -306,7 +150,11 @@ export function VerifyReadout({
   );
 }
 
-/* REPRODUCE: repeated re-runs (most, not all, reproduce), then a smaller fault schedule. */
+/*
+ * REPRODUCE & PREVENT: repeated re-runs (most, not all, reproduce), a smaller fault schedule,
+ * then the reduced scenario is kept as a regression case. Fixed, generic labels: no numbered IDs
+ * and nothing that counts up between loops (this figure is conceptual).
+ */
 export function ReproduceReadout({
   clock,
   align = "start",
@@ -315,33 +163,33 @@ export function ReproduceReadout({
   align?: "start" | "end";
 }) {
   const active = useTrack(clock, READOUT.reproduceNode);
-  const done = useTrack(clock, READOUT.minimized);
+  const reduced = useTrack(clock, READOUT.reduced);
+  const saved = useTrack(clock, NEWEST);
+  const savedY = useTrack(clock, NEWEST_Y);
   const idle = useTransform(active, fadeOut);
-  const doneOpacity = useTransform(done, fadeIn);
+  const reducedOpacity = useTransform(reduced, fadeIn);
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-2",
-        align === "end" && "items-end text-right",
-      )}
-    >
-      <span className={cn(tag, "text-subtle")}>Re-runs</span>
-      <span className="flex gap-[3px]">
+    <div className={cn("flex min-w-0 flex-col gap-2", align === "end" && "items-end text-right")}>
+      <span className="flex gap-[3px]" aria-hidden="true">
         {Array.from({ length: RERUN_COUNT }, (_, i) => (
           <Rerun key={i} i={i} clock={clock} />
         ))}
       </span>
       <Stack className={cn(align === "end" && "justify-items-end")}>
         <motion.span style={{ opacity: idle }} className={cn(tag, "text-subtle")}>
-          —
+          Re-runs
         </motion.span>
-        <motion.span
-          style={{ opacity: doneOpacity }}
-          className={cn(tag, "whitespace-nowrap text-text")}
-        >
+        <motion.span style={{ opacity: reducedOpacity }} className={cn(tag, "whitespace-nowrap text-text")}>
           Fewer faults
         </motion.span>
       </Stack>
+      <motion.span
+        style={{ opacity: saved, y: savedY }}
+        className="flex items-center gap-1.5 font-mono text-[10px] leading-[1.35] tracking-[0.04em] whitespace-nowrap text-text"
+      >
+        {hero.visual.regressionLabel}
+        <Check className="text-lime" />
+      </motion.span>
     </div>
   );
 }
@@ -360,11 +208,8 @@ function Rerun({ i, clock }: { i: number; clock: Clock }) {
   );
 }
 
-/** Newest regression row: appears when the failure is saved and holds until the loop restarts. */
-const NEWEST = track([
-  [FAIL.saved - 0.001, 0],
-  [FAIL.saved + 0.3, 1],
-]);
+/** Regression row: appears when the failure is saved and holds until the loop restarts. */
+const NEWEST = persistFrom(FAIL.saved, 0.3);
 const NEWEST_Y = track([
   [FAIL.saved - 0.001, 4],
   [FAIL.saved + 0.4, 0],
@@ -372,44 +217,8 @@ const NEWEST_Y = track([
 
 function Check({ className }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 10 10"
-      aria-hidden="true"
-      className={cn("size-[9px] shrink-0", className)}
-    >
-      <path
-        d="M1.5 5.2 4 7.6 8.6 2.4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="square"
-      />
+    <svg viewBox="0 0 10 10" aria-hidden="true" className={cn("size-[9px] shrink-0", className)}>
+      <path d="M1.5 5.2 4 7.6 8.6 2.4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="square" />
     </svg>
-  );
-}
-
-/*
- * REGRESS: the reduced failure is kept as a regression case. A fixed, generic label: no
- * numbered IDs and nothing that counts up between loops (this figure is conceptual).
- */
-export function RegressionReadout({
-  clock,
-  align = "start",
-}: {
-  clock: Clock;
-  align?: "start" | "end";
-}) {
-  const opacity = useTrack(clock, NEWEST);
-  const y = useTrack(clock, NEWEST_Y);
-  return (
-    <div className={cn("flex min-w-0 flex-col gap-1", align === "end" && "items-end")}>
-      <motion.span
-        style={{ opacity, y }}
-        className="flex items-center gap-1.5 font-mono text-[10px] leading-[1.35] tracking-[0.04em] whitespace-nowrap text-text"
-      >
-        {hero.visual.regressionLabel}
-        <Check className="text-lime" />
-      </motion.span>
-    </div>
   );
 }

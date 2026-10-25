@@ -2,16 +2,28 @@ import PipelineHero from "@/components/visuals/PipelineHero";
 import Button from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
 import Kicker from "@/components/ui/Kicker";
-import { hero } from "@/lib/content";
+import { hero, type Maturity } from "@/lib/content";
+import { MaturityMark } from "@/components/visuals/pipeline/maturity";
+import { ArrowLink } from "@/components/sections/home/shared";
 
 /**
- * "Research-stage platform · First implemented integration: ROS 2 / Nav2" -> two mono items.
- * The stage gets a hollow marker; the implemented integration gets the solid lime "implemented" marker.
+ * "Research-stage · Working robotics integration · Experimental cross-system integrations" ->
+ * three mono items. Each integration item carries the marker of its maturity (working = solid
+ * lime "Built & validated", experimental = outlined lime); the stage itself gets a steel outline.
  */
-const statusItems = hero.status.split(" · ");
+const statusItems = hero.status.split(" · ").map((text) => {
+  const maturity: Maturity | null = /^working/i.test(text)
+    ? "validated"
+    : /^experimental/i.test(text)
+      ? "experimental"
+      : null;
+  return { text, maturity };
+});
 
 /**
- * Hero: thesis, plain-language lede, CTAs, honest build status, and the conceptual PipelineHero loop.
+ * Hero: thesis, plain-language lede, who it is for, CTAs, honest build status, and the
+ * conceptual four-stage PipelineHero (the home page's only statement of the four stages),
+ * with a link to the full lifecycle on /technology.
  * Desktop: copy on top, the pipeline band anchored to the bottom of a viewport-high
  * (capped) frame. Mobile: copy first, then the vertical pipeline.
  */
@@ -49,9 +61,14 @@ export default function Hero() {
           </h1>
 
           <div className="mt-7 flex flex-col gap-8 sm:mt-8 md:gap-9">
-            <p className="max-w-[600px] text-[16px] leading-[1.7] tracking-[-0.017em] text-[#b9c2c0] md:text-[18px]">
-              {hero.lede}
-            </p>
+            <div className="max-w-[640px]">
+              <p className="text-[16px] leading-[1.7] tracking-[-0.017em] text-[#b9c2c0] md:text-[18px]">
+                {hero.lede}
+              </p>
+              <p className="mt-4 border-l border-lime/60 pl-4 text-[14.5px] leading-[1.65] text-muted md:text-[15px]">
+                {hero.audience}
+              </p>
+            </div>
 
             <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-[18px]">
               <Button href={hero.primaryCta.href} icon="→">
@@ -66,28 +83,25 @@ export default function Hero() {
               aria-label="Status"
               className="flex flex-wrap items-center gap-x-5 gap-y-3 font-mono text-[11px] leading-[1.3] tracking-[0.09em] text-[#889591] uppercase sm:text-[10px]"
             >
-              {statusItems.map((item, i) => {
-                const last = i === statusItems.length - 1;
-                return (
-                  <li key={item} className="flex items-center gap-2.5">
-                    <span
-                      aria-hidden="true"
-                      className={
-                        last
-                          ? "inline-block size-[7px] shrink-0 bg-lime"
-                          : "inline-block size-[7px] shrink-0 border border-subtle"
-                      }
-                    />
-                    <span className={last ? "text-[#b9c2c0]" : undefined}>{item}</span>
-                  </li>
-                );
-              })}
+              {statusItems.map(({ text, maturity }) => (
+                <li key={text} className="flex items-center gap-2.5">
+                  {maturity ? (
+                    <MaturityMark maturity={maturity} />
+                  ) : (
+                    <span aria-hidden="true" className="inline-block size-[7px] shrink-0 border border-subtle" />
+                  )}
+                  <span className={maturity ? "text-[#b9c2c0]" : undefined}>{text}</span>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
         <div className="pt-12 md:pt-14 lg:mt-auto lg:pt-12">
           <PipelineHero />
+          <ArrowLink href={hero.visual.link.href} className="mt-3">
+            {hero.visual.link.label}
+          </ArrowLink>
         </div>
       </Container>
     </section>

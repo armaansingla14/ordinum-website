@@ -2,10 +2,9 @@ import Reveal from "@/components/ui/Reveal";
 import Section from "@/components/ui/Section";
 import { cn } from "@/lib/cn";
 import { research } from "@/lib/content";
-import { PRODUCT_SOURCE } from "@/lib/evidence";
-import { Provenance, Tag } from "./badges";
-import { SectionHead } from "./shared";
-import { TOY_ARMS_SOURCE, TOY_CLASS_TOTAL, toyArms } from "@/lib/evidence";
+import { PRODUCT_SOURCE, TOY_ARMS_SOURCE, TOY_CLASS_TOTAL, toyArms } from "@/lib/evidence";
+import { ClassChip, Provenance, Tag } from "./badges";
+import { Bullets, SectionHead, SubHead, TargetAside } from "./shared";
 
 const toy = research.toy;
 const pos = (v: number) => `${(v / TOY_CLASS_TOTAL) * 100}%`;
@@ -101,28 +100,42 @@ function Verdict({ v }: { v: "Supported" | "Not supported" }) {
 
 export default function ToyBenchmark() {
   return (
-    <Section id="toy-benchmark" variant="charcoal" aria-labelledby="toy-title">
-      <SectionHead id="toy-title" kicker={toy.kicker} title={toy.title} titleMuted={toy.titleMuted} lede={toy.lede} />
-      <Reveal>
-        <p className="mt-8 max-w-[820px] border-l border-lime/70 pl-5 text-[16px] leading-[1.75] text-[#c9d1ce]">{toy.plainResult}</p>
+    <Section id={toy.id} aria-labelledby="toy-title">
+      <SectionHead id="toy-title" kicker={toy.kicker} title={toy.title} titleMuted={toy.titleMuted} lede={toy.lede} aside={<TargetAside id="toy" />} />
+
+      {/* Plain result first, with its label; the statistics follow further down. */}
+      <Reveal className="mt-14 md:mt-20">
+        <ClassChip classes={["positive-control"]} label={toy.label} />
+        <p className="mt-5 max-w-[820px] border-l border-lime/70 pl-5 text-[16px] leading-[1.75] text-[#c9d1ce]">{toy.plainResult}</p>
       </Reveal>
 
-      <div className="mt-14 grid gap-10 md:mt-20 lg:grid-cols-12 lg:gap-12">
+      <Reveal className="hairline-grid mt-10 grid-cols-1 md:grid-cols-2" amount={0.15}>
+        <div className="bg-surface p-6 sm:p-8">
+          <h3 className="label-mono text-lime">What this supports</h3>
+          <Bullets items={toy.supports} mark="solid" className="mt-5" />
+        </div>
+        <div className="bg-bg p-6 sm:p-8">
+          <h3 className="label-mono text-text">What this does not support</h3>
+          <Bullets items={toy.doesNotSupport} mark="dashed" className="mt-5" />
+        </div>
+      </Reveal>
+
+      <div className="mt-14 grid gap-10 border-t border-line pt-10 md:mt-16 lg:grid-cols-12 lg:gap-12">
         <Reveal className="space-y-8 lg:col-span-5">
           <div>
-            <h3 className="label-mono text-subtle">What was compared</h3>
+            <SubHead>What was compared</SubHead>
             <p className="mt-3 text-[15px] leading-[1.75] text-muted">{toy.target}</p>
             <ul className="mt-5 space-y-2.5">
               {toy.design.map((d) => (
                 <li key={d} className="flex gap-3 text-[14.5px] leading-[1.6] text-text">
-                  <span aria-hidden="true" className="mt-[9px] h-px w-3 shrink-0 bg-line-2" />
+                  <span aria-hidden="true" className="mt-[11px] h-px w-3 shrink-0 bg-line-2" />
                   <span>{d}</span>
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <h3 className="label-mono text-subtle">What was measured</h3>
+            <SubHead>What was measured</SubHead>
             <p className="mt-3 text-[14.5px] leading-[1.7] text-muted">{toy.metric}</p>
           </div>
         </Reveal>
@@ -133,9 +146,7 @@ export default function ToyBenchmark() {
 
       {/* Pre-registered comparisons */}
       <Reveal className="mt-14 md:mt-16" amount={0.1}>
-        <h3 className="label-mono text-subtle" id="toy-tests">
-          Pre-registered comparisons · Holm-corrected
-        </h3>
+        <SubHead id="toy-tests">Pre-registered comparisons · Holm-corrected</SubHead>
         {/* Table from md up */}
         <div className="mt-4 hidden border border-line md:block">
           <table aria-labelledby="toy-tests" className="w-full border-collapse text-left">
@@ -190,32 +201,6 @@ export default function ToyBenchmark() {
           ))}
         </ul>
         <p className="mt-5 max-w-[900px] border-l border-line-2 pl-5 text-[15px] leading-[1.75] text-muted">{toy.narrowResult}</p>
-      </Reveal>
-
-      {/* What it supports / does not */}
-      <Reveal className="hairline-grid mt-12 grid-cols-1 md:grid-cols-2" amount={0.15}>
-        <div className="bg-surface p-6 sm:p-8">
-          <h3 className="label-mono text-lime">What this supports</h3>
-          <ul className="mt-5 space-y-3.5">
-            {toy.supports.map((x) => (
-              <li key={x} className="flex gap-3 text-[15px] leading-[1.65] text-text">
-                <span aria-hidden="true" className="mt-[7px] size-[7px] shrink-0 bg-lime" />
-                <span>{x}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="bg-bg p-6 sm:p-8">
-          <h3 className="label-mono text-text">What this does not support</h3>
-          <ul className="mt-5 space-y-3.5">
-            {toy.doesNotSupport.map((x) => (
-              <li key={x} className="flex gap-3 text-[15px] leading-[1.65] text-text">
-                <span aria-hidden="true" className="mt-[7px] size-[7px] shrink-0 border border-dashed border-[#7d8c8a]" />
-                <span>{x}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
       </Reveal>
 
       <Reveal className="mt-8">

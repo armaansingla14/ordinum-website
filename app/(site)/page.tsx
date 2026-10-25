@@ -1,17 +1,18 @@
 import CtaBand from "@/components/sections/CtaBand";
-import ExploreGrid from "@/components/sections/ExploreGrid";
 import Hero from "@/components/sections/Hero";
 import Problem from "@/components/sections/Problem";
 import DemoProof from "@/components/sections/home/DemoProof";
-import HowItWorksHome from "@/components/sections/home/HowItWorksHome";
-import PlatformVisionSection from "@/components/sections/home/PlatformVisionSection";
+import Founders from "@/components/sections/home/Founders";
 import WhatWorksToday from "@/components/sections/home/WhatWorksToday";
 import HashRedirect from "@/components/layout/HashRedirect";
+import { homeMetadata } from "@/components/layout/metadata";
+
+export const metadata = homeMetadata;
 
 /**
- * Home, in the order of the founder brief (section 4): hero, problem, platform vision,
- * how it works, what works today, a real demonstration, then onward links and the
- * design-partnership band. The only h1 is in <Hero />.
+ * Home (founder brief section 3): hero, whose visual carries the four stages of what Ordinum
+ * does; the problem (one conceptual example); the product working on a real run; progress and
+ * the platform vision; founders, closed by the design-partner band. The only h1 is in <Hero />.
  */
 export default function HomePage() {
   return (
@@ -19,11 +20,9 @@ export default function HomePage() {
       <HashRedirect />
       <Hero />
       <Problem />
-      <PlatformVisionSection />
-      <HowItWorksHome />
-      <WhatWorksToday />
       <DemoProof />
-      <ExploreGrid />
+      <WhatWorksToday />
+      <Founders />
       <CtaBand current="home" />
     </>
   );

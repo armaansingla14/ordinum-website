@@ -1,7 +1,7 @@
-import { EvidenceBadge, Provenance, ReplayDots } from "@/components/sections/research/badges";
-import { asFaults } from "@/components/sections/research/faults";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { EVIDENCE_LABELS, PRODUCT_SOURCE, nav2SuccessMismatch, type EvidenceFault } from "@/lib/evidence";
+import { demoWalkthrough, product } from "@/lib/content";
+import { PRODUCT_SOURCE, nav2SuccessMismatch, type EvidenceFault } from "@/lib/evidence";
 
 /* -------------------------------------------------------------------------- */
 /* Visual 4: a legible preview of the real Ordinum HTML report for the Nav2    */
@@ -12,6 +12,61 @@ import { EVIDENCE_LABELS, PRODUCT_SOURCE, nav2SuccessMismatch, type EvidenceFaul
 
 const sm = nav2SuccessMismatch;
 const REPORT_FILE = sm.source.split(" @ ")[0].split("/").pop() ?? sm.source;
+
+/* Small local primitives, so this visual does not depend on another page's sections. */
+
+type LooseFault = Omit<EvidenceFault, "params"> & {
+  readonly params: Readonly<Record<string, number | string | undefined>>;
+};
+
+/** The fault arrays in lib/evidence.ts infer missing params as `?: undefined`; drop them (none exist at runtime). */
+function asFaults(faults: readonly LooseFault[]): readonly EvidenceFault[] {
+  return faults.map((f) => ({
+    ...f,
+    params: Object.fromEntries(
+      Object.entries(f.params).filter((e): e is [string, number | string] => e[1] !== undefined),
+    ),
+  }));
+}
+
+/** Evidence classification (site vocabulary, lib/content.ts). Glyph so it never relies on colour. */
+function ClassificationBadge({ text }: { text: string }) {
+  return (
+    <span className="inline-flex max-w-full items-start gap-2 border border-line-2 px-2.5 py-1.5 font-mono text-[10px] leading-[1.5] tracking-[0.08em] text-text uppercase">
+      <span aria-hidden="true" className="text-subtle">
+        △
+      </span>
+      <span className="min-w-0">
+        <span className="sr-only">Classification: </span>
+        {text}
+      </span>
+    </span>
+  );
+}
+
+/** k-of-n replay outcome as n squares: filled orange = the violation recurred, hollow = it did not. */
+function ReplayDots({ failures, trials }: { failures: number; trials: number }) {
+  return (
+    <span role="img" aria-label={`Violation recurred in ${failures} of ${trials} re-runs`} className="inline-flex gap-[3px]">
+      {Array.from({ length: trials }, (_, i) => (
+        <span key={i} className={cn("block size-[8px]", i < failures ? "bg-orange" : "border border-[#5d6b6c]")} />
+      ))}
+    </span>
+  );
+}
+
+function Provenance({ kind, children }: { kind: string; children: ReactNode }) {
+  return (
+    <p className="font-mono text-[10.5px] leading-[1.7] tracking-[0.06em] break-words text-[#8a9894]">
+      <span className="text-lime uppercase">{kind}</span>
+      <span aria-hidden="true" className="text-line-2">
+        {" · "}
+      </span>
+      <span className="sr-only">: </span>
+      {children}
+    </p>
+  );
+}
 
 /** Shorten long hashes for display; the full value stays in the title attribute and screen-reader text. */
 function short(hash: string, keep = 12) {
@@ -39,7 +94,8 @@ function FaultList({ faults, showMinimization }: { faults: readonly EvidenceFaul
             )}
           >
             <span className="flex flex-wrap items-baseline justify-between gap-x-3">
-              <span className={cn(removed && "line-through decoration-[#5d6b6c]")}>
+              {/* Removed faults: dashed rule and the "removed by ddmin" line, no strike-through. */}
+              <span>
                 {f.kind} · {f.target}
               </span>
               <span className="tabular-nums text-[#8a9894]">
@@ -96,7 +152,9 @@ export default function EvidenceReport({ compact = false }: { compact?: boolean 
           </p>
           <p className="mt-2 text-[13px] leading-[1.55] text-[#d6dedb]">{sm.verdict.detail}</p>
           <div className="mt-3">
-            <EvidenceBadge label={sm.label} text={EVIDENCE_LABELS[sm.label]} />
+            <ClassificationBadge text={demoWalkthrough.label} />
+            {/* On /demo the qualifier is already in the header and the classification box. */}
+            {compact && <p className="mt-2 text-[12.5px] leading-[1.5] text-quiet">{demoWalkthrough.qualifier}.</p>}
           </div>
         </div>
 
@@ -191,8 +249,7 @@ export default function EvidenceReport({ compact = false }: { compact?: boolean 
           docs/demo/{REPORT_FILE} @ {PRODUCT_SOURCE.commitShort}
         </Provenance>
         <p className="font-mono text-[10.5px] leading-[1.7] tracking-[0.04em] break-words text-[#8a9894]">
-          Re-rendered from the committed report, traces and meta file; not a screenshot.
-          {!compact && " The regression case encodes this artifact; it is not a guard against a Nav2 bug."}
+          Re-rendered from the committed report, traces and meta file; not a screenshot. {product.outputs.reportNote}
         </p>
       </figcaption>
     </figure>

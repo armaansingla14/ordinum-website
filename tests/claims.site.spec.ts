@@ -27,13 +27,43 @@ const FORBIDDEN = [
   "industry-leading",
   "the first platform",
   "Not a pentest",
+  // Focus pass (2026-10-24): no progress ratios, no unsupported test counts, no reuse or
+  // superiority claims, no competitor comparison, no customer/partner claims, no video yet.
+  "parts built",
+  "764",
+  "reuse rate",
+  "beats random",
+  "better than random",
+  "Antithesis",
+  "our customers",
+  "design partners include",
+  "Watch the demo",
 ] as const;
 
-const ROUTES = ["/", "/product", "/technology", "/research", "/vision", "/about", "/contact", "/terms", "/no-such-page"];
+const ROUTES = [
+  "/",
+  "/demo",
+  "/product",
+  "/technology",
+  "/research",
+  "/vision",
+  "/about",
+  "/contact",
+  "/terms",
+  "/privacy",
+  "/no-such-page",
+];
+
+/** Bare numbers ("764") only match as whole tokens, so hex trace ids and SVG path data don't trip them. */
+const BARE_NUMBER = /^\d+$/;
 
 function hits(text: string): string[] {
   const lower = text.toLowerCase();
-  return FORBIDDEN.filter((term) => lower.includes(term.toLowerCase()));
+  return FORBIDDEN.filter((term) =>
+    BARE_NUMBER.test(term)
+      ? new RegExp(`(?<![\\w.,])${term}(?!\\w|\\.\\d)`).test(text)
+      : lower.includes(term.toLowerCase()),
+  );
 }
 
 for (const route of ROUTES) {
@@ -93,9 +123,10 @@ test("claims: source files contain no withdrawn or forbidden claims", () => {
   expect(offenders).toEqual([]);
 });
 
-test("claims: pending co-founder profile details never ship in client JavaScript", () => {
-  // Unapproved profile details are kept out of the repo; any approved ones live in
-  // lib/team.server.ts (server-only) and must not appear in browser-loaded assets while pending.
+/** Personal LinkedIn profiles approved for publication (both co-founders, approved 2026-10-24). */
+const APPROVED_PROFILES = ["armaansingla", "aaravsinglaa"] as const;
+
+test("claims: client JavaScript links only to approved founder LinkedIn profiles", () => {
   const root = path.resolve(__dirname, "..", ".next", "static");
   expect(fs.existsSync(root), "run `npm run build` first").toBe(true);
   const offenders: string[] = [];
@@ -106,7 +137,10 @@ test("claims: pending co-founder profile details never ship in client JavaScript
       else if (/\.(js|css|json|html|txt)$/.test(entry.name)) {
         const text = fs.readFileSync(full, "utf8");
         const personal = text.match(/linkedin\.com\/in\/[A-Za-z0-9_-]+/g) ?? [];
-        for (const link of personal) if (!link.endsWith("/armaansingla")) offenders.push(`${entry.name}: ${link}`);
+        for (const link of personal) {
+          const handle = link.split("/").pop() ?? "";
+          if (!(APPROVED_PROFILES as readonly string[]).includes(handle)) offenders.push(`${entry.name}: ${link}`);
+        }
       }
     }
   };

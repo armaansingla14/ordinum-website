@@ -9,7 +9,13 @@ import { pages, pageOrder, type PageKey } from "@/lib/content";
  * Same masked 48px grid as the home Hero, at a shorter height.
  * `children` render below the lede (e.g. a status line or an as-of note).
  */
-export default function PageHeader({ page, children }: { page: PageKey; children?: ReactNode }) {
+export default function PageHeader({
+  page,
+  children,
+}: {
+  page: Exclude<PageKey, "contact">;
+  children?: ReactNode;
+}) {
   const { header } = pages[page];
   const position = (pageOrder as readonly PageKey[]).indexOf(page);
   const index = position >= 0 ? String(position + 1).padStart(2, "0") : undefined;

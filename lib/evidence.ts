@@ -14,6 +14,18 @@
  *           experiments/results/v2/nav2_pilot/summary.json
  *           docs/research/nav2_pilot.md (sections 6 and 9: classification + independent review)
  *           docs/LIMITATIONS.md, MORNING_REPORT.md (toy target is in-house with planted bugs)
+ *   re-checked: 24 October 2026 against product HEAD 124dde072ab7d143cafa722bad80c61970740156
+ *           (merge of the cross-system testbed). Every file listed above is unchanged between
+ *           c25ba4f and 124dde072 (`git diff --stat c25ba4f 124dde072 -- docs/demo/` is empty;
+ *           experiments/results, the Nav2 and toy targets, LIMITATIONS.md and MORNING_REPORT.md
+ *           are unchanged). Only src/ordinum/reporting/html.py changed (a lanes view for
+ *           multi-process targets); the committed demo HTML was not regenerated. So the values
+ *           below remain valid and PRODUCT_SOURCE stays pinned to c25ba4f, where they were copied.
+ *           The site-wide facts snapshot (124dde072) lives in lib/content.ts FACT_SOURCE.
+ *           Internal claims registry (not published), rows F1-F6.
+ *   labels: EVIDENCE_LABELS below are the artifact-level keys. The site renders the evidence
+ *           vocabulary from lib/content.ts (EVIDENCE_CLASS_LABELS via evidenceClassOf), e.g.
+ *           "normal-behavior" is shown as "Expected behavior".
  *
  * RULES
  *   - Values are copied from the artifacts, not invented. Times are shown to 2 decimals,
@@ -21,7 +33,7 @@
  *   - Do not edit a value without re-checking the source file above.
  *   - No artifact in the repo is a genuine, independently verified defect. Never label one so.
  *   - Withdrawn v1 benchmark numbers must not appear here.
- *   - Catalog with caveats: /home/arsingla/scratch/ordinum-overhaul/evidence/README.md
+ *   - Catalog with caveats: internal evidence catalog (not published).
  */
 
 /* -------------------------------------------------------------------------- */
@@ -97,6 +109,13 @@ export const nav2SuccessMismatch = {
   ],
   metaSource: "experiments/results/v2/nav2_pilot/raw/confirm/success_mismatch_meta.json",
   regressionCase: "experiments/results/v2/nav2_pilot/regression/fail_ca43c26f7e96.json",
+  /**
+   * What the regression case asserts (fail_ca43c26f7e96.json: expect_violation true; verify.mode
+   * "repeat", min_k 4 over 10 stored exec seeds; checked at 124dde072). It asserts the violation
+   * still occurs (k >= min_k); after a fix it is flipped to require k == 0
+   * (src/ordinum/replay/regression.py). Stored with the pilot results, not in tests/regression/.
+   */
+  regressionVerify: { expectViolation: true, mode: "repeat", minK: 4, storedSeeds: 10 },
   label: "harness-artifact" as EvidenceLabel,
   labelShort: "Robustness observation under an unrealistic fault configuration. Not a Nav2 defect.",
   labelJustification: [
@@ -644,7 +663,8 @@ export const evidenceArtifacts = [nav2SuccessMismatch, nav2Nominal, toyPositiveC
 /* -------------------------------------------------------------------------- */
 
 /**
- * SOURCE (copied verbatim, not computed here): experiments/results/v2/toy_v2/report.md @ c25ba4f,
+ * SOURCE (copied verbatim, not computed here): experiments/results/v2/toy_v2/report.md @ c25ba4f
+ * (unchanged at 124dde072),
  * budget `exec5000` (primary), table "Distinct confirmed failure classes per seed (primary metric)":
  * n = 30 campaigns per arm, mean and "mean 95% bootstrap CI" (10,000 resamples, seed 20261026).
  * The toy target has 11 planted classes; the metric saturates.

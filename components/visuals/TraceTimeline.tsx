@@ -5,7 +5,8 @@ import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "rea
 import { EvidenceBadge, Provenance, ReplayDots } from "@/components/sections/research/badges";
 import { asFaults } from "@/components/sections/research/faults";
 import { cn } from "@/lib/cn";
-import { EVIDENCE_LABELS, nav2SuccessMismatch, type EvidenceFault, type Lane, type LaneEvent } from "@/lib/evidence";
+import { EVIDENCE_CLASS_LABELS, evidenceClassOf } from "@/lib/content";
+import { nav2SuccessMismatch, type EvidenceFault, type Lane, type LaneEvent } from "@/lib/evidence";
 
 /* -------------------------------------------------------------------------- */
 /* Visual 3: a real cross-component timeline.                                  */
@@ -16,6 +17,8 @@ import { EVIDENCE_LABELS, nav2SuccessMismatch, type EvidenceFault, type Lane, ty
 /* -------------------------------------------------------------------------- */
 
 const sm = nav2SuccessMismatch;
+/** Site evidence vocabulary: Nav2 is a real external target; the result class comes from the artifact. */
+const LABEL_TEXT = `${EVIDENCE_CLASS_LABELS["real-external-target"]} · ${EVIDENCE_CLASS_LABELS[evidenceClassOf(sm.label)]}`;
 type RunKey = "minimized" | "original";
 
 const T_MAX = 12;
@@ -63,6 +66,21 @@ const RUNS: Record<RunKey, Run> = {
     violated: false,
     traceSource: sm.traceSources[0],
   },
+};
+
+/**
+ * Plain-English lane labels for the compact (home) embed: no unexplained ROS identifiers there.
+ * The raw component and fault ids stay on /demo, where the event log explains them.
+ */
+const PLAIN_FAULT: Record<string, string> = {
+  "msg_noise · tf": "Position noise",
+  "msg_noise · odom": "Odometry noise",
+  "msg_reorder · scan": "Reordered laser scans",
+  "msg_nan · scan": "Invalid laser values",
+};
+const PLAIN_LANE: Record<string, { label: string; sub?: string }> = {
+  bt_navigator: { label: "Nav2 result", sub: "what Nav2 reported" },
+  "behavior tree": { label: "Nav2 planner", sub: "replans ~1/s" },
 };
 
 const HARNESS = "ordinum (harness)";
@@ -144,12 +162,12 @@ function LaneRow({
     <div
       className={cn(
         "grid grid-cols-1 gap-y-1 py-1.5",
-        compact ? "sm:grid-cols-[132px_minmax(0,1fr)] sm:gap-x-3" : "sm:grid-cols-[168px_minmax(0,1fr)] sm:gap-x-3",
+        compact ? "sm:grid-cols-[152px_minmax(0,1fr)] sm:gap-x-3" : "sm:grid-cols-[168px_minmax(0,1fr)] sm:gap-x-3",
       )}
     >
-      <div className="min-w-0 self-center font-mono text-[10.5px] leading-[1.35] text-[#b7c4bf]">
-        <span className="block truncate">{label}</span>
-        {sub && <span className="block truncate text-[10px] text-[#8a9894]">{sub}</span>}
+      <div className="min-w-0 self-center font-mono text-[11px] leading-[1.35] text-[#b7c4bf]">
+        <span className="block break-words">{label}</span>
+        {sub && <span className="block break-words text-[11px] text-quiet">{sub}</span>}
       </div>
       {children}
     </div>
@@ -200,7 +218,12 @@ function Marker({
 /* Main component                                                              */
 /* -------------------------------------------------------------------------- */
 
-export default function TraceTimeline({ compact = false }: { compact?: boolean }) {
+/**
+ * compact: home embed (minimized run only, plain-English labels, no log or tiles).
+ * bare: /demo full trace, which sits below the walkthrough: run tabs, lanes and event log, but
+ * no evidence badge and no verdict / reproduction / minimization tiles (the steps above carry them).
+ */
+export default function TraceTimeline({ compact = false, bare = false }: { compact?: boolean; bare?: boolean }) {
   const uid = useId();
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.3 });
@@ -252,8 +275,14 @@ export default function TraceTimeline({ compact = false }: { compact?: boolean }
         {/* Window bar */}
         <div className="flex min-h-[47px] flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-line px-4 py-3 sm:px-5">
           <p id={`${uid}-title`} className="min-w-0 font-mono text-[10px] tracking-[0.08em] text-[#a5b1ad] uppercase">
-            <span className="text-lime">Real trace</span> <span className="text-line-2">/</span> {sm.verdict.invariant}{" "}
-            <span className="text-line-2">/</span> task {sm.task.id} {sm.task.name}
+            <span className="text-lime">Real trace</span> <span className="text-line-2">/</span>{" "}
+            {compact ? (
+              "Nav2 pilot · minimized run"
+            ) : (
+              <>
+                {sm.verdict.invariant} <span className="text-line-2">/</span> task {sm.task.id} {sm.task.name}
+              </>
+            )}
           </p>
           {!compact && (
             <div role="tablist" aria-label="Choose run" className="grid w-full grid-cols-2 border border-line-2 sm:flex sm:w-auto">
@@ -289,20 +318,25 @@ export default function TraceTimeline({ compact = false }: { compact?: boolean }
           aria-labelledby={compact ? undefined : `${uid}-tab-${runKey}`}
           className="px-4 pt-4 pb-5 sm:px-5"
         >
-          {/* Classification first: it frames everything below. */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
-            <EvidenceBadge label={sm.label} text={EVIDENCE_LABELS[sm.label]} />
-            <p className="text-[13px] leading-[1.5] text-muted">{sm.labelShort}</p>
-          </div>
-          {!compact && <p className="mt-3 max-w-[760px] text-[13px] leading-[1.6] text-[#b7c4bf]">{run.summary}</p>}
+          {/* Classification first: it frames everything below. Compact embeds carry the label in
+              their own section head, so it is not repeated here. */}
+          {!compact && !bare && (
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
+              <EvidenceBadge label={sm.label} text={LABEL_TEXT} />
+              <p className="text-[13px] leading-[1.5] text-muted">{sm.labelShort}</p>
+            </div>
+          )}
+          {!compact && (
+            <p className={cn("max-w-[760px] text-[13px] leading-[1.6] text-[#b7c4bf]", !bare && "mt-3")}>{run.summary}</p>
+          )}
 
           {/* Lanes */}
-          <div className="relative mt-5" aria-hidden="true">
+          <div className={cn("relative", !compact && "mt-5")} aria-hidden="true">
             {/* Axis */}
             <div
               className={cn(
                 "grid grid-cols-1 sm:gap-x-3",
-                compact ? "sm:grid-cols-[132px_minmax(0,1fr)]" : "sm:grid-cols-[168px_minmax(0,1fr)]",
+                compact ? "sm:grid-cols-[152px_minmax(0,1fr)]" : "sm:grid-cols-[168px_minmax(0,1fr)]",
               )}
             >
               <span className="label-mono hidden text-[10px] text-[#8a9894] sm:block">Sim time</span>
@@ -325,14 +359,19 @@ export default function TraceTimeline({ compact = false }: { compact?: boolean }
             <GroupLabel>Injected by Ordinum · harness</GroupLabel>
             {appliedFaults.map((f) => {
               const { name, params } = faultLabel(f);
+              const plain = compact ? PLAIN_FAULT[name] : undefined;
               const start = f.appliedAt ?? f.at;
               const end = faultEnd(f, run.resultT);
               return (
                 <LaneRow
                   key={f.idx}
                   compact={compact}
-                  label={`F${f.idx} ${name}`}
-                  sub={[params, f.minimization ? `${f.minimization} by ddmin` : null].filter(Boolean).join(" · ")}
+                  label={plain ?? `F${f.idx} ${name}`}
+                  sub={
+                    plain
+                      ? params
+                      : [params, f.minimization ? `${f.minimization} by ddmin` : null].filter(Boolean).join(" · ")
+                  }
                 >
                   <Track>
                     <span
@@ -370,8 +409,14 @@ export default function TraceTimeline({ compact = false }: { compact?: boolean }
             {observed.map(({ lane, li }) => {
               const ticks = lane.events.filter((e) => e.text === BT_TICK);
               const running = lane.events.find((e) => e.text.startsWith("FollowPath RUNNING"));
+              const plain = compact ? PLAIN_LANE[lane.component] : undefined;
               return (
-                <LaneRow key={li} compact={compact} label={lane.component} sub={ticks.length ? "replans ~1/s" : undefined}>
+                <LaneRow
+                  key={li}
+                  compact={compact}
+                  label={plain?.label ?? lane.component}
+                  sub={plain ? plain.sub : ticks.length ? "replans ~1/s" : undefined}
+                >
                   <Track>
                     {running && (
                       <span
@@ -397,7 +442,11 @@ export default function TraceTimeline({ compact = false }: { compact?: boolean }
             })}
 
             <GroupLabel>Checked by the oracle · simulator ground truth</GroupLabel>
-            <LaneRow compact={compact} label="success_mismatch" sub="truth vs claimed, 0.35 m">
+            <LaneRow
+              compact={compact}
+              label={compact ? "Ground-truth check" : "success_mismatch"}
+              sub="truth vs claimed, 0.35 m"
+            >
               <Track>
                 {oracleLane ? (
                   oracleLane.lane.events.map((e, ei) => (
@@ -414,7 +463,7 @@ export default function TraceTimeline({ compact = false }: { compact?: boolean }
               <div
                 className={cn(
                   "pointer-events-none absolute inset-y-0 right-0 left-0",
-                  compact ? "sm:left-[144px]" : "sm:left-[180px]",
+                  compact ? "sm:left-[164px]" : "sm:left-[180px]",
                 )}
               >
                 <span
@@ -429,7 +478,7 @@ export default function TraceTimeline({ compact = false }: { compact?: boolean }
               <div
                 className={cn(
                   "pointer-events-none absolute inset-y-0 right-0 left-0 overflow-hidden",
-                  compact ? "sm:left-[144px]" : "sm:left-[180px]",
+                  compact ? "sm:left-[164px]" : "sm:left-[180px]",
                 )}
               >
                 <motion.div
@@ -531,49 +580,46 @@ export default function TraceTimeline({ compact = false }: { compact?: boolean }
           )}
         </div>
 
-        {/* Verdict + reproduction */}
-        <div className={cn("grid gap-px border-t border-line bg-line", compact ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 md:grid-cols-2 xl:grid-cols-4")}>
-          <div className="bg-window px-4 py-4 sm:px-5">
-            <p className="label-mono text-[10px] text-[#8a9894]">Invariant verdict</p>
-            {run.violated ? (
-              <>
-                <p className="mt-2 font-mono text-[12px] text-orange uppercase">
-                  {sm.verdict.invariant} violated · {fmt(sm.verdict.tS)}
-                </p>
-                {!compact && <p className="mt-2 text-[13px] leading-[1.55] text-[#d6dedb]">{sm.verdict.detail}</p>}
-              </>
-            ) : (
-              <>
-                <p className="mt-2 font-mono text-[12px] text-text uppercase">No violation in this run</p>
-                <p className="mt-2 text-[13px] leading-[1.55] text-[#d6dedb]">
-                  Nav2 {run.resultText} at {fmt(run.resultT)}.
-                </p>
-              </>
-            )}
-          </div>
-          <div className="bg-window px-4 py-4 sm:px-5">
-            <p className="label-mono text-[10px] text-[#8a9894]">Reproduction{!compact && " · minimized scenario"}</p>
-            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span className="font-mono text-[12px] text-text">
-                {compact ? `Reproduced ${sm.reproduction.failures} of ${sm.reproduction.trials} times` : sm.reproduction.rate}
-              </span>
-              <ReplayDots failures={sm.reproduction.failures} trials={sm.reproduction.trials} />
+        {/* Verdict + reproduction. Not in compact embeds: the walkthrough steps beside them carry these values. */}
+        {!compact && !bare && (
+          <div className="grid grid-cols-1 gap-px border-t border-line bg-line md:grid-cols-2 xl:grid-cols-4">
+            <div className="bg-window px-4 py-4 sm:px-5">
+              <p className="label-mono text-[10px] text-[#8a9894]">Invariant verdict</p>
+              {run.violated ? (
+                <>
+                  <p className="mt-2 font-mono text-[12px] text-orange uppercase">
+                    {sm.verdict.invariant} violated · {fmt(sm.verdict.tS)}
+                  </p>
+                  <p className="mt-2 text-[13px] leading-[1.55] text-[#d6dedb]">{sm.verdict.detail}</p>
+                </>
+              ) : (
+                <>
+                  <p className="mt-2 font-mono text-[12px] text-text uppercase">No violation in this run</p>
+                  <p className="mt-2 text-[13px] leading-[1.55] text-[#d6dedb]">
+                    Nav2 {run.resultText} at {fmt(run.resultT)}.
+                  </p>
+                </>
+              )}
             </div>
-            <p className="mt-2 text-[13px] leading-[1.55] text-[#d6dedb]">
-              {sm.reproduction.wilson95Text}
-              {!compact && `; exec seeds ${sm.reproduction.execSeeds}. Statistical, not identical replay.`}
-            </p>
-          </div>
-          <div className="bg-window px-4 py-4 sm:px-5">
-            <p className="label-mono text-[10px] text-[#8a9894]">Minimization</p>
-            <p className="mt-2 font-mono text-[12px] text-text">
-              {sm.minimization.before} → {sm.minimization.after} faults
-            </p>
-            <p className="mt-2 text-[13px] leading-[1.55] text-[#d6dedb]">
-              {compact ? "Not verified 1-minimal (600 s cap)." : `${sm.minimization.runs} ${sm.minimization.algorithm} runs. ${sm.minimization.note} ${sm.followUp.note}`}
-            </p>
-          </div>
-          {!compact && (
+            <div className="bg-window px-4 py-4 sm:px-5">
+              <p className="label-mono text-[10px] text-[#8a9894]">Reproduction · minimized scenario</p>
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className="font-mono text-[12px] text-text">{sm.reproduction.rate}</span>
+                <ReplayDots failures={sm.reproduction.failures} trials={sm.reproduction.trials} />
+              </div>
+              <p className="mt-2 text-[13px] leading-[1.55] text-[#d6dedb]">
+                {sm.reproduction.wilson95Text}; exec seeds {sm.reproduction.execSeeds}. Statistical, not identical replay.
+              </p>
+            </div>
+            <div className="bg-window px-4 py-4 sm:px-5">
+              <p className="label-mono text-[10px] text-[#8a9894]">Minimization</p>
+              <p className="mt-2 font-mono text-[12px] text-text">
+                {sm.minimization.before} → {sm.minimization.after} faults
+              </p>
+              <p className="mt-2 text-[13px] leading-[1.55] text-[#d6dedb]">
+                {sm.minimization.runs} {sm.minimization.algorithm} runs. {sm.minimization.note} {sm.followUp.note}
+              </p>
+            </div>
             <div className="bg-window px-4 py-4 sm:px-5">
               <p className="label-mono text-[10px] text-[#8a9894]">Retry / recovery signals</p>
               <p className="mt-2 font-mono text-[12px] text-text">
@@ -585,8 +631,8 @@ export default function TraceTimeline({ compact = false }: { compact?: boolean }
                 replanning about once a second and never entered a recovery behavior.
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <figcaption className="mt-4 space-y-1">

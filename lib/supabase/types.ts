@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      inquiries: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string | null
+          request_type: string | null
+          source: string | null
+          technology_category: string | null
+          working_on: string | null
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message?: string | null
+          request_type?: string | null
+          source?: string | null
+          technology_category?: string | null
+          working_on?: string | null
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string | null
+          request_type?: string | null
+          source?: string | null
+          technology_category?: string | null
+          working_on?: string | null
+        }
+        Relationships: []
+      }
       waitlist: {
         Row: {
           company: string | null

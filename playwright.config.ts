@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 3000;
+/** Default 3000; PLAYWRIGHT_PORT overrides it when 3000 is taken by another server. */
+const PORT = Number(process.env.PLAYWRIGHT_PORT ?? 3000);
 const BASE_URL = `http://localhost:${PORT}`;
 
 // Some machines need extra shared libraries for the bundled Chromium.

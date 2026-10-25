@@ -9,10 +9,11 @@ import { test, type Page } from "@playwright/test";
  *   reduced-<page>-full.png                  every width
  *   reduced-<page>-section-<id>.png          1440 and 375 only
  *   motion-<page>-full.png                   1440 only
- *   <mode>-terms.png, <mode>-404.png
+ *   <mode>-terms.png, <mode>-privacy.png, <mode>-404.png
  */
 const ROUTES = [
   { name: "home", path: "/" },
+  { name: "demo", path: "/demo" },
   { name: "product", path: "/product" },
   { name: "technology", path: "/technology" },
   { name: "research", path: "/research" },
@@ -82,8 +83,10 @@ for (const width of WIDTHS) {
         await page.screenshot({ path: path.join(dir, `${mode.name}-${route.name}-full.png`), fullPage: true });
       }
 
-      await page.goto("/terms", { waitUntil: "networkidle" });
-      await page.screenshot({ path: path.join(dir, `${mode.name}-terms.png`), fullPage: true });
+      for (const legal of ["terms", "privacy"]) {
+        await page.goto(`/${legal}`, { waitUntil: "networkidle" });
+        await page.screenshot({ path: path.join(dir, `${mode.name}-${legal}.png`), fullPage: true });
+      }
       await page.goto("/nope-404", { waitUntil: "networkidle" });
       await page.waitForTimeout(mode.settle);
       await page.screenshot({ path: path.join(dir, `${mode.name}-404.png`), fullPage: true });

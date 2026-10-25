@@ -3,7 +3,7 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import OrdinumMark from "@/components/brand/OrdinumMark";
 import Container from "@/components/ui/Container";
 import { cn } from "@/lib/cn";
-import { FACT_SOURCE, footer } from "@/lib/content";
+import { footer } from "@/lib/content";
 import { resolveHref } from "@/lib/nav";
 
 type FooterProps = {
@@ -89,7 +89,7 @@ export default function Footer({ onHome = true }: FooterProps) {
     <footer className="relative overflow-hidden border-t border-line bg-bg">
       <Container className="relative pt-16 md:pt-24">
         <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] lg:gap-20">
-          {/* Brand + thesis */}
+          {/* Brand and one-line thesis. Build status lives in the hero status line, not repeated here. */}
           <div className="max-w-[460px]">
             <FooterLink
               href={onHome ? "#top" : "/"}
@@ -103,12 +103,6 @@ export default function Footer({ onHome = true }: FooterProps) {
             <p className="mt-9 text-[24px] font-semibold leading-[1.18] tracking-title text-text md:text-[28px]">
               {footer.thesis}
             </p>
-
-            <p className="label-mono mt-8 flex items-start gap-2.5 text-subtle">
-              <span aria-hidden="true" className="mt-[0.45em] inline-block size-[6px] shrink-0 bg-lime" />
-              {footer.status}
-            </p>
-            <p className="mt-4 max-w-[420px] text-[12px] leading-[1.6] text-subtle">{FACT_SOURCE.note}</p>
           </div>
 
           {/* Link columns */}
@@ -153,7 +147,7 @@ export default function Footer({ onHome = true }: FooterProps) {
           </nav>
         </div>
 
-        {/* Bottom bar */}
+        {/* Bottom bar: copyright, Terms + Privacy (interim drafts, see lib/content.ts legal), back to top. */}
         <div className="mt-16 flex flex-col gap-5 border-t border-line py-6 font-mono text-[11px] uppercase tracking-[0.1em] text-subtle md:mt-24 md:flex-row md:items-center md:justify-between">
           <p>{copyright}</p>
           <ul className="flex flex-wrap items-center gap-x-7 gap-y-3">

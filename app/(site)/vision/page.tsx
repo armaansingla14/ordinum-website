@@ -1,27 +1,24 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/components/layout/metadata";
 import CtaBand from "@/components/sections/CtaBand";
 import NextPage from "@/components/sections/NextPage";
 import PageHeader from "@/components/sections/PageHeader";
 import Vision from "@/components/sections/Vision";
-import Applications from "@/components/sections/vision/Applications";
 import Mission from "@/components/sections/vision/Mission";
-import { pages } from "@/lib/content";
+import WhyNow from "@/components/sections/vision/WhyNow";
 
-export const metadata: Metadata = {
-  title: pages.vision.meta.title,
-  description: pages.vision.meta.description,
-  alternates: { canonical: pages.vision.href },
-};
+export const metadata: Metadata = pageMetadata("vision");
 
+/** /vision: the ambition and long-term scope, three phases, then why now. */
 export default function VisionPage() {
   return (
     <>
       <PageHeader page="vision" />
       <Mission />
       <Vision variant="charcoal" />
-      <Applications />
+      <WhyNow />
       <NextPage current="vision" />
-      <CtaBand />
+      <CtaBand current="vision" />
     </>
   );
 }

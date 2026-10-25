@@ -3,14 +3,17 @@ import Heading from "@/components/ui/Heading";
 import Kicker from "@/components/ui/Kicker";
 import Reveal from "@/components/ui/Reveal";
 import { cn } from "@/lib/cn";
-import { STATUS_LABELS, type Status } from "@/lib/content";
+import { MATURITY_LABELS, type Maturity } from "@/lib/content";
+import { MaturityMarker } from "@/components/ui/MaturityMarker";
 
 /*
- * Local copies of the status primitives used on /technology and /product (same markup and
- * classes) so every page shows status the same way. Candidates for a shared ui/Status module.
+ * Small helpers shared by /vision and /about. The maturity marker follows the site-wide
+ * convention (lib/content.ts, Maturity): validated = solid lime, experimental = outlined lime,
+ * in progress = dashed lime, planned = dashed steel. Shape differs per level, so status never
+ * relies on color alone.
  */
 
-/** "THE MISSION / 001" -> ["THE MISSION", "001"] */
+/** "THE AMBITION / 001" -> ["THE AMBITION", "001"] */
 export function splitLabel(s: string): [string, string | undefined] {
   const at = s.lastIndexOf(" / ");
   return at === -1 ? [s, undefined] : [s.slice(0, at), s.slice(at + 3)];
@@ -18,7 +21,7 @@ export function splitLabel(s: string): [string, string | undefined] {
 
 export const pad = (n: number) => String(n).padStart(2, "0");
 
-/** Numbered section head: kicker + h2 on the left, lede on the right. */
+/** Numbered section head: kicker + h2 on the left, optional lede on the right. */
 export function SectionIntro({
   kicker,
   title,
@@ -53,50 +56,33 @@ export function SectionIntro({
   );
 }
 
-/**
- * Square status marker; shape differs per status so it never relies on color alone.
- * implemented = solid lime; in-development = outlined lime; planned = dashed steel.
- */
-export function StatusMarker({ status, className }: { status: Status; className?: string }) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 9 9" className={cn("size-[9px] shrink-0", className)}>
-      {status === "implemented" && <rect x="0" y="0" width="9" height="9" className="fill-lime" />}
-      {status === "in-development" && (
-        <>
-          <rect x="0.5" y="0.5" width="8" height="8" fill="none" className="stroke-lime" strokeWidth="1" />
-          <rect x="3" y="3" width="3" height="3" className="fill-lime" />
-        </>
-      )}
-      {status === "planned" && (
-        <rect
-          x="0.5"
-          y="0.5"
-          width="8"
-          height="8"
-          fill="none"
-          className="stroke-subtle"
-          strokeWidth="1"
-          strokeDasharray="2 1.5"
-        />
-      )}
-    </svg>
-  );
-}
-
-/** Mono status chip (marker + label). */
-export function StatusChip({ status, label, className }: { status: Status; label?: string; className?: string }) {
+/** Mono chip: marker + label (defaults to the canonical maturity label). */
+export function MaturityChip({
+  maturity,
+  label,
+  className,
+}: {
+  maturity: Maturity;
+  label?: string;
+  className?: string;
+}) {
+  const lime = maturity !== "planned";
   return (
     <span
       className={cn(
         "inline-flex shrink-0 items-center gap-2 border px-[7px] py-[4px] font-mono text-[10px] leading-none tracking-[0.12em] whitespace-nowrap uppercase",
-        status === "implemented" && "border-lime/45 text-lime",
-        status === "in-development" && "border-dashed border-lime/60 text-lime",
-        status === "planned" && "border-dashed border-line-2 text-muted",
+        lime ? "text-lime" : "text-muted",
+        maturity === "validated" && "border-lime/45",
+        maturity === "experimental" && "border-lime/30",
+        maturity === "in-progress" && "border-dashed border-lime/60",
+        maturity === "planned" && "border-dashed border-line-2",
         className,
       )}
     >
-      <StatusMarker status={status} />
-      {label ?? STATUS_LABELS[status]}
+      <MaturityMarker maturity={maturity} />
+      {label ?? MATURITY_LABELS[maturity]}
     </span>
   );
 }
+
+export { MaturityMarker };

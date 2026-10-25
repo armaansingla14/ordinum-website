@@ -34,6 +34,8 @@ export default function Navbar() {
   const onHome = pathname === "/";
   const scrolled = useScrolled();
   const active = activeHref(pathname);
+  // The primary CTA points at a section of /contact; mark it current on that page.
+  const ctaPath = nav.demo.href.split("#")[0];
 
   return (
     <header
@@ -93,7 +95,7 @@ export default function Navbar() {
             href={resolveHref(nav.demo.href, onHome)}
             size="sm"
             icon="→"
-            aria-current={pathname === nav.demo.href ? "page" : undefined}
+            aria-current={pathname === ctaPath ? "page" : undefined}
             className="hidden px-4 py-[11px] sm:inline-flex lg:px-[18px] lg:py-[13px]"
           >
             {nav.demo.label}

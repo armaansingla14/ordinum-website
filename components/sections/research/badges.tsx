@@ -1,9 +1,18 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import type { Status } from "@/lib/content";
+// Types only: this module is imported by client visuals, so it must not pull lib/content.ts into the bundle.
+import type { EvidenceClass } from "@/lib/content";
 import type { EvidenceLabel } from "@/lib/evidence";
 
 /* Small presentational primitives shared by the research sections and the evidence visuals. */
+
+/** Artifact label (lib/evidence.ts) -> site evidence class (same mapping as evidenceClassOf in lib/content.ts). */
+const ARTIFACT_CLASS: Record<EvidenceLabel, EvidenceClass> = {
+  "normal-behavior": "expected-behavior",
+  "positive-control": "positive-control",
+  "harness-artifact": "harness-artifact",
+  "verified-defect": "verified-defect",
+};
 
 /** Small mono tag with a 1px border. */
 export function Tag({
@@ -32,61 +41,56 @@ export function Tag({
 }
 
 /**
- * Status marker used across the site:
- * implemented = solid lime square, in development = outlined lime (dashed), planned = dashed steel.
+ * Glyph per evidence class, so labels are distinguishable without relying on colour.
+ * "Real external target" describes the system, so the glyph of a combined label is the result class.
  */
-export function StatusMark({ status, label }: { status: Status; label?: string }) {
-  const text =
-    label ?? (status === "implemented" ? "Implemented" : status === "in-development" ? "In development" : "Planned");
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-2 font-mono text-[10px] leading-none tracking-[0.12em] uppercase",
-        status === "planned" ? "text-subtle" : "text-lime",
-      )}
-    >
-      <span
-        aria-hidden="true"
-        className={cn(
-          "inline-block size-[9px] shrink-0",
-          status === "implemented" && "bg-lime",
-          status === "in-development" && "border border-dashed border-lime",
-          status === "planned" && "border border-dashed border-[#7d8c8a]",
-        )}
-      />
-      {text}
-    </span>
-  );
-}
-
-/** Glyph per evidence label, so labels are distinguishable without relying on colour. */
-const LABEL_STYLE: Record<EvidenceLabel, { glyph: string; className: string }> = {
-  "normal-behavior": { glyph: "○", className: "border-line-2 text-text" },
-  "positive-control": { glyph: "◇", className: "border-line-2 text-text" },
-  "harness-artifact": { glyph: "△", className: "border-line-2 text-text" },
-  "verified-defect": { glyph: "●", className: "border-orange/60 text-orange" },
+const CLASS_GLYPH: Record<EvidenceClass, string> = {
+  "real-external-target": "□",
+  "expected-behavior": "○",
+  "positive-control": "◇",
+  "harness-artifact": "△",
+  unresolved: "?",
+  "verified-defect": "●",
 };
 
-/** Evidence classification badge (BRIEF 4.6 labels). Always rendered with its full text. */
-export function EvidenceBadge({ label, text, className }: { label: EvidenceLabel; text: string; className?: string }) {
-  const s = LABEL_STYLE[label];
+/** Evidence chip for a result: precomputed label text ("Real external target · Harness artifact"). */
+export function ClassChip({
+  classes,
+  label,
+  className,
+}: {
+  classes: readonly EvidenceClass[];
+  /** Rendered text, e.g. LabeledResult.label. */
+  label: string;
+  className?: string;
+}) {
+  const outcome = classes.find((c) => c !== "real-external-target") ?? classes[0];
+  const defect = outcome === "verified-defect";
   return (
     <span
       className={cn(
         "inline-flex max-w-full items-start gap-2 border px-2.5 py-1.5 font-mono text-[10px] leading-[1.5] tracking-[0.08em] uppercase",
-        s.className,
+        outcome === undefined ? "border-line text-subtle" : defect ? "border-orange/60 text-orange" : "border-line-2 text-text",
         className,
       )}
     >
       <span aria-hidden="true" className="text-subtle">
-        {s.glyph}
+        {outcome === undefined ? "–" : CLASS_GLYPH[outcome]}
       </span>
       <span className="min-w-0">
-        <span className="sr-only">Classification: </span>
-        {text}
+        <span className="sr-only">Evidence label: </span>
+        {label}
       </span>
     </span>
   );
+}
+
+/**
+ * Evidence badge keyed by the artifact label stored in lib/evidence.ts. `text` is what is shown
+ * (use the site vocabulary, e.g. "Real external target · Harness artifact").
+ */
+export function EvidenceBadge({ label, text, className }: { label: EvidenceLabel; text: string; className?: string }) {
+  return <ClassChip classes={[ARTIFACT_CLASS[label]]} label={text} className={className} />;
 }
 
 /** k-of-n replay outcome as n squares: filled orange = the violation reproduced, hollow = it did not. */

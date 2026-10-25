@@ -3,11 +3,13 @@ import Heading from "@/components/ui/Heading";
 import Kicker from "@/components/ui/Kicker";
 import Reveal from "@/components/ui/Reveal";
 import { cn } from "@/lib/cn";
-import { STATUS_LABELS, type Status } from "@/lib/content";
+import Link from "next/link";
+import { MaturityMark } from "@/components/visuals/pipeline/maturity";
+import { MATURITY_LABELS, type Maturity } from "@/lib/content";
 
 /*
- * Home-page helpers. The status marker/chip mirror components/sections/product/shared.tsx so
- * every page reads the same; they should move to a shared ui primitive at integration.
+ * Home-page helpers. The maturity chip follows the CLAUDE.md marker rules (see
+ * components/visuals/pipeline/maturity.tsx); it could move to a shared ui primitive.
  */
 
 /** "THE PROBLEM / 001" -> ["THE PROBLEM", "001"] */
@@ -34,7 +36,7 @@ export function SectionIntro({
 }) {
   const [label, index] = splitLabel(kicker);
   return (
-    <Reveal className="grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-12 xl:gap-16">
+    <Reveal className="grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-start lg:gap-12 xl:gap-16">
       <div>
         <Kicker index={index}>{label}</Kicker>
         <Heading id={titleId} muted={titleMuted} className="mt-6">
@@ -51,40 +53,40 @@ export function SectionIntro({
   );
 }
 
-/**
- * Square status marker.
- * implemented = solid lime; in development = dashed lime outline; planned = dashed steel outline.
- */
-export function StatusMarker({ status, className }: { status: Status; className?: string }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        "inline-block size-[7px] shrink-0",
-        status === "implemented" && "bg-lime",
-        status === "in-development" && "border border-dashed border-lime",
-        status === "planned" && "border border-dashed border-subtle",
-        className,
-      )}
-    />
-  );
-}
-
-/** Mono status chip. Shape, border and color all differ per status, so it never relies on color alone. */
-export function StatusChip({ status, label, className }: { status: Status; label?: string; className?: string }) {
+/** Mono maturity chip. Marker shape, border and text all differ per level, so it never relies on color alone. */
+export function MaturityChip({ maturity, className }: { maturity: Maturity; className?: string }) {
   return (
     <span
       className={cn(
         "inline-flex shrink-0 items-center gap-2 border px-[7px] py-[4px] font-mono text-[10px] leading-none tracking-[0.12em] whitespace-nowrap uppercase",
-        status === "implemented" && "border-lime/45 text-lime",
-        status === "in-development" && "border-dashed border-lime/60 text-lime",
-        status === "planned" && "border-dashed border-line-2 text-subtle",
+        maturity === "validated" && "border-lime/50 bg-lime/[0.06] text-lime",
+        maturity === "experimental" && "border-lime/35 text-lime",
+        maturity === "in-progress" && "border-dashed border-lime/50 text-lime/85",
+        maturity === "planned" && "border-dashed border-line-2 text-subtle",
         className,
       )}
     >
-      <StatusMarker status={status} />
-      {label ?? STATUS_LABELS[status]}
+      <MaturityMark maturity={maturity} />
+      {MATURITY_LABELS[maturity]}
     </span>
+  );
+}
+
+/** Mono arrow link ("SEE THE FULL WALKTHROUGH →"). */
+export function ArrowLink({ href, children, className }: { href: string; children: ReactNode; className?: string }) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "group inline-flex min-h-11 items-center gap-3 font-mono text-[11px] tracking-[0.12em] text-lime uppercase underline-offset-4 hover:underline",
+        className,
+      )}
+    >
+      {children}
+      <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-1">
+        →
+      </span>
+    </Link>
   );
 }
 
