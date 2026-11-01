@@ -1,6 +1,8 @@
 # Logs
 logs
 *.log
+# Published evidence includes real terminal logs (see public/evidence/*/).
+!public/evidence/**/*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

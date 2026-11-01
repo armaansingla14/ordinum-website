@@ -8,15 +8,15 @@ import { lifecycle, technology } from "@/lib/content";
 import { Disclosure, SECTION_PAD, SectionIntro, splitLabel } from "./shared";
 
 /**
- * Section 1: one-page architecture overview (PlatformMap: three tiers, every node labelled with
- * its maturity), then the seven-stage lifecycle (anchor #lifecycle, linked from the home hero),
- * collapsed behind a disclosure below md.
+ * /security #architecture (redirect target of /technology): the architecture overview
+ * (PlatformMap: three tiers, every node labelled with its maturity), then the seven-stage
+ * lifecycle (#lifecycle), collapsed behind a disclosure below md.
  */
 export default function Architecture() {
   const a = technology.architecture;
   const [lcLabel, lcIndex] = splitLabel(lifecycle.kicker);
   return (
-    <Section id={a.id} aria-labelledby={`${a.id}-title`} className={SECTION_PAD}>
+    <Section id={a.id} variant="charcoal" aria-labelledby={`${a.id}-title`} className={SECTION_PAD}>
       <SectionIntro kicker={a.kicker} title={a.title} titleMuted={a.titleMuted} titleId={`${a.id}-title`} lede={a.lede} />
 
       <Reveal className="mt-12 md:mt-16" amount={0.05}>

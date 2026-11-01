@@ -1,13 +1,13 @@
 /**
  * Ordinum Labs: typed articles (no MDX). Every number is taken from lib/content.ts (`flagship`),
  * lib/evidence.ts (the Nav2 artifacts) or the release fact list (1 November 2026); nothing is
- * retyped from memory. Articles that are not written yet appear on the index as "In preparation"
- * with no results and no page.
+ * retyped from memory. Only published articles appear on the index.
  *
  * RULES (CLAUDE.md "Claims")
  *   - Author: Armaan Singla. Every article carries AI_METHODS_NOTE verbatim.
  *   - Reviews are "review by separate AI review agents", never described as independent.
- *   - The flagship is a planted control: FLAGSHIP_LABEL travels with every flagship number.
+ *   - The flagship is a planted defect: FLAGSHIP_LABEL travels with every flagship number. State
+ *     each qualifier once, where its claim appears.
  *   - Nav2 violations are harness, oracle or configuration artifacts, never Nav2 defects.
  *   - Reproducibility links point only at /evidence/* pages that exist (lib/evidence-packages.ts).
  */
@@ -23,8 +23,7 @@ import {
 } from "./content";
 import { nav2SuccessMismatch as sm } from "./evidence";
 
-export const LABS_CATEGORIES = ["Research", "Case Studies", "Engineering", "Product Updates"] as const;
-export type LabsCategory = (typeof LABS_CATEGORIES)[number];
+export type LabsCategory = "Research" | "Case Studies" | "Engineering" | "Product Updates";
 
 export type LabsResult = { readonly k: string; readonly v: string };
 
@@ -59,15 +58,6 @@ export type LabsArticle = {
   readonly body?: "research-summary";
 };
 
-export type LabsPlanned = {
-  readonly status: "in-preparation";
-  readonly title: string;
-  readonly category: LabsCategory;
-  readonly note: string;
-};
-
-export type LabsEntry = LabsArticle | LabsPlanned;
-
 const AUTHOR = "Armaan Singla";
 const PUBLISHED = "1 November 2026";
 
@@ -76,10 +66,10 @@ const flagshipArticle = {
   status: "published",
   title: "From a failed authorization test to a verified fix",
   category: "Case Studies",
-  leadingResult: `On a planted control in unmodified PocketBase 0.40.6, ordinum verify returned FIX_VERIFIED: read authorization was violated on the affected build in ${flagship.affected} comparison runs and on the fixed build in ${flagship.fixed} (one-sided Fisher p = ${flagship.fisherP}).`,
+  leadingResult: `Yes. With a defect we planted in our own client path for unmodified PocketBase 0.40.6, ordinum verify returned FIX_VERIFIED: read authorization was violated in ${flagship.affected} comparison runs on the failing build and ${flagship.fixed} on the fixed build (one-sided Fisher p = ${flagship.fisherP}).`,
   label: { text: FLAGSHIP_LABEL, classes: flagship.labelClasses },
   summary:
-    "A defect we planted in our own client path, found, confirmed, reduced and then shown fixed, without counting a pass where the property never came into play.",
+    "A stale read cache we planted in our PocketBase client path: found, confirmed, reduced, then checked as fixed, without counting a pass where the property never came into play.",
   authors: [AUTHOR],
   date: PUBLISHED,
   revision: `Revision 1 · run at product commit ${flagship.commitShort}`,
@@ -87,37 +77,34 @@ const flagshipArticle = {
     "Can Ordinum take a failing authorization test on real, unmodified software, confirm and reduce it, and then show that a fix removes it, without counting a vacuous pass as a fix?",
   system: [
     "PocketBase 0.40.6, unmodified, with the binary pinned by SHA-256, on one host. The access policy and the workload are Ordinum's own.",
-    `What we planted: ${flagship.planted}, a stale read cache in ${flagship.plantedWhere}. The affected build includes it; the fixed build is the same build without it.`,
-    "What stayed unchanged: PocketBase itself. This is not a PocketBase bug, and it says nothing about PocketBase's correctness.",
+    `What we planted: ${flagship.planted}, a stale read cache in ${flagship.plantedWhere}. The failing build includes it; the fixed build is the same build without it, the change an engineer would make.`,
   ],
   method: [
-    "ordinum verify runs a search campaign on the affected build, confirms each violation by re-running it, and reduces the fault schedule with delta debugging.",
-    "It then runs the confirmed cases against the affected and the fixed build, and compares the two with a one-sided Fisher exact test.",
+    "ordinum verify runs a search campaign on the failing build, confirms each violation by re-running it, and reduces the fault schedule with delta debugging.",
+    "It then runs the confirmed cases against the failing and the fixed build, and compares the two with a one-sided Fisher exact test.",
     "The fixed build also gets its own search campaign. FIX_VERIFIED requires that every confirmed violation is gone, that this campaign finds none, and that each required property (read_authz and model_agreement here) was actually exercised: a pass in which the property never came into play does not count.",
     "Finally, ordinum ci replays the saved regression cases.",
-    `The run was executed on ${flagship.date} at product commit ${flagship.commitShort}, inside a fresh network namespace with only loopback (unshare -rn), without Docker. It took ${flagship.runtime} on ${flagship.host}.`,
+    `The run was executed on ${flagship.date} at product commit ${flagship.commitShort}, inside a network namespace with loopback only (unshare -rn), without Docker. It took ${flagship.runtime} on ${flagship.host}.`,
   ],
   results: [
     { k: "Verdict", v: "FIX_VERIFIED (ordinum verify, exit 0)" },
     { k: "Confirmation", v: `read_authz and model_agreement, each confirmed ${flagship.confirmed}` },
     { k: "Reduction", v: `${flagship.minimized} fault schedule` },
-    { k: "Affected vs fixed", v: `${flagship.affected} vs ${flagship.fixed}, one-sided Fisher p = ${flagship.fisherP}` },
+    { k: "Failing vs fixed", v: `${flagship.affected} vs ${flagship.fixed}, one-sided Fisher p = ${flagship.fisherP}` },
     { k: "Property exercise", v: `read_authz exercised in ${flagship.exercised} executions on each build` },
     { k: "Regression", v: `ordinum ci: ${flagship.ciResult}, ${flagship.ciExit}` },
     { k: "Runtime", v: `About 5.5 min on ${flagship.host}, no Docker` },
   ],
-  resultsNote: "The defect was planted by us. These numbers show the workflow working, not a discovery.",
   limitations: [
-    "A controlled positive control: we wrote the defect, so finding it is a check on the engine, not a discovery.",
+    "We wrote the defect, so finding it checks the engine. It is not a discovery.",
     "One host, our own policy and workload, not a production deployment.",
     "Exercise counts are declared by the adapter: a count is only as good as that declaration.",
     "Ten runs per build is a statistical comparison, not a proof that the failure can never return.",
-    "No historical third-party affected/fixed reproduction, and no new third-party vulnerability, has been shown yet.",
-    "A recording of this run is in production; the evidence package carries the terminal logs and reports.",
+    "No historical third-party failing/fixed reproduction, and no new third-party vulnerability, has been shown yet.",
   ],
   related: [
+    { label: "Watch the demo", href: "/demos#demo-flagship" },
     { label: "Software & APIs", href: "/products/software" },
-    { label: "Demos", href: "/demos" },
     { label: "Research summary", href: "/labs/research-summary" },
   ],
   reproducibility: [{ label: "Evidence package: PocketBase verified fix", href: "/evidence/pocketbase-verified-fix" }],
@@ -130,13 +117,13 @@ const nav2Article = {
   status: "published",
   title: "What a robot's success message can hide",
   category: "Case Studies",
-  leadingResult: `Nav2 reported ${sm.minimized.result.status} while the robot was ${sm.verdict.distanceText} from its goal. We traced it to our own fault configuration: a harness artifact, not a Nav2 defect.`,
+  leadingResult: `Yes, and yes. Nav2 reported ${sm.minimized.result.status} while the robot was ${sm.verdict.distanceText} from its goal. We traced it to our own fault configuration: a harness artifact, not a Nav2 defect.`,
   label: {
     text: `${EVIDENCE_CLASS_LABELS["real-external-target"]} · ${EVIDENCE_CLASS_LABELS["harness-artifact"]}`,
     classes: ["real-external-target", "harness-artifact"],
   },
   summary:
-    "A check that compares what a robot reports with where it really is caught a mismatch. The cause was our own unrealistic fault, and saying so is part of the result.",
+    "A check that compares what a robot reports with where it really is caught a mismatch. The cause was our own unrealistic fault.",
   authors: [AUTHOR],
   date: PUBLISHED,
   revision: `Revision 1 · artifacts from ${FACT_SOURCE.artifactsCommitShort}, unchanged at ${FACT_SOURCE.evidenceCommitShort}`,
@@ -158,14 +145,14 @@ const nav2Article = {
     { k: "Reproduction", v: `${sm.reproduction.rate} on fresh seeds (${sm.reproduction.wilson95Text})` },
     { k: "Reduction", v: `${sm.minimization.before} faults to ${sm.minimization.after}; time cap reached, so not verified 1-minimal` },
     { k: "Follow-up", v: `Transform noise alone reproduced ${sm.followUp.tfNoiseOnly}` },
-    { k: "Classification", v: "Harness artifact: the injected noise is physically unrealistic and corrupts the only position source" },
+    { k: "Classification", v: "The injected noise is physically unrealistic and corrupts the only position source" },
   ],
-  resultsNote: "A violation is a test failure, not automatically a defect. This one is our harness's doing.",
+  resultsNote: "A violation is a test failure, not automatically a defect.",
   limitations: [
     "Simulation only: no physics, no state estimator, no physical robot.",
-    "The fault was physically unrealistic, and check bounds were not yet fault-aware.",
-    "The original, unminimized schedule did not violate when re-run at its discovery seed (stochastic target).",
-    "The regression case encodes this artifact; it is a harness regression check, not a Nav2 bug guard.",
+    "Check bounds were not yet fault-aware.",
+    "The original, unreduced schedule did not violate when re-run at its discovery seed (stochastic target).",
+    "The regression case encodes this artifact, so it checks our harness, not Nav2.",
   ],
   related: [
     { label: "Robotics & Connected Systems", href: "/products/robotics" },
@@ -217,9 +204,9 @@ const summaryArticle = {
     { k: "Toy benchmark", v: "Automated strategies found about 8.5 to 9 of 11 planted classes; differences between them were not significant" },
     { k: "Nav2 pilot", v: "Three reproduced violations, all harness, oracle or configuration artifacts; no Nav2 defect" },
     { k: "Testbed", v: "The correctly behaving build replayed with one behavior hash over 20 reruns" },
-    { k: "MQTT", v: "No confirmed finding; at 768a9b5, Mosquitto and NanoMQ campaigns returned 0 FAIL" },
+    { k: "MQTT", v: "0 FAIL so far. Latest blind campaign with the NanoMQ edge bridge on: 612 executions, 0 confirmed" },
   ],
-  resultsNote: "The full sections follow, as they appeared on the former Research page, with the updates noted below.",
+  resultsNote: "The full sections follow, with updates from the stable checkpoint 768a9b5 noted.",
   limitations: [
     "A general advantage of guided search over random search has not been shown, on any target.",
     "No independently confirmed defect in Nav2, Mosquitto or any other system.",
@@ -238,7 +225,7 @@ const summaryArticle = {
   corrections: [
     {
       date: PUBLISHED,
-      text: "Moved from the former Research page to Ordinum Labs. Review wording corrected: reviews were carried out by separate AI review agents, not independent human reviewers. Added updates from the stable checkpoint 768a9b5: a planted-control build of the testbed, MQTT results on two brokers, and fix verification on PocketBase.",
+      text: "Moved from the former Research page to Ordinum Labs. Review wording corrected: reviews were carried out by separate AI review agents, not independent human reviewers. Added updates from the stable checkpoint 768a9b5: a planted-control build of the testbed, the MQTT setup with its NanoMQ edge bridge, fix verification on PocketBase, and the test-suite figure.",
     },
     { date: "22 October 2026", text: "v1 benchmark results withdrawn after an internal audit (see the withdrawn-results note under Methodology)." },
   ],
@@ -248,34 +235,8 @@ const summaryArticle = {
 
 export const labsArticles = [flagshipArticle, nav2Article, summaryArticle] as const satisfies readonly LabsArticle[];
 
-/** Founder-requested titles. Not written yet: no results, no page, no link. */
-export const labsInPreparation = [
-  {
-    status: "in-preparation",
-    title: "Lost updates in PocketBase: reproducing a known issue",
-    category: "Research",
-    note: "In preparation. No results published.",
-  },
-  {
-    status: "in-preparation",
-    title: "Property exercise: when a pass means nothing",
-    category: "Engineering",
-    note: "In preparation. No results published.",
-  },
-  {
-    status: "in-preparation",
-    title: "Feedback guidance vs random search",
-    category: "Research",
-    note: "In preparation. No results published.",
-  },
-] as const satisfies readonly LabsPlanned[];
-
 export const labs = {
-  indexKicker: "ARTICLES / 001",
-  indexTitle: "Published",
-  preparingKicker: "IN PREPARATION / 002",
-  preparingTitle: "Being written",
-  preparingNote: "Titles only. Nothing here is a result.",
+  indexTitle: "Published articles",
 } as const;
 
 export function labsArticle(slug: string): LabsArticle | undefined {

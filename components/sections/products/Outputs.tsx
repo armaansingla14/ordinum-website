@@ -7,14 +7,14 @@ import { product } from "@/lib/content";
 import { SECTION_PAD, SectionIntro, mono, pad } from "@/components/sections/technology/shared";
 
 /**
- * 005 What an engineer receives (on /products). The real Nav2 report preview
+ * What you get (on /products). The real Nav2 report preview
  * (EvidenceReport, compact, re-rendered from lib/evidence.ts) beside the six outputs in plain
  * English, each with its value in that same run.
  */
 export default function Outputs() {
   const o = product.outputs;
   return (
-    <Section id="outputs" aria-labelledby="outputs-title" className={SECTION_PAD}>
+    <Section id="outputs" variant="charcoal" aria-labelledby="outputs-title" className={SECTION_PAD}>
       <SectionIntro kicker={o.kicker} title={o.title} titleId="outputs-title" lede={o.lede} />
 
       <div className="mt-12 grid gap-10 md:mt-16 xl:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] xl:gap-12">

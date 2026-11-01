@@ -2,7 +2,7 @@ WEBVTT
 
 1
 00:00:00.000 --> 00:00:07.000
-Failure to verified fix: a recorded Ordinum run. Planted positive control — a defect in Ordinum's own test harness, not a PocketBase bug.
+Failure to verified fix: a recorded Ordinum run. Planted defect in our client path, not a PocketBase bug.
 
 2
 00:00:07.000 --> 00:00:19.000

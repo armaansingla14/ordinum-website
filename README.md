@@ -1,16 +1,17 @@
 # Ordinum Website
 
-Marketing site for [ordinum.org](https://ordinum.org). Ordinum builds adversarial testing and verification for systems built from interacting parts. It finds failures that only appear when those systems interact. It is research-stage:
-- The first validated integration is ROS 2 / Nav2 in simulation.
-- PocketBase (software), an agents kit (planted reference fixtures only), the Mosquitto and NanoMQ brokers and a four-process testbed are experimental.
+Marketing site for [ordinum.org](https://ordinum.org). Ordinum is a local testing tool for engineers: connect a system, define the rules it must obey, run controlled failure scenarios, reproduce what fails and check the fix. It ships as a CLI (`ordinum`, installed from source) and Python integration interfaces, with custom integrations written alongside pilot teams, and runs on your machine. It is research-stage:
+- ROS 2 / Nav2 in simulation is Built & validated.
+- PocketBase (one host), the `ordinum.agents` kit (planted fixtures only), MQTT (Eclipse Mosquitto 2.0.22 with a NanoMQ 0.25.7 edge bridge, on by default) and a four-process testbed are Built, experimental.
 
 **Pages:**
 - home
-- **Products:** `/products` (platform overview, with `#how-it-works` and `#architecture`), `/products/software`, `/products/agents`, `/products/robotics`, `/roadmap`
-- **Demos:** `/demos` (gallery) and `/demos/nav2-walkthrough` (the step-by-step Nav2 run, formerly `/demo`)
-- **Ordinum Labs:** `/labs` and `/labs/[slug]` (typed articles in `lib/labs.ts`)
+- home: what Ordinum does and how it is delivered, the flagship recording, three workflow steps, testing areas with maturity labels, two Labs articles, one pilot invitation
+- **Products:** `/products` (one workflow `#how-it-works`, what you install, commands, outputs), `/products/software`, `/products/agents`, `/products/robotics`, `/roadmap`
+- **Demos:** `/demos` (the flagship PocketBase recording at the top, `#demo-flagship`, then the other runs) and `/demos/nav2-walkthrough` (the step-by-step Nav2 run, formerly `/demo`)
+- **Ordinum Labs:** `/labs` (published articles only) and `/labs/[slug]` (typed articles in `lib/labs.ts`)
 - **Evidence packages:** `/evidence/[case]` (manifest in `lib/evidence-packages.ts`; files in `public/evidence/<case>/`)
-- `/security` (operating boundaries), `/about`, `/contact`
+- `/security` (network isolation per integration `#network`, operating limits, how a run works `#architecture` / `#lifecycle` / `#reproduction`), `/about`, `/contact`
 - `/terms` and `/privacy`: interim legal pages (see [Legal pages](#legal-pages))
 - Old URLs (`/product`, `/technology`, `/research`, `/vision`, `/demo`, `/solution`, `/how-it-works`, `/problem`) redirect in one 308 hop (`next.config.ts`).
 
@@ -52,13 +53,14 @@ First Playwright run: `npx playwright install chromium`. If Chromium's system li
 **What `npm test` covers:**
 - every route (`tests/routes.ts`) at seven widths from 320 to 1920 px: one `h1`, no console errors, no horizontal overflow
 - the nav disclosures (keyboard open, Escape returns focus, outside click and focus-out close, not hover-only) and the mobile accordion
+- the home structure (hero with delivery line, recording, three steps, testing areas, two articles, one CTA band) and the moved anchors (`#how-it-works` on `/products`; `#architecture`, `#lifecycle`, `#reproduction`, `#network` on `/security`)
 - every internal link on every route returns 200 without a redirect; old URLs redirect in one hop; old `/#section` links
-- titles (home is exactly "Ordinum", others end " | Ordinum"), canonical URLs, social metadata, JSON-LD, sitemap and robots, the 404 page
-- evidence packages: only published files are linked, and each matches its SHA-256
-- Labs articles (author, date, methods note, evidence links), the `/demos` status while no recording exists
+- titles (home is exactly "Ordinum", others end " | Ordinum"), canonical URLs, social metadata, JSON-LD with both co-founders, sitemap and robots, the 404 page
+- evidence packages: only published files are linked, and each matches its SHA-256; both PocketBase terminal logs are served
+- the `/demos` recording (captions, transcript, decodes, never autoplays), Labs articles (question and result first, author, date, methods note, evidence links), the CI sentence
 - labels on the contact form; the Nav2 walkthrough steps without JavaScript and by keyboard
-- a homepage word budget: at most 960 words, which is 60% of the 1,600-word baseline before the focus pass
-- a claims guard (`tests/claims.site.spec.ts`), which fails on withdrawn benchmark numbers and on banned phrasing (including "independent review", treasury/M17 numbers, and "Watch the demo" until a recording is published) in rendered pages, metadata and source files
+- a homepage word budget: at most 650 words (the copy pass cut the 778-word home page by about a third)
+- a claims guard (`tests/claims.site.spec.ts`), which fails on withdrawn benchmark numbers and on banned phrasing (including "independent review", treasury/M17 numbers, retired test counts and meta headings) in rendered pages, metadata and source files, and on any em dash in rendered text or `<head>`
 
 ## Deployment
 
@@ -100,7 +102,8 @@ Do not change their wording without founder approval (ideally after legal review
 
 Technical statements and proof visuals are based on the Ordinum product repository (branch `ordinum-2`). That repository is private and is not linked here.
 - **`FACT_SOURCE` in `lib/content.ts`:** facts checked against product head `44284b0`; evidence pinned at the stable checkpoint `768a9b5` (checked 1 November 2026). The research summary in Labs reflects `124dde072`, with updates noted.
-- **`flagship` in `lib/content.ts`:** the PocketBase planted-control run of 1 November 2026 at `768a9b5`. It is always labeled "Controlled positive control — a defect planted in Ordinum's own test harness, not a PocketBase bug".
+- **Test figure:** `TEST_SUITE_STATUS`, "2229 passed, 32 skipped (local full suite at product commit 768a9b5)". **CI:** `HOSTED_CI_STATUS`, "Ordinum's own repository runs its light test jobs on GitHub Actions, and they pass. CI for your pipeline: templates exist, not yet run on a hosted runner."
+- **`flagship` in `lib/content.ts`:** the PocketBase planted-defect run of 1 November 2026 at `768a9b5`. It is always labeled "Planted defect in our client path, not a PocketBase bug." The fixed build is the same harness without the planted cache: the engineer changes the code and Ordinum checks the fixed build.
 - **[`lib/evidence.ts`](lib/evidence.ts):** data copied from real Nav2 and toy artifacts at commit `c25ba4f`, unchanged at `768a9b5`. Its header lists the source files.
-- **Evidence packages:** `lib/evidence-packages.ts` lists the files each `/evidence/<case>` page expects. The files are exported into `public/evidence/<case>/` by a founder-run, founder-authorized script; never copy them by hand. A file is linked only if it exists at build time, with its size and a SHA-256 computed at build; otherwise the page says "Artifact pending publication".
-- **Media:** there is no demo video yet. `demoPage.media` stays disabled, `/demos` shows "Recording in production" on the flagship card, and the CTA is "See Ordinum in action".
+- **Evidence packages:** `lib/evidence-packages.ts` lists the files each `/evidence/<case>` page expects. The files are exported into `public/evidence/<case>/` by a founder-run, founder-authorized script; never copy them by hand. A file is linked only if it exists at build time, with its size and a SHA-256 computed at build; otherwise the page says "Artifact pending publication". Terminal logs are committed through the `.gitignore` exception `!public/evidence/**/*.log`.
+- **Media:** the flagship PocketBase recording (1:35, real terminal output, captions and transcript) is in `public/media/` and plays on `/demos#demo-flagship` and the home page. CTAs are "Watch the demo", "Talk to us" and "Book a call". There is no Nav2 video; `demoPage.media` stays disabled.

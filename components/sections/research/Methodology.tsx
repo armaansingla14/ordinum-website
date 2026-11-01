@@ -14,7 +14,7 @@ const LABEL_ORDER: readonly EvidenceClass[] = [
   "verified-defect",
 ];
 
-/** How results are produced and labeled, the label glossary, and the withdrawn-v1 note (no numbers). */
+/** How results are checked, the label glossary, and the withdrawn-v1 note (no numbers). */
 export default function Methodology() {
   return (
     <Section id={m.id} variant="charcoal" aria-labelledby="method-title">

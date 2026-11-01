@@ -2,9 +2,9 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { AI_METHODS_NOTE, flagshipVideo, demoWalkthrough, legal, nav, pages, site, type NavEntry, type NavGroup } from "../lib/content";
+import { AI_METHODS_NOTE, HOSTED_CI_STATUS, flagshipVideo, demoWalkthrough, legal, nav, pages, site, testingAreas, type NavEntry, type NavGroup } from "../lib/content";
 import { PENDING_LABEL, evidencePackages } from "../lib/evidence-packages";
-import { labsArticles, labsInPreparation } from "../lib/labs";
+import { labsArticles } from "../lib/labs";
 import { REDIRECTS, ROUTES } from "./routes";
 
 const WIDTHS = [320, 375, 430, 768, 1024, 1440, 1920] as const;
@@ -17,13 +17,12 @@ const WALKTHROUGH = "/demos/nav2-walkthrough";
 const FOUNDER_LINKEDIN = ["linkedin.com/in/armaansingla", "linkedin.com/in/aaravsinglaa"] as const;
 
 /**
- * Homepage copy budget. Baseline: 1600 words of main innerText on the pre-focus home page
- * (~/scratch/ordinum-focus/wordcount-before.json, generated 2026-10-25T03:10Z at 1440px with
- * reduced motion). The brief asks for a 40-50% cut, so the home page may use at most 60% of
- * that: 1600 * 0.6 = 960 words. Counting method matches the baseline script exactly.
+ * Homepage copy budget. Copy pass (1 November 2026): the home page had 778 words of main text
+ * (~/scratch/ordinum-human/wordcount-before.json); the brief cuts about a third and sets a hard
+ * ceiling of 650 words. Word = whitespace-separated token with at least one Unicode letter.
  */
-const HOME_WORD_BASELINE = 1600;
-const HOME_WORD_BUDGET = Math.floor(HOME_WORD_BASELINE * 0.6); // 960
+const HOME_WORD_BASELINE = 778;
+const HOME_WORD_BUDGET = 650;
 
 function collectConsoleErrors(page: Page) {
   const errors: string[] = [];
@@ -234,6 +233,47 @@ test("home hero: 'Watch the demo' -> the flagship recording and 'Talk to us'", a
   await expect(hero.locator("a[href='/contact#talk']")).toContainText("Talk to us");
 });
 
+test("home: what and who, delivery, flagship recording, three steps, testing areas, two articles, one CTA band", async ({ page }) => {
+  await page.goto("/");
+  const main = page.locator("main");
+  const hero = page.locator("#top");
+  await expect(hero).toContainText("testing tool for engineers");
+  await expect(hero).toContainText("CLI");
+  await expect(hero).toContainText("Runs on your machine");
+  const ids = await main.locator(":scope > section[id]").evaluateAll((els) => els.map((el) => el.id));
+  expect(ids).toEqual(["top", "demo", "workflow", "areas", "labs", "get-started"]);
+  await expect(main.locator("#demo video")).toHaveCount(1);
+  await expect(main.locator("#demo")).toContainText("not a PocketBase bug");
+  await expect(main.locator("#demo a[href^='/evidence/']")).toHaveCount(1);
+  await expect(main.locator("#workflow ol > li")).toHaveCount(3);
+  for (const area of testingAreas) {
+    for (const i of area.integrations) await expect(main.locator("#areas"), i.name).toContainText(i.name);
+  }
+  await expect(main.locator("#labs li")).toHaveCount(2);
+  // No retired sections: the Nav2 showcase, the separate failure-to-fix stats and the boundaries block.
+  for (const id of ["recorded-run", "failure-to-fix", "boundaries", "product-areas"]) await expect(main.locator(`[id="${id}"]`)).toHaveCount(0);
+  // One pilot invitation, and no button repeats the hero's "Watch the demo".
+  await expect(main.locator("#get-started")).toHaveCount(1);
+  await expect(main.locator("#get-started a", { hasText: "Watch the demo" })).toHaveCount(0);
+});
+
+test("moved sections keep their anchors: #how-it-works on /products; #architecture, #lifecycle, #reproduction, #network on /security", async ({ page }) => {
+  await page.goto("/products");
+  await expect(page.locator("[id='how-it-works']")).toHaveCount(1);
+  for (const id of ["architecture", "lifecycle", "reproduction"]) await expect(page.locator(`[id="${id}"]`), `/products #${id}`).toHaveCount(0);
+  await page.goto("/security");
+  for (const id of ["architecture", "lifecycle", "reproduction", "network"]) await expect(page.locator(`[id="${id}"]`), `/security #${id}`).toHaveCount(1);
+  await expect(page.locator("#network tbody tr")).toHaveCount(5);
+});
+
+test("CI wording: one sentence, used verbatim", async ({ page }) => {
+  for (const route of ["/products", "/security", "/roadmap"]) {
+    await page.goto(route);
+    await expect(page.locator("main"), route).toContainText(HOSTED_CI_STATUS);
+    await expect(page.locator("main"), route).not.toContainText(/no hosted CI/i);
+  }
+});
+
 test("every same-page anchor resolves to an element id", async ({ page }) => {
   for (const route of ROUTES) {
     await page.goto(route);
@@ -356,8 +396,8 @@ test("old single-page hash links forward to the new pages", async ({ page }) => 
     ["contact", /\/contact$/],
     ["product", /\/products$/],
     ["why-ordinum", /\/products$/],
-    ["technology", /\/products#architecture$/],
-    ["stack", /\/products#architecture$/],
+    ["technology", /\/security#architecture$/],
+    ["stack", /\/security#architecture$/],
     ["vision", /\/roadmap$/],
     ["why-now", /\/roadmap#why-now$/],
     ["about", /\/about$/],
@@ -391,11 +431,29 @@ test("evidence packages link only published files, and each matches its SHA-256"
   }
 });
 
+test("PocketBase evidence: both terminal logs are published, served and nothing is pending", async ({ page, request }) => {
+  const slug = "pocketbase-verified-fix";
+  for (const name of ["verify-terminal.log", "ci-terminal.log"]) {
+    const local = path.resolve(__dirname, "..", "public", "evidence", slug, name);
+    expect(fs.existsSync(local), `${name} must be committed (see .gitignore exception)`).toBe(true);
+    const res = await request.get(`/evidence/${slug}/${name}`);
+    expect(res.status(), name).toBe(200);
+    const sha = createHash("sha256").update(await res.body()).digest("hex");
+    expect(sha, name).toBe(createHash("sha256").update(fs.readFileSync(local)).digest("hex"));
+  }
+  await page.goto(`/evidence/${slug}`);
+  await expect(page.locator("main [data-pending]")).toHaveCount(0);
+  await expect(page.locator("main")).not.toContainText(PENDING_LABEL);
+});
+
 test("/demos: flagship card plays the recorded run with captions, labeled before playback", async ({ page, request }) => {
   await page.goto("/demos");
   const main = page.locator("main");
   const card = main.locator("#demo-flagship");
+  // The recording sits in the page header, the first thing on the page.
+  await expect(page.locator("main > header #demo-flagship")).toHaveCount(1);
   await expect(card).toContainText("not a PocketBase bug");
+  await expect(card).toContainText("FIX_VERIFIED");
   await expect(card).toContainText("10/10 vs 0/10");
   await expect(card).toContainText(flagshipVideo.duration);
   const video = card.locator("video");
@@ -422,7 +480,7 @@ test("/demos: flagship card plays the recorded run with captions, labeled before
   await expect(main.locator("a[href='/evidence/testbed-planted-control']").first()).toBeVisible();
 });
 
-test("Labs: articles carry author, date, methods note and evidence links; in-preparation titles have no link", async ({ page }) => {
+test("Labs: articles lead with question and result and carry author, date, methods note and evidence links", async ({ page }) => {
   for (const article of labsArticles) {
     await page.goto(`/labs/${article.slug}`);
     const main = page.locator("main");
@@ -430,19 +488,24 @@ test("Labs: articles carry author, date, methods note and evidence links; in-pre
     await expect(main).toContainText("Armaan Singla");
     await expect(main).toContainText(article.date);
     await expect(main).toContainText(AI_METHODS_NOTE);
-    for (const id of ["leading-result", "question", "system", "method", "results", "article-limitations", "related", "reproduce", "corrections", "methods-note"]) {
+    const order = ["question", "leading-result", "results", "system", "method", "reproduce", "article-limitations", "related", "corrections", "methods-note"];
+    for (const id of order) {
       await expect(main.locator(`[id="${id}"]`), `${article.slug} #${id}`).toHaveCount(1);
     }
+    // Question and result first, methods note last.
+    const ids = await main.locator("article section[id]").evaluateAll((els) => els.map((el) => el.id));
+    const positions = order.map((id) => ids.indexOf(id));
+    expect(positions, article.slug).toEqual([...positions].sort((a, b) => a - b));
     expect(article.reproducibility.some((l) => l.href.startsWith("/evidence/"))).toBe(true);
   }
   await page.goto("/labs/research-summary");
   await expect(page.locator("[data-withdrawn]")).toHaveCount(1);
+  // The index lists published articles only: no category counts, no placeholders.
   await page.goto("/labs");
-  for (const entry of labsInPreparation) {
-    const card = page.locator("#in-preparation li", { hasText: entry.title });
-    await expect(card).toContainText("In preparation");
-    await expect(card.locator("a")).toHaveCount(0);
-  }
+  await expect(page.locator("#articles li")).toHaveCount(labsArticles.length);
+  await expect(page.locator("#in-preparation")).toHaveCount(0);
+  await expect(page.locator("main")).not.toContainText(/in preparation/i);
+  await expect(page.locator("main ul[aria-label='Categories']")).toHaveCount(0);
 });
 
 test("unknown route returns 404", async ({ page }) => {

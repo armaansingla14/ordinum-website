@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { hero, pages, seo, site, type PageKey } from "@/lib/content";
+import { hero, heroStatusLine, pages, seo, site, type PageKey } from "@/lib/content";
 
 /*
  * Per-page metadata built from `pages` and `seo` in lib/content.ts.
@@ -11,7 +11,7 @@ import { hero, pages, seo, site, type PageKey } from "@/lib/content";
  * Keep alt/size in step with app/opengraph-image.tsx.
  */
 
-const IMAGE_ALT = `Ordinum: ${hero.titleLine1} ${hero.titleLine2} ${hero.eyebrow}. ${hero.status}.`;
+const IMAGE_ALT = `Ordinum: ${hero.titleLine1} ${hero.titleLine2} ${hero.eyebrow}. ${heroStatusLine}.`;
 const OG_IMAGE = { url: "/opengraph-image", width: 1200, height: 630, alt: IMAGE_ALT, type: "image/png" };
 const TWITTER_IMAGE = { url: "/twitter-image", width: 1200, height: 630, alt: IMAGE_ALT, type: "image/png" };
 

@@ -44,7 +44,7 @@ export default function Story() {
           </Kicker>
         </Reveal>
 
-        <Reveal as="ul" stagger={0.06} className="hairline-grid mt-8 sm:grid-cols-2 xl:grid-cols-4">
+        <Reveal as="ul" stagger={0.06} className="hairline-grid mt-8 md:grid-cols-3">
           {fit.items.map((d, i) => (
             <RevealItem as="li" key={d.title} className="flex flex-col bg-surface p-7 md:p-8">
               <span aria-hidden="true" className="font-mono text-[11px] tracking-[0.08em] text-lime">

@@ -4,25 +4,23 @@ import CtaBand from "@/components/sections/CtaBand";
 import NextPage from "@/components/sections/NextPage";
 import PageHeader from "@/components/sections/PageHeader";
 import Capabilities from "@/components/sections/products/Capabilities";
-import HowItWorks from "@/components/sections/products/HowItWorks";
+import HowItWorks, { Delivery } from "@/components/sections/products/HowItWorks";
 import Outputs from "@/components/sections/products/Outputs";
-import Architecture from "@/components/sections/technology/Architecture";
-import Reproduction from "@/components/sections/technology/Reproduction";
 import { platform } from "@/lib/content";
 
 export const metadata: Metadata = pageMetadata("products");
 
 const JUMP = [
   { href: "#how-it-works", label: "How it works" },
-  { href: "#capabilities", label: "Capabilities" },
-  { href: "#architecture", label: "Architecture" },
-  { href: "#reproduction", label: "Reproduction" },
-  { href: "#outputs", label: "Outputs" },
+  { href: "#install", label: "What you install" },
+  { href: "#capabilities", label: "Commands" },
+  { href: "#outputs", label: "What you get" },
 ] as const;
 
 /**
- * /products: platform overview. Redirect targets: /product, /solution (here), /technology
- * (#architecture), /how-it-works (#how-it-works). Isolation and limitations live on /security.
+ * /products: one workflow, what you install, the commands and the outputs. Redirect targets:
+ * /product, /solution (here), /how-it-works (#how-it-works). The architecture, the seven-stage
+ * lifecycle and reproduction detail live on /security (#architecture, #lifecycle, #reproduction).
  */
 export default function ProductsPage() {
   return (
@@ -45,9 +43,8 @@ export default function ProductsPage() {
         </nav>
       </PageHeader>
       <HowItWorks />
+      <Delivery />
       <Capabilities />
-      <Architecture />
-      <Reproduction />
       <Outputs />
       <NextPage current="products" />
       <CtaBand current="products" copy={platform.cta} />

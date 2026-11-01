@@ -4,7 +4,7 @@ import Kicker from "@/components/ui/Kicker";
 import Section from "@/components/ui/Section";
 import { ctaBand, pages, type Link, type PageKey } from "@/lib/content";
 
-/** Page-specific copy for the band (e.g. `product.cta` on /product). Unset fields fall back to `ctaBand`. */
+/** Page-specific copy for the band (e.g. `platform.cta` on /products). Unset fields fall back to `ctaBand`. */
 export type CtaBandCopy = {
   readonly title: string;
   readonly titleMuted?: string;
@@ -16,7 +16,7 @@ export type CtaBandCopy = {
 type CtaBandProps = {
   /**
    * The page this band closes. When a button would link to the current page (the secondary
-   * "See Ordinum in action" on /demo), it is swapped for the Cal.com "Book a call" link.
+   * "Watch the demo" on /demos), it is swapped for the Cal.com "Book a call" link.
    */
   current?: PageKey | "home";
   /** Optional page-specific copy; the design-partner note and Book-a-call link always come from `ctaBand`. */
@@ -24,9 +24,9 @@ type CtaBandProps = {
 };
 
 /**
- * Slim sage band closing the home page and every inner page except /contact: design-partner
- * invitation, primary "Talk to the founders", secondary "See Ordinum in action", and a quiet
- * "Book a call" link. All copy from `ctaBand` in lib/content.ts.
+ * Slim sage band closing the home page and every inner page except /contact: the pilot
+ * invitation, primary "Talk to us", secondary "Watch the demo", and a quiet "Book a call" link.
+ * All copy from `ctaBand` in lib/content.ts.
  */
 export default function CtaBand({ current, copy }: CtaBandProps) {
   const title = copy?.title ?? ctaBand.title;
@@ -38,6 +38,8 @@ export default function CtaBand({ current, copy }: CtaBandProps) {
   const currentHref = current !== undefined && current !== "home" ? pages[current].href : current === "home" ? "/" : null;
   const selfLink = currentHref !== null && wanted.href.split("#")[0] === currentHref;
   const secondary = selfLink ? ctaBand.bookCall : wanted;
+  /** The quiet "Or book a call" link shows only when no button already books a call. */
+  const showCallLink = secondary.href !== ctaBand.bookCall.href;
 
   return (
     <Section
@@ -79,7 +81,7 @@ export default function CtaBand({ current, copy }: CtaBandProps) {
               {secondary.label}
             </Button>
           </div>
-          {!selfLink && (
+          {showCallLink && (
             <a
               href={ctaBand.bookCall.href}
               target="_blank"

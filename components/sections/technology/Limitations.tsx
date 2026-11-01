@@ -26,7 +26,7 @@ export default function Limitations() {
           href="/labs/research-summary"
           className="inline-flex min-h-11 shrink-0 items-center gap-2 font-mono text-[11px] tracking-[0.12em] text-lime uppercase underline decoration-lime/40 underline-offset-4 hover:decoration-lime md:min-h-0"
         >
-          Results and their labels in Ordinum Labs
+          Research summary in Ordinum Labs
           <span aria-hidden="true">→</span>
         </Link>
       </Reveal>

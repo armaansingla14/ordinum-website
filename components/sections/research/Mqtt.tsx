@@ -1,13 +1,16 @@
 import Reveal from "@/components/ui/Reveal";
 import Section from "@/components/ui/Section";
-import { FACT_SOURCE, integration, research } from "@/lib/content";
+import { FACT_SOURCE, MQTT_SETUP, integration, research } from "@/lib/content";
 import { Provenance } from "./badges";
 import { Bullets, MaturityMark, ResultList, SectionHead, SubHead, TargetAside } from "./shared";
 
 const m = research.mqtt;
-const bridge = integration("nanomq");
+const mqtt = integration("mqtt");
 
-/** MQTT integration: one 12-scenario exploratory campaign against Eclipse Mosquitto, every outcome labeled. */
+/**
+ * MQTT integration: the first 12-scenario exploratory campaign against Eclipse Mosquitto, every
+ * outcome labeled, then the setup and results at the stable checkpoint (NanoMQ edge bridge on).
+ */
 export default function Mqtt() {
   return (
     <Section id={m.id} aria-labelledby="mqtt-title">
@@ -27,9 +30,11 @@ export default function Mqtt() {
           <Bullets items={m.limits} mark="dashed" className="mt-5" />
         </div>
         <div className="flex flex-col gap-3 lg:col-span-4 lg:border-l lg:border-line lg:pl-8">
-          <p className="text-[14px] font-semibold tracking-[-0.01em] text-text">{bridge.name}</p>
-          <MaturityMark maturity={bridge.maturity} note={bridge.maturityNote} />
-          <p className="text-[13.5px] leading-[1.6] text-muted">{bridge.summary}</p>
+          <p className="text-[14px] font-semibold tracking-[-0.01em] text-text">Setup at {FACT_SOURCE.evidenceCommitShort}</p>
+          <MaturityMark maturity={mqtt.maturity} note={mqtt.maturityNote} />
+          <p className="text-[13.5px] leading-[1.6] text-muted">
+            {MQTT_SETUP.config} {MQTT_SETUP.bridge} {MQTT_SETUP.results}
+          </p>
         </div>
       </Reveal>
 

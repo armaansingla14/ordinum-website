@@ -1,0 +1,13 @@
+Script started on 2026-11-01 14:20:10-05:00 [COMMAND="unshare -rn sh -c 'ip link set lo up && exec ordinum --target-config examples/pocketbase/ordinum.pc.toml ci'" <not executed on terminal>]
+[ci] <venv>/bin/python <repo>/src/ordinum/cli/_ci_runner.py <repo>/data/campaigns/m14_pocketbase_pc/cases --allow-target ordinum.targets.pocketbase.target:PocketBaseTarget --cannot-verify fail   (cwd <repo>/examples/pocketbase)
+VERDICT        EXIT    TIME  CASE
+PASS              0   19.8s  <repo>/data/campaigns/m14_pocketbase_pc/cases/fail_76e6d79bb741.json
+                             PASS FIXED: fixed build 0/N with no inconclusive run; affected reproduces. invariant model_agreement: affected 10/10 conclusive (0 inconclusive), fixed 0/10 con
+                             after: ordinum reap --session ci-492ecf1e7a0a4163: exit 0 (reaped session ci-492ecf1e7a0a4163 on target ordinum.targets.pocketbase.target:PocketBaseTarget (best effort: the target's reap() ran without error))
+PASS              0   18.6s  <repo>/data/campaigns/m14_pocketbase_pc/cases/fail_a862e75a4fbb.json
+                             PASS FIXED: fixed build 0/N with no inconclusive run; affected reproduces. invariant read_authz: affected 10/10 conclusive (0 inconclusive), fixed 0/10 conclusi
+                             after: ordinum reap --session ci-4faeb24a36e24d65: exit 0 (reaped session ci-4faeb24a36e24d65 on target ordinum.targets.pocketbase.target:PocketBaseTarget (best effort: the target's reap() ran without error))
+
+2 case(s): 2 PASS, 0 FAIL, 0 CANNOT_VERIFY, 0 INVALID, 0 ERROR. OK: every regression expectation holds
+
+Script done on 2026-11-01 14:20:48-05:00 [COMMAND_EXIT_CODE="0"]

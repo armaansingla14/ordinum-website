@@ -56,9 +56,9 @@ function Links({ links }: { links: readonly { label: string; href: string }[] })
 }
 
 /**
- * A Labs article: leading result with its evidence label, then question, system under test,
- * method, results, (research summary: the migrated research sections), limitations, related
- * work, reproducibility links, correction history and the AI-assistance methods note.
+ * A Labs article: the question and the result first (with its evidence label), then the results
+ * in detail, the system under test and the method (research summary: the full research sections),
+ * the evidence links, limitations, related work, corrections, and the AI methods note last.
  */
 export default function ArticleView({ article }: { article: LabsArticle }) {
   return (
@@ -76,9 +76,15 @@ export default function ArticleView({ article }: { article: LabsArticle }) {
       </PageHeader>
 
       <Container>
-        <section id="leading-result" aria-labelledby="leading-result-title" className="border-b border-line py-10 md:py-14">
+        <section id="question" aria-labelledby="question-title" className="pt-10 md:pt-14">
+          <h2 id="question-title" className={cn(mono, "text-subtle")}>
+            Question
+          </h2>
+          <p className="mt-4 max-w-[920px] text-[17px] leading-[1.7] text-text md:text-[18px]">{article.question}</p>
+        </section>
+        <section id="leading-result" aria-labelledby="leading-result-title" className="border-b border-line pt-10 pb-10 md:pt-12 md:pb-14">
           <h2 id="leading-result-title" className={cn(mono, "text-lime")}>
-            Leading result
+            Result
           </h2>
           <p className="mt-5 max-w-[920px] text-[clamp(21px,2.2vw,28px)] leading-[1.4] tracking-[-0.03em] text-balance text-text">
             {article.leadingResult}
@@ -86,16 +92,7 @@ export default function ArticleView({ article }: { article: LabsArticle }) {
           <EvidenceLabel size="lg" text={article.label.text} classes={article.label.classes} className="mt-6" />
         </section>
 
-        <Block id="question" n="01" title="Question">
-          <p className="text-[17px] leading-[1.7] text-text">{article.question}</p>
-        </Block>
-        <Block id="system" n="02" title="System under test">
-          <Paragraphs items={article.system} />
-        </Block>
-        <Block id="method" n="03" title="Method">
-          <Paragraphs items={article.method} />
-        </Block>
-        <Block id="results" n="04" title="Results">
+        <Block id="results" n="01" title="Results in detail">
           <dl className="border-t border-line">
             {article.results.map((r) => (
               <div key={r.k} className="grid grid-cols-1 gap-1 border-b border-line py-3.5 sm:grid-cols-[170px_minmax(0,1fr)] sm:gap-5">
@@ -106,6 +103,12 @@ export default function ArticleView({ article }: { article: LabsArticle }) {
           </dl>
           {article.resultsNote && <p className="mt-4 text-[14px] leading-[1.65] text-subtle">{article.resultsNote}</p>}
         </Block>
+        <Block id="system" n="02" title="System under test">
+          <Paragraphs items={article.system} />
+        </Block>
+        <Block id="method" n="03" title="Method">
+          <Paragraphs items={article.method} />
+        </Block>
       </Container>
 
       {article.body === "research-summary" && (
@@ -115,16 +118,16 @@ export default function ArticleView({ article }: { article: LabsArticle }) {
       )}
 
       <Container>
+        <Block id="reproduce" n="04" title="Evidence">
+          <Links links={article.reproducibility} />
+        </Block>
         <Block id="article-limitations" n="05" title="Limitations">
           <Bullets items={article.limitations} mark="dashed" />
         </Block>
-        <Block id="related" n="06" title="Related work">
+        <Block id="related" n="06" title="Related">
           <Links links={article.related} />
         </Block>
-        <Block id="reproduce" n="07" title="Reproducibility">
-          <Links links={article.reproducibility} />
-        </Block>
-        <Block id="corrections" n="08" title="Correction history">
+        <Block id="corrections" n="07" title="Corrections">
           <ol className="space-y-4">
             {article.corrections.map((c) => (
               <li key={c.date + c.text.slice(0, 20)} className="grid gap-1 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-5">
@@ -134,7 +137,7 @@ export default function ArticleView({ article }: { article: LabsArticle }) {
             ))}
           </ol>
         </Block>
-        <Block id="methods-note" n="09" title="Methods note" className="border-b-0">
+        <Block id="methods-note" n="08" title="Methods note" className="border-b-0">
           <p className="text-[15px] leading-[1.7] text-muted">{article.methodsNote}</p>
         </Block>
       </Container>

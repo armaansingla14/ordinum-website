@@ -1,10 +1,11 @@
 import { demoPage } from "@/lib/content";
 
 /* -------------------------------------------------------------------------- */
-/* SLOT: future recorded walkthrough video + hosted original reports.          */
+/* SLOT: a future recorded Nav2 walkthrough video.                             */
 /*                                                                            */
-/* NOT RENDERED. No video exists, and publishing the original HTML reports     */
-/* needs separate founder authorization. This component returns null unless   */
+/* NOT RENDERED. No Nav2 video exists (the flagship PocketBase recording lives */
+/* on /demos). The original Nav2 HTML reports are already downloadable from    */
+/* /evidence/nav2-success-mismatch. This component returns null unless         */
 /* lib/content.ts gains a `demoPage.media` object with `enabled: true` AND real */
 /* hosted sources. Requested shape (all off by default):                       */
 /*                                                                            */
@@ -15,8 +16,7 @@ import { demoPage } from "@/lib/content";
 /*   }                                                                        */
 /*                                                                            */
 /* The caption track should be generated from demoPage.captionScript (also not */
-/* rendered). Never point `src` at a file that does not exist, and keep the    */
-/* "See Ordinum in action" wording until a real video is published.            */
+/* rendered). Never point `src` at a file that does not exist.                 */
 /* -------------------------------------------------------------------------- */
 
 type DemoMedia = {

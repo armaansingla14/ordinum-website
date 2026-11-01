@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return routeMetadata({
     href: `/labs/${article.slug}`,
     title: article.title,
-    fullTitle: `${article.title} — Ordinum Labs`,
+    fullTitle: `${article.title} | Ordinum Labs`,
     description: article.leadingResult,
     type: "article",
   });

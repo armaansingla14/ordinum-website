@@ -51,8 +51,39 @@ const FORBIDDEN: readonly (string | RegExp)[] = [
   "independently reviewed",
   "treasury",
   /(?<![\w.])M17(?!\w|\.\d)/,
+  // Copy pass (2026-11-01): the only test figure is TEST_SUITE_STATUS (2229 passed, 32 skipped);
+  // no "independent checks" (they are ground-truth checks); no stale recording, CI or bridge
+  // status; no meta or self-congratulatory headings.
+  "523 passed",
+  "523 tests",
+  "1 skipped",
+  "independent check",
+  "recording is in production",
+  "Recording in production",
+  "passes review",
+  "edge bridge is still in progress",
+  "no hosted CI",
+  "Honest status",
+  "labeled for what",
+  "Limitations included",
+  "Each with its own status",
+  "Three integrations, three boundaries",
+  "How results are produced and labeled",
+  "Research and case studies, with their evidence",
+  "command by command",
+  "Agent authority and resource effects",
+  "Targets run with no network or loopback only",
   // No video until a reviewed recording exists.
   ...(VIDEO_PUBLISHED ? [] : ["Watch the demo", "watch the video"]),
+];
+
+/**
+ * Rendered-only rules (body text, attributes, <title>, meta and JSON-LD). Not applied to source
+ * files: code comments and the verbatim recording transcript in public/media may use them.
+ */
+const FORBIDDEN_RENDERED: readonly (string | RegExp)[] = [
+  // No em dashes in visible copy, titles, OG text or aria labels.
+  "\u2014",
 ];
 
 const ROUTES = [...SITE_ROUTES, "/no-such-page"];
@@ -60,9 +91,9 @@ const ROUTES = [...SITE_ROUTES, "/no-such-page"];
 /** Bare numbers ("764") only match as whole tokens, so hex trace ids and SVG path data don't trip them. */
 const BARE_NUMBER = /^\d+$/;
 
-function hits(text: string): string[] {
+function hits(text: string, terms: readonly (string | RegExp)[] = FORBIDDEN): string[] {
   const lower = text.toLowerCase();
-  return FORBIDDEN.filter((term) =>
+  return terms.filter((term) =>
     term instanceof RegExp
       ? term.test(text)
       : BARE_NUMBER.test(term)
@@ -85,6 +116,7 @@ for (const route of ROUTES) {
       return `${clone.textContent ?? ""} ${attrs}`;
     });
     expect(hits(body), `${route} body`).toEqual([]);
+    expect(hits(body, FORBIDDEN_RENDERED), `${route} body (rendered-only rules)`).toEqual([]);
 
     const head = await page.evaluate(() => {
       const meta = Array.from(document.querySelectorAll("meta[content]"))
@@ -96,6 +128,7 @@ for (const route of ROUTES) {
       return `${document.title}\n${meta}\n${ld}`;
     });
     expect(hits(head), `${route} head`).toEqual([]);
+    expect(hits(head, FORBIDDEN_RENDERED), `${route} head (rendered-only rules)`).toEqual([]);
   });
 }
 

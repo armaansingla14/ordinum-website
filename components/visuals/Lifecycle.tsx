@@ -4,17 +4,17 @@ import { WORKFLOW_STAGES, lifecycle, type LifecycleStage, type WorkflowStageId }
 
 /*
  * Visual: the seven-stage lifecycle (Define -> Generate -> Execute -> Observe -> Verify ->
- * Reproduce -> Regress), shown on /technology only. Server component, no interaction needed:
- * - lg+: a rail grouping the seven stages under the four home-page stages (decorative), then
+ * Reproduce -> Regress), shown on /security only. Server component, no interaction needed:
+ * - lg+: a rail grouping the seven stages under the three workflow steps (decorative), then
  *   one row per stage.
- * - below lg: the rows stack; each row names its home-page stage.
+ * - below lg: the rows stack; each row names its workflow step.
  * Every stage, its artifact and what exists in the engine today are in the static HTML.
  */
 
 const stages: readonly LifecycleStage[] = lifecycle.stages;
 const workflowLabel = (id: WorkflowStageId) => WORKFLOW_STAGES.find((w) => w.id === id)?.label ?? id;
 
-/** Consecutive runs of stages that belong to the same home-page stage. */
+/** Consecutive runs of stages that belong to the same workflow step. */
 const groups = stages.reduce<{ id: WorkflowStageId; count: number }[]>((acc, s) => {
   const last = acc[acc.length - 1];
   if (last && last.id === s.workflowStage) last.count += 1;
@@ -56,8 +56,9 @@ export default function Lifecycle({ className }: { className?: string }) {
   return (
     <figure className={cn("border border-[#3c4749] bg-window", className)}>
       <figcaption className="sr-only">
-        The Ordinum testing lifecycle in seven stages, grouped under the four stages Connect, Stress-test, Verify, and
-        Reproduce and prevent, with the artifact each stage produces and what exists in the engine today.
+        The Ordinum testing lifecycle in seven stages, grouped under the three workflow steps (connect and define rules,
+        run failure scenarios, reproduce and check the fix), with the artifact each stage produces and what exists in
+        the engine today.
       </figcaption>
       <Rail />
       <ol className="divide-y divide-line">

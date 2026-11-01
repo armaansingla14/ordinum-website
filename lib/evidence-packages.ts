@@ -51,14 +51,14 @@ const pocketbase = {
   title: "PocketBase: failure to verified fix",
   label: FLAGSHIP_LABEL,
   classes: flagship.labelClasses,
-  qualifier: "PocketBase itself is unmodified. The defect is ours.",
+  qualifier: "PocketBase itself is unmodified.",
   summary:
-    "The flagship run. A stale read cache planted in Ordinum's own PocketBase client path violates read authorization; ordinum verify finds it, confirms it, verifies that one fault is enough (1-minimal), compares the affected and fixed builds and returns FIX_VERIFIED, and ordinum ci replays the saved cases.",
+    "The run in the demo. A stale read cache in our PocketBase client path violates read authorization; ordinum verify finds it, confirms it, reduces it to one fault, compares the failing and fixed builds and returns FIX_VERIFIED, and ordinum ci replays the saved cases.",
   identity: [
     { k: "Source revision", v: `Product commit ${flagship.commitShort} (stable checkpoint)` },
     { k: "Run date", v: flagship.date },
     { k: "Target", v: flagship.target },
-    { k: "Affected build", v: `Planted ${flagship.planted} in ${flagship.plantedWhere}` },
+    { k: "Failing build", v: `Planted ${flagship.planted} in ${flagship.plantedWhere}` },
     { k: "Fixed build", v: "The same build without the planted cache" },
     { k: "Host", v: "WSL2 Ubuntu laptop, 16 vCPU; no Docker" },
     { k: "Commands", v: "unshare -rn … ordinum verify --require-exercise read_authz --require-exercise model_agreement; then ordinum ci" },
@@ -75,14 +75,14 @@ const pocketbase = {
   counts: [
     { k: "Confirmation", v: `read_authz and model_agreement, ${flagship.confirmed} each` },
     { k: "Minimization", v: flagship.minimized },
-    { k: "Affected vs fixed", v: `${flagship.affected} vs ${flagship.fixed} (one-sided Fisher p = ${flagship.fisherP})` },
+    { k: "Failing vs fixed", v: `${flagship.affected} vs ${flagship.fixed} (one-sided Fisher p = ${flagship.fisherP})` },
     { k: "Exercise", v: `read_authz exercised ${flagship.exercised} on each build (adapter-declared)` },
     { k: "Verdict", v: `FIX_VERIFIED, ${flagship.verifyExit}` },
     { k: "Regression", v: `ordinum ci: ${flagship.ciResult}, ${flagship.ciExit}` },
     { k: "Runtime", v: "About 5.5 min" },
   ],
   comparisonRule:
-    "FIX_VERIFIED requires every confirmed violation to be absent on the fixed build in the affected-vs-fixed comparison (one-sided Fisher exact test), no violation in the fixed build's own campaign, and each required property to be exercised on both builds.",
+    "FIX_VERIFIED requires every confirmed violation to be absent on the fixed build in the failing-vs-fixed comparison (one-sided Fisher exact test), no violation in the fixed build's own campaign, and each required property to be exercised on both builds.",
   files: [
     { name: "report.md", description: "Fix-verification report (Markdown)" },
     { name: "report.json", description: "Fix-verification report (JSON)" },
@@ -94,12 +94,13 @@ const pocketbase = {
   ],
   sanitization: "Local paths were replaced with <repo>, <venv> and <run>. No other edits.",
   limitations: [
-    "A controlled positive control: the defect was planted by us, so finding it is a check on the engine, not a discovery.",
+    "We planted the defect, so finding it checks the engine. It is not a discovery.",
     "One host, Ordinum's own policy and workload.",
     "Exercise counts are declared by the adapter.",
     "Ten runs per build is a statistical comparison, not a proof.",
   ],
   related: [
+    { label: "Watch the demo", href: "/demos#demo-flagship" },
     { label: "Case study", href: "/labs/from-failed-authorization-test-to-verified-fix" },
     { label: "Software & APIs", href: "/products/software" },
   ],
@@ -134,7 +135,7 @@ const nav2 = {
   sanitization: "One local cache path in report.html was replaced with maps/depot.yaml. No other edits.",
   limitations: [
     "Simulation only; no physical robot.",
-    "The noise is physically unrealistic; the result is a harness artifact, not a Nav2 defect.",
+    "The injected noise is physically unrealistic.",
     "The Nav2 container image is not published.",
   ],
   related: [
@@ -148,7 +149,7 @@ const testbed = {
   title: "Four-process testbed: a planted violation",
   label: EVIDENCE_CLASS_LABELS["positive-control"],
   classes: ["positive-control"],
-  qualifier: "Our own system and our own planted defect. Not a discovery.",
+  qualifier: "Our own system and our own planted defect.",
   summary:
     "A defect planted in a build of Ordinum's four-process reference system (authorization service, broker, controller, actuator), used to check that its policy checks catch a violation end to end.",
   identity: [
@@ -169,7 +170,7 @@ const testbed = {
     { name: "regression-case.json", description: "Regression case, as stored in the product repository" },
   ],
   sanitization: "Copied as committed. Scanned for local paths, usernames, hostnames, emails, tokens and keys.",
-  limitations: ["Our own system under test, not production software or hardware.", "A planted control: it checks the engine, not a real system."],
+  limitations: ["Our own system under test, not production software or hardware.", "A planted control: it checks the engine. It is not a discovery."],
   related: [{ label: "Robotics & Connected Systems", href: "/products/robotics" }],
 } as const satisfies EvidencePackage;
 

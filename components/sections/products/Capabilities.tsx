@@ -1,43 +1,16 @@
-import Link from "next/link";
-import { NavMaturityStatic } from "@/components/sections/products/NavMaturityStatic";
 import Reveal, { RevealItem } from "@/components/ui/Reveal";
 import Section from "@/components/ui/Section";
-import { Caveat, MaturityChip, SECTION_PAD, SectionIntro, mono } from "@/components/sections/technology/shared";
-import { cn } from "@/lib/cn";
-import { nav, platform, type NavEntry, type NavGroup, type NavItem } from "@/lib/content";
+import { Caveat, MaturityChip, SECTION_PAD, SectionIntro } from "@/components/sections/technology/shared";
+import { platform } from "@/lib/content";
 
-const products = (nav.entries as readonly NavEntry[]).find((e): e is NavGroup => e.kind === "group" && e.id === "products");
-/** The product areas and the roadmap (the nav's Products group, minus this page). */
-const AREAS: readonly NavItem[] = (products?.items ?? []).filter((i) => i.href !== "/products");
-
-/** /products#capabilities: product areas with status, then the engine's capabilities at the stable checkpoint. */
+/** /products#capabilities: the engine's commands at the stable checkpoint, each with its maturity label, and the CI status. */
 export default function Capabilities() {
   const c = platform.capabilities;
   return (
-    <Section id={c.id} variant="charcoal" aria-labelledby={`${c.id}-title`} className={SECTION_PAD}>
+    <Section id={c.id} aria-labelledby={`${c.id}-title`} className={SECTION_PAD}>
       <SectionIntro kicker={c.kicker} title={c.title} titleMuted={c.titleMuted} titleId={`${c.id}-title`} lede={c.lede} />
 
-      <Reveal className="mt-12 md:mt-16">
-        <h3 className={cn(mono, "text-subtle")}>{c.areasTitle}</h3>
-        <ul className="hairline-grid mt-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {AREAS.map((a) => (
-            <li key={a.href} className="bg-bg">
-              <Link href={a.href} className="group flex h-full flex-col gap-3 p-5 transition-colors hover:bg-surface sm:p-6">
-                <span className="text-[18px] leading-[1.25] font-semibold tracking-[-0.025em] text-text group-hover:text-lime">
-                  {a.label}
-                  <span aria-hidden="true" className="ml-2 inline-block text-lime transition-transform duration-200 group-hover:translate-x-1">
-                    →
-                  </span>
-                </span>
-                <span className="text-[14px] leading-[1.6] text-muted">{a.description}</span>
-                <NavMaturityStatic item={a} className="mt-auto pt-2" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Reveal>
-
-      <Reveal as="ul" stagger={0.03} amount={0.03} className="mt-12 border-t border-line-2 md:mt-14">
+      <Reveal as="ul" stagger={0.03} amount={0.03} className="mt-12 border-t border-line-2 md:mt-16">
         {c.items.map((it) => (
           <RevealItem
             key={it.name}

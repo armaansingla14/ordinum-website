@@ -1,27 +1,13 @@
 import Button from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
 import Kicker from "@/components/ui/Kicker";
-import { hero, type Maturity } from "@/lib/content";
+import { hero } from "@/lib/content";
 import { MaturityMark } from "@/components/visuals/pipeline/maturity";
 
 /**
- * "Research-stage · Working robotics integration · Experimental cross-system integrations" ->
- * three mono items. Each integration item carries the marker of its maturity (working = solid
- * lime "Built & validated", experimental = outlined lime); the stage itself gets a steel outline.
- */
-const statusItems = hero.status.split(" · ").map((text) => {
-  const maturity: Maturity | null = /^working/i.test(text)
-    ? "validated"
-    : /^experimental/i.test(text)
-      ? "experimental"
-      : null;
-  return { text, maturity };
-});
-
-/**
- * Hero: thesis, plain-language lede, who it is for, CTAs ("See Ordinum in action" -> /demos,
- * "Talk to us"), and the honest build status. The four-stage PipelineHero now sits in its own
- * home section (components/sections/home/Workflow.tsx), after the recorded run.
+ * Hero (first screen): what Ordinum does, who uses it and how it is delivered, the two CTAs
+ * ("Watch the demo" -> /demos#demo-flagship, "Talk to us"), and the build status with exact
+ * maturity labels. The flagship recording follows in components/sections/home/DemoVideo.tsx.
  */
 export default function Hero() {
   return (
@@ -61,8 +47,9 @@ export default function Hero() {
               <p className="text-[16px] leading-[1.7] tracking-[-0.017em] text-[#b9c2c0] md:text-[18px]">
                 {hero.lede}
               </p>
-              <p className="mt-4 border-l border-lime/60 pl-4 text-[14.5px] leading-[1.65] text-muted md:text-[15px]">
-                {hero.audience}
+              <p className="mt-4 text-[14.5px] leading-[1.65] text-muted md:text-[15px]">{hero.audience}</p>
+              <p className="mt-4 border-l border-lime/60 pl-4 text-[14.5px] leading-[1.65] text-[#c9d1ce] md:text-[15px]">
+                {hero.delivery}
               </p>
             </div>
 
@@ -79,7 +66,7 @@ export default function Hero() {
               aria-label="Status"
               className="flex flex-wrap items-center gap-x-5 gap-y-3 font-mono text-[11px] leading-[1.3] tracking-[0.09em] text-[#889591] uppercase sm:text-[10px]"
             >
-              {statusItems.map(({ text, maturity }) => (
+              {hero.status.map(({ text, maturity }) => (
                 <li key={text} className="flex items-center gap-2.5">
                   {maturity ? (
                     <MaturityMark maturity={maturity} />

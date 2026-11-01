@@ -207,7 +207,7 @@ export default function ToyBenchmark() {
         <ul className="flex flex-col gap-2 font-mono text-[11px] leading-[1.7] text-subtle">
           {toy.notes.map((n) => (
             <li key={n}>
-              <span aria-hidden="true" className="text-line-2">— </span>
+              <span aria-hidden="true" className="text-line-2">· </span>
               {n}
             </li>
           ))}

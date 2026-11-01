@@ -1,8 +1,8 @@
 import { ImageResponse } from "next/og";
 import { ORDINUM_MARK_PATH, ORDINUM_MARK_VIEWBOX } from "@/components/brand/OrdinumMark";
-import { MATURITY_LABELS, hero, nav, type Maturity, type NavEntry, type NavGroup } from "@/lib/content";
+import { MATURITY_LABELS, hero, heroStatusLine, nav, type Maturity, type NavEntry, type NavGroup } from "@/lib/content";
 
-export const alt = `Ordinum: ${hero.titleLine1} ${hero.titleLine2} ${hero.eyebrow}. ${hero.status}.`;
+export const alt = `Ordinum: ${hero.titleLine1} ${hero.titleLine2} ${hero.eyebrow}. ${heroStatusLine}.`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
