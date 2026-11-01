@@ -1,14 +1,22 @@
 import fs from "node:fs";
 import path from "node:path";
 import { expect, test } from "@playwright/test";
+import { flagshipVideo } from "../lib/content";
+import { ROUTES as SITE_ROUTES } from "./routes";
 
 /**
  * Claims guard. The withdrawn v1 benchmark numbers, unsupported replay wording and the old
  * positioning must not appear anywhere a visitor or crawler can read them: rendered text,
  * <title>, meta/OG/Twitter tags and JSON-LD. The only allowed place for v1 terms is inside an
- * element marked [data-withdrawn] (the history note on /research).
+ * element marked [data-withdrawn] (the history note in the Labs research summary).
  */
-const FORBIDDEN = [
+
+/** "Watch the demo" is allowed only while the flagship recording (lib/content.ts flagshipVideo) exists in public/. */
+const VIDEO_PUBLISHED = ["mp4", "webm", "captions", "poster"].every((k) =>
+  fs.existsSync(path.resolve(__dirname, "..", "public", flagshipVideo[k as "mp4"].replace(/^\//, ""))),
+);
+
+const FORBIDDEN: readonly (string | RegExp)[] = [
   "+35",
   "35%",
   "+23",
@@ -28,7 +36,7 @@ const FORBIDDEN = [
   "the first platform",
   "Not a pentest",
   // Focus pass (2026-10-24): no progress ratios, no unsupported test counts, no reuse or
-  // superiority claims, no competitor comparison, no customer/partner claims, no video yet.
+  // superiority claims, no competitor comparison, no customer/partner claims.
   "parts built",
   "764",
   "reuse rate",
@@ -37,22 +45,17 @@ const FORBIDDEN = [
   "Antithesis",
   "our customers",
   "design partners include",
-  "Watch the demo",
-] as const;
-
-const ROUTES = [
-  "/",
-  "/demo",
-  "/product",
-  "/technology",
-  "/research",
-  "/vision",
-  "/about",
-  "/contact",
-  "/terms",
-  "/privacy",
-  "/no-such-page",
+  // Release (2026-11-01): reviews were by separate AI review agents, never "independent review";
+  // transactions are a roadmap entry only (no treasury numbers, no M17 milestone).
+  "independent review",
+  "independently reviewed",
+  "treasury",
+  /(?<![\w.])M17(?!\w|\.\d)/,
+  // No video until a reviewed recording exists.
+  ...(VIDEO_PUBLISHED ? [] : ["Watch the demo", "watch the video"]),
 ];
+
+const ROUTES = [...SITE_ROUTES, "/no-such-page"];
 
 /** Bare numbers ("764") only match as whole tokens, so hex trace ids and SVG path data don't trip them. */
 const BARE_NUMBER = /^\d+$/;
@@ -60,10 +63,12 @@ const BARE_NUMBER = /^\d+$/;
 function hits(text: string): string[] {
   const lower = text.toLowerCase();
   return FORBIDDEN.filter((term) =>
-    BARE_NUMBER.test(term)
-      ? new RegExp(`(?<![\\w.,])${term}(?!\\w|\\.\\d)`).test(text)
-      : lower.includes(term.toLowerCase()),
-  );
+    term instanceof RegExp
+      ? term.test(text)
+      : BARE_NUMBER.test(term)
+        ? new RegExp(`(?<![\\w.,])${term}(?!\\w|\\.\\d)`).test(text)
+        : lower.includes(term.toLowerCase()),
+  ).map(String);
 }
 
 for (const route of ROUTES) {
@@ -107,8 +112,11 @@ test("claims: source files contain no withdrawn or forbidden claims", () => {
   const dirs = ["app", "components", "lib", "public"];
   const exts = new Set([".ts", ".tsx", ".js", ".mjs", ".css", ".json", ".md", ".svg", ".txt", ".html", ".xml"]);
   const offenders: string[] = [];
+  // public/evidence holds verbatim, founder-exported product artifacts (scanned for secrets by the
+  // export script, never edited by hand); they are checked by their own test, not by this copy guard.
+  const SKIP = new Set([path.join(root, "public", "evidence")]);
   const walk = (dir: string) => {
-    if (!fs.existsSync(dir)) return;
+    if (!fs.existsSync(dir) || SKIP.has(dir)) return;
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) walk(full);

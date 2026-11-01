@@ -14,14 +14,14 @@ const steps = demo.showSteps
   .filter((s): s is (typeof demoWalkthrough.steps)[number] => s !== undefined);
 
 /**
- * Home section 3: the product working on one real recorded failure case (Nav2 pilot), labeled
- * for what it is: "Real external target · Harness artifact", with the qualifier (fault
- * configuration, not a Nav2 defect) as separate text.
- * Seven condensed steps from demoWalkthrough (shared with /demo) beside the compact real trace.
+ * Home section 2: a short recorded run (Nav2 pilot), labeled "Recorded run" and for what it is:
+ * "Real external target · Harness artifact", with the qualifier (fault configuration, not a Nav2
+ * defect) as separate text. Four condensed steps from demoWalkthrough (shared with
+ * /demos/nav2-walkthrough) beside the compact real trace.
  */
 export default function DemoProof() {
   return (
-    <Section id="demo" variant="charcoal" aria-labelledby="demo-title">
+    <Section id="recorded-run" variant="charcoal" aria-labelledby="demo-title">
       <SectionIntro
         kicker={demo.kicker}
         title={demo.title}
@@ -30,6 +30,10 @@ export default function DemoProof() {
         lede={demo.lede}
         aside={
           <div className="flex flex-col items-start gap-2">
+            <p className="inline-flex items-center gap-2 border border-lime/40 px-[7px] py-[4px] font-mono text-[10px] leading-none tracking-[0.12em] text-lime uppercase">
+              <span aria-hidden="true" className="inline-block size-[6px] rounded-full bg-lime" />
+              {demo.tag}
+            </p>
             <p className="inline-flex items-start gap-2.5 border border-line-2 bg-window px-3 py-2 font-mono text-[10.5px] leading-[1.5] tracking-[0.08em] text-[#c9d1ce] uppercase">
               <span aria-hidden="true" className="mt-[4px] inline-block size-[7px] shrink-0 border border-subtle" />
               <span>

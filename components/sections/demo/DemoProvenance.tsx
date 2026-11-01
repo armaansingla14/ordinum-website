@@ -1,12 +1,12 @@
 import Link from "next/link";
 import Kicker from "@/components/ui/Kicker";
 import Section from "@/components/ui/Section";
-import { demoPage, home } from "@/lib/content";
+import { demoPage } from "@/lib/content";
 import { PRODUCT_SOURCE } from "@/lib/evidence";
 
 const p = demoPage.provenance;
 
-/** 004 Where every value on /demo comes from, plus a link to the research. */
+/** 004 Where every value in the Nav2 walkthrough comes from, plus a link to its evidence package. */
 export default function DemoProvenance() {
   return (
     <Section id="provenance" variant="charcoal" aria-labelledby="provenance-title" className="py-[64px] md:py-[88px]">
@@ -28,12 +28,12 @@ export default function DemoProvenance() {
               <dd className="break-all text-[#d6dedb]">{PRODUCT_SOURCE.commit}</dd>
             </div>
           </dl>
-          {/* The sage band below carries the founder CTAs; only a research link here. */}
+          {/* The sage band below carries the founder CTAs; only the evidence link here. */}
           <Link
-            href={home.demo.secondaryCta.href}
+            href={p.evidenceLink.href}
             className="mt-6 inline-flex min-h-11 items-center gap-2 font-mono text-[11px] tracking-[0.1em] text-lime uppercase underline decoration-lime/40 underline-offset-4 transition-colors hover:decoration-lime"
           >
-            {home.demo.secondaryCta.label}
+            {p.evidenceLink.label}
             <span aria-hidden="true">→</span>
           </Link>
         </div>

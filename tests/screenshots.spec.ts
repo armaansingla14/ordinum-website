@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { test, type Page } from "@playwright/test";
+import { ROUTES as SITE_ROUTES } from "./routes";
 
 /**
  * Visual review capture, not an assertion suite.
@@ -11,27 +12,30 @@ import { test, type Page } from "@playwright/test";
  *   motion-<page>-full.png                   1440 only
  *   <mode>-terms.png, <mode>-privacy.png, <mode>-404.png
  */
-const ROUTES = [
-  { name: "home", path: "/" },
-  { name: "demo", path: "/demo" },
-  { name: "product", path: "/product" },
-  { name: "technology", path: "/technology" },
-  { name: "research", path: "/research" },
-  { name: "vision", path: "/vision" },
-  { name: "about", path: "/about" },
-  { name: "contact", path: "/contact" },
-] as const;
+/** Every route except the legal pages (captured separately below). Name: path with "/" -> "-". */
+const ALL_ROUTES = SITE_ROUTES.filter((r) => r !== "/terms" && r !== "/privacy").map((p) => ({
+  name: p === "/" ? "home" : p.slice(1).replace(/\//g, "-"),
+  path: p,
+}));
+/** Optional filters: SHOTS_ROUTES=home,products  SHOTS_WIDTHS=1440,375  SHOTS_MODES=reduced  SHOTS_EXTRAS=0 */
+const ONLY_ROUTES = process.env.SHOTS_ROUTES?.split(",").map((x) => x.trim()).filter(Boolean);
+const ROUTES = ONLY_ROUTES ? ALL_ROUTES.filter((r) => ONLY_ROUTES.includes(r.name)) : ALL_ROUTES;
 const OUT = process.env.SHOTS_DIR ?? path.join(process.cwd(), "test-results", "screenshots");
 
 const HEIGHT: Record<number, number> = { 320: 640, 375: 812, 430: 932, 768: 1024, 1024: 768, 1440: 900, 1920: 1080 };
-const WIDTHS = [320, 375, 430, 768, 1024, 1440, 1920] as const;
+const ALL_WIDTHS = [320, 375, 430, 768, 1024, 1440, 1920] as const;
+const WIDTHS = process.env.SHOTS_WIDTHS
+  ? ALL_WIDTHS.filter((w) => process.env.SHOTS_WIDTHS!.split(",").map(Number).includes(w))
+  : ALL_WIDTHS;
 const SECTION_WIDTHS = new Set<number>([1440, 375]);
 const MOTION_WIDTHS = new Set<number>([1440]);
 
-const MODES = [
+const ALL_MODES = [
   { name: "reduced", reducedMotion: "reduce" as const, settle: 300 },
   { name: "motion", reducedMotion: "no-preference" as const, settle: 3000 },
 ];
+const MODES = process.env.SHOTS_MODES ? ALL_MODES.filter((m) => process.env.SHOTS_MODES!.split(",").includes(m.name)) : ALL_MODES;
+const EXTRAS = process.env.SHOTS_EXTRAS !== "0";
 
 async function revealAll(page: Page) {
   await page.evaluate(async () => {
@@ -83,13 +87,15 @@ for (const width of WIDTHS) {
         await page.screenshot({ path: path.join(dir, `${mode.name}-${route.name}-full.png`), fullPage: true });
       }
 
-      for (const legal of ["terms", "privacy"]) {
+      for (const legal of EXTRAS ? ["terms", "privacy"] : []) {
         await page.goto(`/${legal}`, { waitUntil: "networkidle" });
         await page.screenshot({ path: path.join(dir, `${mode.name}-${legal}.png`), fullPage: true });
       }
-      await page.goto("/nope-404", { waitUntil: "networkidle" });
-      await page.waitForTimeout(mode.settle);
-      await page.screenshot({ path: path.join(dir, `${mode.name}-404.png`), fullPage: true });
+      if (EXTRAS) {
+        await page.goto("/nope-404", { waitUntil: "networkidle" });
+        await page.waitForTimeout(mode.settle);
+        await page.screenshot({ path: path.join(dir, `${mode.name}-404.png`), fullPage: true });
+      }
 
       await context.close();
     });

@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { ORDINUM_MARK_PATH, ORDINUM_MARK_VIEWBOX } from "@/components/brand/OrdinumMark";
-import { MATURITY_LABELS, MATURITY_ORDER, hero, platformVision, type Domain, type Maturity } from "@/lib/content";
+import { MATURITY_LABELS, hero, nav, type Maturity, type NavEntry, type NavGroup } from "@/lib/content";
 
 export const alt = `Ordinum: ${hero.titleLine1} ${hero.titleLine2} ${hero.eyebrow}. ${hero.status}.`;
 export const size = { width: 1200, height: 630 };
@@ -49,26 +49,27 @@ async function loadGoogleFont(
 
 const KICKER = hero.eyebrow.toUpperCase();
 const FOOTER_LEFT = "ordinum.org";
-const FOOTER_RIGHT = hero.meta.join(" · ");
+const FOOTER_RIGHT = `${hero.meta[0]} · DEMOS · LABS · EVIDENCE`;
 
 /*
- * Status strip: the real maturity of each platform domain (lib/content.ts platformVision),
- * grouped by the four maturity labels. Scope is always printed next to a built domain so
- * "Built & validated" is never read without "simulation only".
+ * Status strip: the product areas from the nav (lib/content.ts nav, Products group), each with its
+ * real maturity label and scope, plus the roadmap as Planned. Scope is always printed next to a
+ * built area so "Built & validated" is never read without "simulation only".
  */
-const GROUPS = MATURITY_ORDER.map((maturity) => {
-  const domains = (platformVision.domains as readonly Domain[]).filter((d) => d.maturity === maturity);
-  return {
-    maturity,
-    label: MATURITY_LABELS[maturity].toUpperCase(),
-    names: domains.map((d) => d.name.split(/ & | /)[0] ?? d.name).join(" · ").toUpperCase(),
-    scope: domains
-      .map((d) => d.scope)
-      .filter((x): x is string => Boolean(x))
-      .join(" · ")
-      .toUpperCase(),
-  };
-}).filter((g) => g.names.length > 0);
+const PRODUCTS = (nav.entries as readonly NavEntry[]).find((e): e is NavGroup => e.kind === "group" && e.id === "products");
+const GROUPS = (PRODUCTS?.items ?? [])
+  .filter((i) => i.href !== "/products")
+  .map((i) => {
+    const maturity: Maturity = i.maturity ?? "planned";
+    const roadmap = i.href === "/roadmap";
+    return {
+      key: i.href,
+      maturity,
+      label: MATURITY_LABELS[maturity].toUpperCase(),
+      names: (roadmap ? "Firmware · devices · hardware" : i.label).toUpperCase(),
+      scope: (roadmap ? "Roadmap" : (i.maturityNote ?? "")).toUpperCase(),
+    };
+  });
 
 /** Marker per CLAUDE.md: validated solid lime, experimental outlined lime, in progress dashed lime, planned dashed steel. */
 function marker(maturity: Maturity) {
@@ -180,7 +181,7 @@ export default async function OpengraphImage() {
           >
             {GROUPS.map((g, i) => (
               <div
-                key={g.maturity}
+                key={g.key}
                 style={{
                   display: "flex",
                   flexDirection: "column",

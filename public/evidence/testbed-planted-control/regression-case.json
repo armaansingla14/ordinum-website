@@ -1,0 +1,183 @@
+{
+  "compare_result": {
+    "affected": {
+      "anchor": {
+        "conclusive": true,
+        "deterministic": true,
+        "exec_seed": 1,
+        "rerun_inconclusive": null,
+        "rerun_status": "FAIL",
+        "status": "FAIL",
+        "trace_hash": "trc_40f39984af0af8fb",
+        "violated_any": true,
+        "violated_with_match": true
+      },
+      "config_hash": "cfg_23ec6c324e33",
+      "fingerprint": "sha256:1531daf420baf22fe7d76a88f8f3ff7a5ac5364754fb146bbf3eebaa780d3b1e",
+      "inconclusive": 0,
+      "inconclusive_reasons": [],
+      "k": 20,
+      "k_witness": 7,
+      "n": 20,
+      "name": "affected",
+      "overrides": {
+        "variant": "pc_d9c9c8"
+      },
+      "statuses": {
+        "FAIL": 20
+      }
+    },
+    "exec_seeds": [
+      1,
+      2026950165,
+      620030781,
+      2142694675,
+      2017364508,
+      1502285310,
+      837919575,
+      638911033,
+      1645749279,
+      1281825879,
+      1478833001,
+      1214643899,
+      1058998399,
+      1426515869,
+      1654737210,
+      1988873761,
+      1369592103,
+      534838973,
+      2118806583,
+      1623094082
+    ],
+    "fixed": {
+      "anchor": {
+        "conclusive": true,
+        "deterministic": true,
+        "exec_seed": 1,
+        "rerun_inconclusive": null,
+        "rerun_status": "PASS",
+        "status": "PASS",
+        "trace_hash": "trc_ff1551e55d375ca6",
+        "violated_any": false,
+        "violated_with_match": false
+      },
+      "config_hash": "cfg_20e313016aab",
+      "fingerprint": "sha256:750c62c6847853df788303605f24e519e14e88b03faa1bbac27f2ee477ce7e65",
+      "inconclusive": 0,
+      "inconclusive_reasons": [],
+      "k": 0,
+      "k_witness": 0,
+      "n": 20,
+      "name": "fixed",
+      "overrides": {
+        "variant": "safe"
+      },
+      "statuses": {
+        "PASS": 20
+      }
+    },
+    "invariant_id": "estop.integrity",
+    "message": "FIXED: fixed build 0/N with no inconclusive run; affected reproduces. invariant estop.integrity: affected 20/20 conclusive (0 inconclusive), fixed 0/20 conclusive (0 inconclusive) over N=20 shared seeds; rule min_k=1, alpha=0.01, max_inconclusive_frac=0.1; one-sided Fisher p=7.25e-12 (over N distinct exec-seed inputs of a deterministic target; witness match required at the anchor seed 1 only, any witness counted elsewhere); affected with the case's witness: 7/20, the other 13 affected violation(s) of estop.integrity have another witness",
+    "p_value": 7.254444551924844e-12,
+    "rule": {
+      "alpha": 0.01,
+      "exec_seed_is_input": true,
+      "min_k": 1
+    },
+    "verdict": "FIXED"
+  },
+  "config": {
+    "deadline_s": null,
+    "guidance": "generic",
+    "invariants": {
+      "enabled": null
+    },
+    "isolation": null,
+    "label": "m3-failure-to-regression (PLANTED positive control, not a discovery)",
+    "max_mutations": 6,
+    "target": "xsys_lockstep",
+    "target_params": {
+      "variant": "pc_d9c9c8"
+    },
+    "trajectory_len_cap": 200,
+    "version": 2
+  },
+  "config_hash": "cfg_23ec6c324e33",
+  "detail": "command 'c11' actuated causally after the controller latched e-stop 'e0' and before any later reset (t=196)",
+  "exec_seed": 1,
+  "expect_violation": false,
+  "failure_id": "fail_547c8eba1c5c",
+  "invariant_id": "estop.integrity",
+  "match": {
+    "data_key": "key",
+    "equals": "c11"
+  },
+  "min_info": {
+    "executions": 4,
+    "minimized_size": 1,
+    "one_minimal": true,
+    "oracle": "deterministic",
+    "original_size": 2
+  },
+  "minimal_mutation_count": 1,
+  "minimized": true,
+  "original_mutation_count": 2,
+  "scenario": {
+    "base_seed": 1,
+    "mutations": [
+      {
+        "at": 35.0,
+        "kind": "proc_kill",
+        "params": {
+          "comp": "controller",
+          "duration": 116
+        },
+        "target": "",
+        "trigger": "obs:controller:actuated_ok#2"
+      }
+    ],
+    "origin": "minimized",
+    "parent_id": "scn_25df0c1c1f7f"
+  },
+  "severity": "critical",
+  "target_fingerprint": "sha256:1531daf420baf22fe7d76a88f8f3ff7a5ac5364754fb146bbf3eebaa780d3b1e",
+  "verify": {
+    "builds": {
+      "affected": {
+        "variant": "pc_d9c9c8"
+      },
+      "fixed": {
+        "variant": "safe"
+      }
+    },
+    "exec_seeds": [
+      1,
+      2026950165,
+      620030781,
+      2142694675,
+      2017364508,
+      1502285310,
+      837919575,
+      638911033,
+      1645749279,
+      1281825879,
+      1478833001,
+      1214643899,
+      1058998399,
+      1426515869,
+      1654737210,
+      1988873761,
+      1369592103,
+      534838973,
+      2118806583,
+      1623094082
+    ],
+    "mode": "compare",
+    "n": 20,
+    "rule": {
+      "alpha": 0.01,
+      "exec_seed_is_input": true,
+      "min_k": 1
+    }
+  }
+}

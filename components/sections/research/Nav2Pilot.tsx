@@ -66,7 +66,7 @@ export default function Nav2Pilot() {
                 </dl>
                 <blockquote className="mt-5 border-l border-line-2 pl-4 text-[13.5px] leading-[1.6] text-[#c9d1cf]">
                   <p>“{row.reviewQuote}”</p>
-                  <footer className="mt-2 font-mono text-[10px] tracking-[0.08em] text-subtle uppercase">Separate adversarial review</footer>
+                  <footer className="mt-2 font-mono text-[10px] tracking-[0.08em] text-subtle uppercase">Review by separate AI review agents</footer>
                 </blockquote>
                 <span aria-hidden="true" className="min-h-5 flex-1" />
                 <ClassChip classes={nav2.results[i + 1].classes} label={row.label} className="self-start" />

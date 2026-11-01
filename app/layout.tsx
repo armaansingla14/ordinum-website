@@ -34,7 +34,7 @@ const SOCIALS = [site.x, site.instagram, site.linkedinCompany];
  */
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  title: { default: seo.home.title, template: "%s · Ordinum" },
+  title: { default: seo.home.title, template: "%s | Ordinum" },
   description: seo.home.description,
   applicationName: site.name,
   alternates: { canonical: "/" },
@@ -70,7 +70,7 @@ const jsonLd = {
       "@type": "Organization",
       "@id": `${site.url}/#organization`,
       name: site.name,
-      url: site.url,
+      url: `${site.url}/`,
       logo: `${site.url}/icon.png`,
       email: site.email,
       description: seo.organizationDescription,
@@ -83,7 +83,7 @@ const jsonLd = {
       "@type": "WebSite",
       "@id": `${site.url}/#website`,
       name: site.name,
-      url: site.url,
+      url: `${site.url}/`,
       description: seo.home.description,
       publisher: { "@id": `${site.url}/#organization` },
       inLanguage: "en",

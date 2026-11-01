@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Section from "@/components/ui/Section";
-import { demoPage, home, research } from "@/lib/content";
+import { demoPage } from "@/lib/content";
 import { nav2SuccessMismatch as sm } from "@/lib/evidence";
 import { DemoSectionHead, SourceLine } from "./parts";
 import { demoSteps } from "./steps";
@@ -31,13 +31,18 @@ export default function Walkthrough() {
             {wt.classification.title}
           </h3>
           <p className="mt-5 max-w-[620px] text-[15.5px] leading-[1.75] text-muted">{wt.classification.body}</p>
-          <Link
-            href={`${home.demo.secondaryCta.href}#${research.nav2.id}`}
-            className="mt-6 inline-flex min-h-11 items-center gap-2 font-mono text-[11px] tracking-[0.1em] text-lime uppercase underline decoration-lime/40 underline-offset-4 transition-colors hover:decoration-lime"
-          >
-            {home.demo.secondaryCta.label}
-            <span aria-hidden="true">→</span>
-          </Link>
+          <div className="mt-6 flex flex-wrap gap-x-6">
+            {[demoPage.caseStudy, demoPage.pilot].map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="inline-flex min-h-11 items-center gap-2 font-mono text-[11px] tracking-[0.1em] text-lime uppercase underline decoration-lime/40 underline-offset-4 transition-colors hover:decoration-lime"
+              >
+                {l.label}
+                <span aria-hidden="true">→</span>
+              </Link>
+            ))}
+          </div>
           {/* Compact next step for a reader convinced by the walkthrough (the sage band is far below). */}
           <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-line pt-6">
             <Button href={demoPage.midCta.primary.href} icon="→">
@@ -57,7 +62,7 @@ export default function Walkthrough() {
         </div>
         <div className="bg-bg p-6 sm:p-8">
           <ul className="space-y-6">
-            {/* One quote: the adversarial review adds information; the README line restates the box. */}
+            {/* One quote: the AI-agent review adds information; the README line restates the box. */}
             {sm.labelJustification.filter((j) => j.source !== "docs/demo/README.md").map((j) => (
               <li key={j.source}>
                 <blockquote className="border-l border-line-2 pl-4 text-[14px] leading-[1.7] text-[#d6dedb]">

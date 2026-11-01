@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Container from "@/components/ui/Container";
 import Kicker from "@/components/ui/Kicker";
 import Reveal from "@/components/ui/Reveal";
-import { pages, pageOrder, type PageKey } from "@/lib/content";
+import { pages, pageOrder, type PageHeaderCopy, type PageKey } from "@/lib/content";
 
 /**
  * Inner-page hero: mono kicker, one h1 with a muted continuation, lede.
@@ -11,13 +11,18 @@ import { pages, pageOrder, type PageKey } from "@/lib/content";
  */
 export default function PageHeader({
   page,
+  header: override,
   children,
 }: {
-  page: Exclude<PageKey, "contact">;
+  /** A page from lib/content.ts `pages`, or */
+  page?: Exclude<PageKey, "contact">;
+  /** explicit copy, for routes generated from data (Labs articles, evidence packages). */
+  header?: PageHeaderCopy;
   children?: ReactNode;
 }) {
-  const { header } = pages[page];
-  const position = (pageOrder as readonly PageKey[]).indexOf(page);
+  const header: PageHeaderCopy | undefined = override ?? (page ? pages[page].header : undefined);
+  if (!header) throw new Error("PageHeader needs `page` or `header`");
+  const position = page ? (pageOrder as readonly PageKey[]).indexOf(page) : -1;
   const index = position >= 0 ? String(position + 1).padStart(2, "0") : undefined;
 
   return (
@@ -37,7 +42,7 @@ export default function PageHeader({
             className="mt-6 max-w-[1050px] text-[clamp(38px,9.6vw,48px)] font-[650] leading-[1.04] tracking-hero text-balance sm:mt-7 sm:text-[clamp(48px,5.4vw,84px)]"
           >
             <span className="block">{header.title}</span>
-            {"titleMuted" in header && header.titleMuted && (
+            {header.titleMuted && (
               <>
                 {" "}
                 <span className="block text-quiet">{header.titleMuted}</span>

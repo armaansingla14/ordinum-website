@@ -1,0 +1,15 @@
+Ordinum flagship run (PocketBase planted positive control)
+product commit: 768a9b555736a2da693bbeeb92d7fed2e65e2236
+host: WSL2 Ubuntu, 16 vCPU, 7592 MiB
+pocketbase: 0.40.6 sha256 8e9805c9d92c50a4ff2bce97579d13e2ddfa138cab10cf6f9e8f6db8016ffa30
+verify: 2026-11-01T19:14:23Z -> 2026-11-01T19:19:50Z, verify exit=0
+ci: ci exit=0
+
+2167e59ad65cf2a9f3772c0cfacd325d8e9f3fceb047429b69b8601f79ac9ece  <run>/verify.log
+99bdefb8d629d65e5ddc389765e3cb34b9ce77835a278a7118b0ea68a7183ccf  <run>/verify.timing
+73c68e36f7f9e1720606db0b6a9cc0e3ed0d33cf71039b665b55b11b5c7b0dc9  <run>/ci.log
+25de9e9bb4bad637a5cd2008f43f68d587962473b7fd60319bfd477773af60bd  <run>/ci.timing
+3537408a678e276ffd50a3f6bb6bd189a4963469ae7288cb6e92b1173380881d  <repo>/data/campaigns/m14_pocketbase_pc/verify/report.json
+90c695c36ba2f118b7fdc438dd85af95d74be04f350c4158c386283003d56199  <repo>/data/campaigns/m14_pocketbase_pc/verify/report.md
+3f542967f235f009ae05ccdecddc9d1754be1fe5e0a3e0eb6e35ea30c296d2d5  <repo>/data/campaigns/m14_pocketbase_pc/cases/fail_76e6d79bb741.json
+8af2ab34cd69c590269e70da4b09a81269b391280264aa06815ab855c14b5f24  <repo>/data/campaigns/m14_pocketbase_pc/cases/fail_a862e75a4fbb.json

@@ -2,13 +2,17 @@
 
 Marketing site for [ordinum.org](https://ordinum.org). Ordinum builds adversarial testing and verification for systems built from interacting parts. It finds failures that only appear when those systems interact. It is research-stage:
 - The first validated integration is ROS 2 / Nav2 in simulation.
-- An MQTT broker adapter and a four-process cross-system testbed are experimental.
+- PocketBase (software), an agents kit (planted reference fixtures only), the Mosquitto and NanoMQ brokers and a four-process testbed are experimental.
 
 **Pages:**
 - home
-- `/demo`: a step-by-step walkthrough of a real Nav2 run. It is not in the main nav; the hero and calls to action link to it.
-- `/product`, `/technology`, `/research`, `/vision`, `/about`, `/contact`
+- **Products:** `/products` (platform overview, with `#how-it-works` and `#architecture`), `/products/software`, `/products/agents`, `/products/robotics`, `/roadmap`
+- **Demos:** `/demos` (gallery) and `/demos/nav2-walkthrough` (the step-by-step Nav2 run, formerly `/demo`)
+- **Ordinum Labs:** `/labs` and `/labs/[slug]` (typed articles in `lib/labs.ts`)
+- **Evidence packages:** `/evidence/[case]` (manifest in `lib/evidence-packages.ts`; files in `public/evidence/<case>/`)
+- `/security` (operating boundaries), `/about`, `/contact`
 - `/terms` and `/privacy`: interim legal pages (see [Legal pages](#legal-pages))
+- Old URLs (`/product`, `/technology`, `/research`, `/vision`, `/demo`, `/solution`, `/how-it-works`, `/problem`) redirect in one 308 hop (`next.config.ts`).
 
 All copy lives in `lib/content.ts`. See [`CLAUDE.md`](CLAUDE.md) for the project structure, conventions and the rules for technical claims.
 
@@ -41,18 +45,20 @@ Other scripts:
 | `npm run lint`        | Run ESLint                                                      |
 | `npm run typecheck`   | Run `tsc --noEmit`                                              |
 | `npm test`            | Playwright tests against `next start` on port 3000 (build first) |
-| `npm run screenshots` | Full-page and per-section screenshots (`SHOTS_DIR` sets output) |
+| `npm run screenshots` | Full-page and per-section screenshots (`SHOTS_DIR` sets output; `SHOTS_ROUTES`, `SHOTS_WIDTHS`, `SHOTS_MODES`, `SHOTS_EXTRAS=0` filter) |
 
-First Playwright run: `npx playwright install chromium`. If Chromium's system libraries are outside the default path, set `PLAYWRIGHT_CHROMIUM_LIBS` (see `playwright.config.ts`).
+First Playwright run: `npx playwright install chromium`. If Chromium's system libraries are outside the default path, set `PLAYWRIGHT_CHROMIUM_LIBS` (see `playwright.config.ts`). If port 3000 is busy, set `PLAYWRIGHT_PORT`.
 
 **What `npm test` covers:**
-- every route at seven widths from 320 to 1920 px: one `h1`, no console errors, no horizontal overflow
-- navigation, legacy redirects and old `/#section` links
-- canonical URLs and social metadata, the sitemap and robots, the 404 page
-- labels on the contact form
-- the `/demo` steps: present without JavaScript and reachable by keyboard
+- every route (`tests/routes.ts`) at seven widths from 320 to 1920 px: one `h1`, no console errors, no horizontal overflow
+- the nav disclosures (keyboard open, Escape returns focus, outside click and focus-out close, not hover-only) and the mobile accordion
+- every internal link on every route returns 200 without a redirect; old URLs redirect in one hop; old `/#section` links
+- titles (home is exactly "Ordinum", others end " | Ordinum"), canonical URLs, social metadata, JSON-LD, sitemap and robots, the 404 page
+- evidence packages: only published files are linked, and each matches its SHA-256
+- Labs articles (author, date, methods note, evidence links), the `/demos` status while no recording exists
+- labels on the contact form; the Nav2 walkthrough steps without JavaScript and by keyboard
 - a homepage word budget: at most 960 words, which is 60% of the 1,600-word baseline before the focus pass
-- a claims guard (`tests/claims.site.spec.ts`), which fails on withdrawn benchmark numbers and on banned phrasing in rendered pages, metadata and source files
+- a claims guard (`tests/claims.site.spec.ts`), which fails on withdrawn benchmark numbers and on banned phrasing (including "independent review", treasury/M17 numbers, and "Watch the demo" until a recording is published) in rendered pages, metadata and source files
 
 ## Deployment
 
@@ -93,6 +99,8 @@ Do not change their wording without founder approval (ideally after legal review
 ## Evidence and provenance
 
 Technical statements and proof visuals are based on the Ordinum product repository (branch `ordinum-2`). That repository is private and is not linked here.
-- **`FACT_SOURCE` in `lib/content.ts`:** records the commit the site copy was checked against, currently `124dde072` (checked 24 October 2026).
-- **[`lib/evidence.ts`](lib/evidence.ts):** holds data copied from real experiment artifacts at commit `c25ba4f`, which are unchanged at `124dde072`. Its header lists the source files.
-- **Not published:** the original HTML reports and any demo video, until the founder authorizes them separately.
+- **`FACT_SOURCE` in `lib/content.ts`:** facts checked against product head `44284b0`; evidence pinned at the stable checkpoint `768a9b5` (checked 1 November 2026). The research summary in Labs reflects `124dde072`, with updates noted.
+- **`flagship` in `lib/content.ts`:** the PocketBase planted-control run of 1 November 2026 at `768a9b5`. It is always labeled "Controlled positive control — a defect planted in Ordinum's own test harness, not a PocketBase bug".
+- **[`lib/evidence.ts`](lib/evidence.ts):** data copied from real Nav2 and toy artifacts at commit `c25ba4f`, unchanged at `768a9b5`. Its header lists the source files.
+- **Evidence packages:** `lib/evidence-packages.ts` lists the files each `/evidence/<case>` page expects. The files are exported into `public/evidence/<case>/` by a founder-run, founder-authorized script; never copy them by hand. A file is linked only if it exists at build time, with its size and a SHA-256 computed at build; otherwise the page says "Artifact pending publication".
+- **Media:** there is no demo video yet. `demoPage.media` stays disabled, `/demos` shows "Recording in production" on the flagship card, and the CTA is "See Ordinum in action".

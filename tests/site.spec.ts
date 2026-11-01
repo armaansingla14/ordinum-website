@@ -1,22 +1,19 @@
+import { createHash } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { demoWalkthrough, legal, nav, pages, site } from "../lib/content";
+import { AI_METHODS_NOTE, flagshipVideo, demoWalkthrough, legal, nav, pages, site, type NavEntry, type NavGroup } from "../lib/content";
+import { PENDING_LABEL, evidencePackages } from "../lib/evidence-packages";
+import { labsArticles, labsInPreparation } from "../lib/labs";
+import { REDIRECTS, ROUTES } from "./routes";
 
 const WIDTHS = [320, 375, 430, 768, 1024, 1440, 1920] as const;
 const HEIGHT: Record<number, number> = { 320: 640, 375: 812, 430: 932, 768: 1024, 1024: 768, 1440: 900, 1920: 1080 };
 
-const ROUTES = [
-  "/",
-  "/demo",
-  "/product",
-  "/technology",
-  "/research",
-  "/vision",
-  "/about",
-  "/contact",
-  "/terms",
-  "/privacy",
-] as const;
-const NAV = ["/product", "/technology", "/research", "/vision", "/about"] as const;
+const ENTRIES = nav.entries as readonly NavEntry[];
+const GROUPS = ENTRIES.filter((e): e is NavGroup => e.kind === "group");
+const PRODUCTS = GROUPS.find((g) => g.id === "products")!;
+const WALKTHROUGH = "/demos/nav2-walkthrough";
 const FOUNDER_LINKEDIN = ["linkedin.com/in/armaansingla", "linkedin.com/in/aaravsinglaa"] as const;
 
 /**
@@ -81,23 +78,87 @@ for (const width of WIDTHS) {
   });
 }
 
-test("primary nav links open their pages and mark the current one", async ({ page }) => {
+test("primary nav: Products, Demos, Ordinum Labs, Resources, Company in order", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  const hrefs = await page
-    .locator("header nav[aria-label='Primary'] a")
-    .evaluateAll((links) => links.map((a) => a.getAttribute("href") ?? ""));
-  expect(hrefs).toEqual([...NAV]);
-
-  for (const href of hrefs) {
-    await page.locator(`header nav[aria-label='Primary'] a[href='${href}']`).click();
-    await expect(page).toHaveURL(new RegExp(`${href}$`));
-    await expect(page.locator(`header nav[aria-label='Primary'] a[href='${href}']`)).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
-    await expect(page.locator("header nav[aria-label='Primary'] a[aria-current='page']")).toHaveCount(1);
+  const primary = page.locator("header nav[aria-label='Primary']");
+  const top = await primary.locator(":scope > ul > li > a, :scope > ul > li > button").allInnerTexts();
+  expect(top.map((t) => t.trim().toLowerCase())).toEqual(ENTRIES.map((e) => e.label.toLowerCase()));
+  // Plain links go straight to their pages and mark the current one.
+  for (const entry of ENTRIES.filter((e) => e.kind === "link")) {
+    await primary.locator(`a[href='${entry.href}']`).click();
+    await expect(page).toHaveURL(new RegExp(`${entry.href}$`));
+    await expect(primary.locator(`a[href='${entry.href}']`)).toHaveAttribute("aria-current", "page");
     await expect(page.locator("h1")).toHaveCount(1);
+  }
+});
+
+test("Products disclosure: keyboard open, Escape closes and returns focus, not hover-only", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const button = page.locator("header nav[aria-label='Primary'] button", { hasText: PRODUCTS.label });
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+  const panelId = await button.getAttribute("aria-controls");
+  expect(panelId).toBeTruthy();
+  const panel = page.locator(`[id="${panelId}"]`);
+
+  // Hover alone does not open it.
+  await button.hover();
+  await page.waitForTimeout(150);
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+  await expect(panel).toBeHidden();
+
+  // Enter opens; every item has a description and (for products) a maturity label.
+  await button.focus();
+  await page.keyboard.press("Enter");
+  await expect(button).toHaveAttribute("aria-expanded", "true");
+  await expect(panel).toBeVisible();
+  const hrefs = await panel.locator("a").evaluateAll((links) => links.map((a) => a.getAttribute("href") ?? ""));
+  expect(hrefs).toEqual(PRODUCTS.items.map((i) => i.href));
+  for (const item of PRODUCTS.items) {
+    const link = panel.locator(`a[href='${item.href}']`);
+    await expect(link).toContainText(item.description);
+    if (item.maturity) await expect(link).toContainText(/Built & validated|Built, experimental|In progress|Planned/);
+  }
+
+  // Escape closes and returns focus to the button.
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Escape");
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+  await expect(panel).toBeHidden();
+  await expect(button).toBeFocused();
+
+  // Space opens too; a click outside closes.
+  await page.keyboard.press("Space");
+  await expect(button).toHaveAttribute("aria-expanded", "true");
+  await page.mouse.click(700, 700);
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+
+  // Focus leaving the group closes it.
+  await button.click();
+  await expect(panel).toBeVisible();
+  for (let i = 0; i < PRODUCTS.items.length + 1; i++) await page.keyboard.press("Tab");
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+
+  // Following a link closes the panel and marks the item current on the new route.
+  await button.click();
+  await panel.locator("a[href='/products/software']").click();
+  await expect(page).toHaveURL(/\/products\/software$/);
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+  await button.click();
+  await expect(panel.locator("a[href='/products/software']")).toHaveAttribute("aria-current", "page");
+});
+
+test("every nav group opens and lists its destinations", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  for (const group of GROUPS) {
+    const button = page.locator("header nav[aria-label='Primary'] button", { hasText: group.label });
+    await button.click();
+    const panel = page.locator(`[id="${await button.getAttribute("aria-controls")}"]`);
+    const hrefs = await panel.locator("a").evaluateAll((links) => links.map((a) => a.getAttribute("href") ?? ""));
+    expect(hrefs, group.id).toEqual(group.items.map((i) => i.href));
+    await page.keyboard.press("Escape");
   }
 });
 
@@ -112,28 +173,65 @@ test("header primary CTA is 'Talk to us' and leads to /contact", async ({ page }
   await cta.click();
   await expect(page).toHaveURL(/\/contact(#talk)?$/);
   await expect(page.locator(`header a[href='${nav.demo.href}']`)).toHaveAttribute("aria-current", "page");
-  // /demo is reached from the hero and CTAs, not from the primary nav.
-  await expect(page.locator("header nav[aria-label='Primary'] a[href='/demo']")).toHaveCount(0);
 });
 
-test("mobile menu opens, lists the nav and closes with Escape", async ({ page }) => {
+test("mobile menu: accordion sections, focus trap, Escape closes", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/");
-  const toggle = page.getByRole("button", { name: "Open menu" });
-  await toggle.click();
+  await page.getByRole("button", { name: "Open menu" }).click();
   const mobileNav = page.locator("nav[aria-label='Mobile']");
   await expect(mobileNav).toBeVisible();
-  const hrefs = await mobileNav.locator("a").evaluateAll((links) => links.map((a) => a.getAttribute("href") ?? ""));
-  expect(hrefs).toEqual([...NAV]);
+
+  // Top level: direct links plus one accordion button per group, all collapsed on the home page.
+  for (const entry of ENTRIES) {
+    if (entry.kind === "link") await expect(mobileNav.locator(`a[href='${entry.href}']`)).toBeVisible();
+    else await expect(mobileNav.getByRole("button", { name: entry.label })).toHaveAttribute("aria-expanded", "false");
+  }
+
+  const products = mobileNav.getByRole("button", { name: PRODUCTS.label });
+  await products.click();
+  await expect(products).toHaveAttribute("aria-expanded", "true");
+  const section = page.locator(`[id="${await products.getAttribute("aria-controls")}"]`);
+  await expect(section).toBeVisible();
+  const hrefs = await section.locator("a").evaluateAll((links) => links.map((a) => a.getAttribute("href") ?? ""));
+  expect(hrefs).toEqual(PRODUCTS.items.map((i) => i.href));
+  await products.click();
+  await expect(section).toBeHidden();
+
+  // Focus stays inside the toggle + sheet.
+  const sheetId = await page.getByRole("button", { name: "Close menu" }).getAttribute("aria-controls");
+  for (let i = 0; i < 25; i++) {
+    await page.keyboard.press("Tab");
+    const inside = await page.evaluate((id) => {
+      const el = document.activeElement;
+      const sheet = id ? document.getElementById(id) : null;
+      return !!el && (el.getAttribute("aria-controls") === id || !!sheet?.contains(el));
+    }, sheetId);
+    expect(inside, `tab ${i}`).toBe(true);
+  }
+
   await page.keyboard.press("Escape");
   await expect(mobileNav).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Open menu" })).toBeFocused();
 });
 
-test("home hero links to the walkthrough and to the founders", async ({ page }) => {
+test("mobile menu opens the section that owns the current page", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/products/robotics");
+  await page.getByRole("button", { name: "Open menu" }).click();
+  const products = page.locator("nav[aria-label='Mobile']").getByRole("button", { name: PRODUCTS.label });
+  await expect(products).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("nav[aria-label='Mobile'] a[href='/products/robotics']")).toHaveAttribute("aria-current", "page");
+  await page.locator("nav[aria-label='Mobile'] a[href='/products/agents']").click();
+  await expect(page).toHaveURL(/\/products\/agents$/);
+  await expect(page.locator("nav[aria-label='Mobile']")).toHaveCount(0);
+});
+
+test("home hero: 'Watch the demo' -> the flagship recording and 'Talk to us'", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("main a[href='/demo']").first()).toBeVisible();
-  await expect(page.locator("main a[href^='/contact']").first()).toBeVisible();
+  const hero = page.locator("#top");
+  await expect(hero.locator("a[href='/demos#demo-flagship']")).toContainText("Watch the demo");
+  await expect(hero.locator("a[href='/contact#talk']")).toContainText("Talk to us");
 });
 
 test("every same-page anchor resolves to an element id", async ({ page }) => {
@@ -146,6 +244,24 @@ test("every same-page anchor resolves to an element id", async ({ page }) => {
       return Array.from(new Set(hrefs)).filter((id) => !document.getElementById(id));
     });
     expect(missing, route).toEqual([]);
+  }
+});
+
+test("no internal link points at a missing or redirecting route", async ({ page, request }) => {
+  const targets = new Map<string, string>();
+  for (const route of ROUTES) {
+    await page.goto(route);
+    const hrefs = await page.locator("a[href^='/']").evaluateAll((links) => links.map((a) => a.getAttribute("href") ?? ""));
+    for (const href of hrefs) {
+      if (href.startsWith("//")) continue;
+      const pathOnly = href.split("#")[0].split("?")[0] || "/";
+      if (!targets.has(pathOnly)) targets.set(pathOnly, route);
+    }
+  }
+  expect(targets.size).toBeGreaterThanOrEqual(ROUTES.length - 2);
+  for (const [target, from] of targets) {
+    const res = await request.get(target, { maxRedirects: 0 });
+    expect(res.status(), `${target} (linked from ${from})`).toBe(200);
   }
 });
 
@@ -165,6 +281,18 @@ test("cross-page deep links land on an existing id", async ({ page }) => {
   }
 });
 
+test("titles: home is exactly 'Ordinum'; every other page ends ' | Ordinum'", async ({ page }) => {
+  for (const route of ROUTES) {
+    await page.goto(route);
+    const title = await page.title();
+    if (route === "/") expect(title).toBe("Ordinum");
+    else {
+      expect(title, route).toMatch(/ \| Ordinum$/);
+      expect(title, route).not.toBe(" | Ordinum");
+    }
+  }
+});
+
 test("every page has its own canonical URL and social metadata", async ({ page }) => {
   for (const route of ROUTES) {
     await page.goto(route);
@@ -175,65 +303,146 @@ test("every page has its own canonical URL and social metadata", async ({ page }
       const content = await page.locator(`meta[property='${prop}']`).first().getAttribute("content");
       expect(content, `${route} ${prop}`).toBeTruthy();
     }
+    await expect(page.locator("meta[property='og:site_name']"), route).toHaveAttribute("content", "Ordinum");
     await expect(page.locator("meta[name='twitter:card']"), route).toHaveAttribute("content", "summary_large_image");
   }
   // Inner pages must not inherit the home page's social title.
   await page.goto("/");
   const homeOg = await page.locator("meta[property='og:title']").getAttribute("content");
-  await page.goto("/research");
+  await page.goto("/labs");
   expect(await page.locator("meta[property='og:title']").getAttribute("content")).not.toBe(homeOg);
 });
 
-test("JSON-LD names the organization and both co-founders", async ({ page }) => {
+test("JSON-LD: one Organization + WebSite graph, both co-founders, no ordinum.ai", async ({ page }) => {
   await page.goto("/");
-  const raw = await page.locator("script[type='application/ld+json']").first().textContent();
-  const data = JSON.parse(raw ?? "{}") as { "@graph": { "@type": string; founder?: { name: string }[] }[] };
+  const scripts = page.locator("script[type='application/ld+json']");
+  await expect(scripts).toHaveCount(1);
+  const raw = (await scripts.first().textContent()) ?? "{}";
+  expect(raw).not.toContain("ordinum.ai");
+  const data = JSON.parse(raw) as { "@graph": { "@type": string; url?: string; founder?: { name: string }[] }[] };
+  expect(data["@graph"].map((n) => n["@type"]).sort()).toEqual(["Organization", "WebSite"]);
   const org = data["@graph"].find((n) => n["@type"] === "Organization");
-  expect(org).toBeTruthy();
+  expect(org?.url).toBe(`${site.url}/`);
   expect((org?.founder ?? []).map((f) => f.name).sort()).toEqual(["Aarav Singla", "Armaan Singla"]);
 });
 
-test("sitemap lists every public page; robots points at it", async ({ request }) => {
+test("sitemap lists every public page and no redirected URL; robots points at it", async ({ request }) => {
   const xml = await (await request.get("/sitemap.xml")).text();
   for (const route of ROUTES) {
     const url = route === "/" ? site.url : `${site.url}${route}`;
     expect(xml, route).toContain(`<loc>${url}</loc>`);
   }
+  for (const [from] of REDIRECTS) {
+    if (from === "/problem") continue;
+    expect(xml, from).not.toContain(`<loc>${site.url}${from}</loc>`);
+  }
   const robots = await (await request.get("/robots.txt")).text();
   expect(robots).toContain(`${site.url}/sitemap.xml`);
 });
 
-test("legacy routes redirect to their new pages", async ({ request }) => {
-  for (const [from, to] of [
-    ["/solution", "/product"],
-    ["/how-it-works", "/technology"],
-    ["/problem", "/#problem"],
-  ] as const) {
+test("old routes redirect in one hop to their final pages", async ({ request }) => {
+  for (const [from, to] of REDIRECTS) {
     const res = await request.get(from, { maxRedirects: 0 });
-    expect([301, 307, 308]).toContain(res.status());
-    expect(res.headers()["location"]).toBe(to);
+    expect(res.status(), from).toBe(308);
+    expect(res.headers()["location"], from).toBe(to);
+    const next = await request.get(to.split("#")[0], { maxRedirects: 0 });
+    expect(next.status(), `${from} -> ${to}`).toBe(200);
   }
 });
 
 test("old single-page hash links forward to the new pages", async ({ page }) => {
   for (const [hash, url] of [
-    ["research", /\/research$/],
+    ["research", /\/labs\/research-summary$/],
     ["contact", /\/contact$/],
-    ["product", /\/product$/],
-    ["why-ordinum", /\/product$/],
-    ["technology", /\/technology$/],
-    ["stack", /\/technology#architecture$/],
-    ["vision", /\/vision$/],
-    ["why-now", /\/vision$/],
+    ["product", /\/products$/],
+    ["why-ordinum", /\/products$/],
+    ["technology", /\/products#architecture$/],
+    ["stack", /\/products#architecture$/],
+    ["vision", /\/roadmap$/],
+    ["why-now", /\/roadmap#why-now$/],
     ["about", /\/about$/],
   ] as const) {
     await page.goto(`/#${hash}`);
     await expect(page, hash).toHaveURL(url);
   }
-  // The legacy /problem redirect lands on the home Problem section and stays there.
-  await page.goto("/problem");
-  await expect(page).toHaveURL(/\/#problem$/);
-  await expect(page.locator("#problem")).toHaveCount(1);
+});
+
+test("evidence packages link only published files, and each matches its SHA-256", async ({ page, request }) => {
+  for (const pkg of evidencePackages) {
+    await page.goto(`/evidence/${pkg.slug}`);
+    const main = page.locator("main");
+    await expect(main).toContainText(pkg.label);
+    for (const file of pkg.files) {
+      const local = path.resolve(__dirname, "..", "public", "evidence", pkg.slug, file.name);
+      const link = main.locator(`a[href='/evidence/${pkg.slug}/${file.name}']`);
+      if (fs.existsSync(local)) {
+        await expect(link, file.name).toHaveCount(1);
+        const res = await request.get(`/evidence/${pkg.slug}/${file.name}`);
+        expect(res.status(), file.name).toBe(200);
+        const sha = createHash("sha256").update(await res.body()).digest("hex");
+        await expect(main, file.name).toContainText(sha);
+      } else {
+        await expect(link, file.name).toHaveCount(0);
+      }
+    }
+    const missing = pkg.files.filter((f) => !fs.existsSync(path.resolve(__dirname, "..", "public", "evidence", pkg.slug, f.name)));
+    await expect(main.locator("[data-pending]")).toHaveCount(missing.length);
+    if (missing.length) await expect(main).toContainText(PENDING_LABEL);
+  }
+});
+
+test("/demos: flagship card plays the recorded run with captions, labeled before playback", async ({ page, request }) => {
+  await page.goto("/demos");
+  const main = page.locator("main");
+  const card = main.locator("#demo-flagship");
+  await expect(card).toContainText("not a PocketBase bug");
+  await expect(card).toContainText("10/10 vs 0/10");
+  await expect(card).toContainText(flagshipVideo.duration);
+  const video = card.locator("video");
+  await expect(video).toHaveCount(1);
+  await expect(video).toHaveAttribute("preload", "none");
+  await expect(video).not.toHaveAttribute("autoplay", /.*/);
+  await expect(card.locator("track[kind='captions']")).toHaveAttribute("src", flagshipVideo.captions);
+  for (const src of [flagshipVideo.mp4, flagshipVideo.webm, flagshipVideo.poster, flagshipVideo.captions, flagshipVideo.transcript]) {
+    const res = await request.get(src);
+    expect(res.status(), src).toBe(200);
+  }
+  const vtt = await (await request.get(flagshipVideo.captions)).text();
+  expect(vtt.startsWith("WEBVTT")).toBe(true);
+  // The recording actually decodes and has the advertised length.
+  const duration = await video.evaluate(async (el: HTMLVideoElement) => {
+    el.preload = "metadata";
+    el.load();
+    await new Promise((r) => el.addEventListener("loadedmetadata", r, { once: true }));
+    return el.duration;
+  });
+  expect(duration).toBeGreaterThan(90);
+  expect(duration).toBeLessThan(100);
+  await expect(main.locator(`a[href='${WALKTHROUGH}']`).first()).toBeVisible();
+  await expect(main.locator("a[href='/evidence/testbed-planted-control']").first()).toBeVisible();
+});
+
+test("Labs: articles carry author, date, methods note and evidence links; in-preparation titles have no link", async ({ page }) => {
+  for (const article of labsArticles) {
+    await page.goto(`/labs/${article.slug}`);
+    const main = page.locator("main");
+    await expect(page.locator("h1")).toContainText(article.title);
+    await expect(main).toContainText("Armaan Singla");
+    await expect(main).toContainText(article.date);
+    await expect(main).toContainText(AI_METHODS_NOTE);
+    for (const id of ["leading-result", "question", "system", "method", "results", "article-limitations", "related", "reproduce", "corrections", "methods-note"]) {
+      await expect(main.locator(`[id="${id}"]`), `${article.slug} #${id}`).toHaveCount(1);
+    }
+    expect(article.reproducibility.some((l) => l.href.startsWith("/evidence/"))).toBe(true);
+  }
+  await page.goto("/labs/research-summary");
+  await expect(page.locator("[data-withdrawn]")).toHaveCount(1);
+  await page.goto("/labs");
+  for (const entry of labsInPreparation) {
+    const card = page.locator("#in-preparation li", { hasText: entry.title });
+    await expect(card).toContainText("In preparation");
+    await expect(card.locator("a")).toHaveCount(0);
+  }
 });
 
 test("unknown route returns 404", async ({ page }) => {
@@ -296,20 +505,20 @@ test("contact form: labelled short fields, optional details, privacy link", asyn
   await expect(page.locator("#talk")).toHaveCount(1);
 });
 
-test.describe("/demo walkthrough without JavaScript", () => {
+test.describe("Nav2 walkthrough without JavaScript", () => {
   test.use({ javaScriptEnabled: false });
 
   test("every step and the evidence label are in the static HTML", async ({ page }) => {
-    await page.goto("/demo");
+    await page.goto(WALKTHROUGH);
     const text = (await page.locator("main").textContent()) ?? "";
     for (const step of demoWalkthrough.steps) expect(text, step.id).toContain(step.label);
     expect(text).toContain("not a Nav2 defect");
   });
 });
 
-test("/demo walkthrough steps are keyboard-reachable", async ({ page }) => {
+test("Nav2 walkthrough steps are keyboard-reachable", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/demo", { waitUntil: "networkidle" });
+  await page.goto(WALKTHROUGH, { waitUntil: "networkidle" });
   const labels = demoWalkthrough.steps.map((s) => s.label);
 
   /** The single step label named by the focused element (inside main), if any. */

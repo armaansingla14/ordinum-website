@@ -1,0 +1,1317 @@
+{
+  "campaign": {
+    "classes_confirmed": [
+      "model_agreement",
+      "read_authz"
+    ],
+    "classes_found": [
+      "model_agreement",
+      "read_authz"
+    ],
+    "config_hash": "cfg_38da749fbf64",
+    "confirm_executions": 90,
+    "diagnostics": {},
+    "executions": 100,
+    "exercise": {
+      "declared": true,
+      "error_executions": 0,
+      "error_reasons": {},
+      "hook": {
+        "declared_by": "module ordinum.targets.pocketbase.exercise",
+        "file": "<repo>/src/ordinum/targets/pocketbase/exercise.py",
+        "function": "ordinum.targets.pocketbase.exercise:exercised",
+        "sha256": "eba22962ac7027681f1b9ac6cb2c5131049dfbd6a9b901e235cf8bdea22ff6b5"
+      },
+      "load_error": null
+    },
+    "fingerprint": "pocketbase@0.40.6:sha256:a632f8779884c9335c3c2716:pc_stale_read_cache",
+    "inconclusive_executions": 0,
+    "inconclusive_fraction": 0.0,
+    "infra_errors": 0,
+    "infra_reasons": {},
+    "max_inconclusive_frac": null,
+    "properties": {
+      "ack_consistency": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 0
+      },
+      "model_agreement": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 100
+      },
+      "no_lost_update": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 0
+      },
+      "read_authz": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 6
+      },
+      "realtime_authz": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 0
+      },
+      "restart_durability": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 0
+      },
+      "stale_token_rejected": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 0
+      },
+      "write_authz": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 0
+      }
+    },
+    "property_scope": {
+      "ack_consistency": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 100,
+          "exercised_complete": 100,
+          "known": 100
+        },
+        "weak": false
+      },
+      "model_agreement": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 100,
+          "exercised_complete": 100,
+          "known": 100
+        },
+        "weak": false
+      },
+      "no_lost_update": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 1,
+          "exercised_complete": 1,
+          "known": 100
+        },
+        "weak": false
+      },
+      "read_authz": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 100,
+          "exercised_complete": 100,
+          "known": 100
+        },
+        "weak": false
+      },
+      "realtime_authz": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 100,
+          "exercised_complete": 100,
+          "known": 100
+        },
+        "weak": false
+      },
+      "restart_durability": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 22,
+          "exercised_complete": 22,
+          "known": 100
+        },
+        "weak": false
+      },
+      "stale_token_rejected": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 26,
+          "exercised_complete": 26,
+          "known": 100
+        },
+        "weak": false
+      },
+      "write_authz": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 100,
+          "exercised_complete": 100,
+          "known": 100
+        },
+        "weak": false
+      }
+    },
+    "statuses": {
+      "FAIL": 100
+    },
+    "wall_s": 97.165,
+    "weak": false,
+    "weak_reasons": []
+  },
+  "cases": [
+    "<repo>/data/campaigns/m14_pocketbase_pc/cases/fail_76e6d79bb741.json",
+    "<repo>/data/campaigns/m14_pocketbase_pc/cases/fail_a862e75a4fbb.json"
+  ],
+  "cases_dir": "<repo>/data/campaigns/m14_pocketbase_pc/cases",
+  "ci": {
+    "cases": [
+      "<repo>/data/campaigns/m14_pocketbase_pc/cases"
+    ],
+    "config": "<repo>/examples/pocketbase/ordinum.pc.toml",
+    "gates_written_cases": true
+  },
+  "evidence_contract": {
+    "completion": {
+      "event": "harness:end",
+      "statuses": [
+        "DONE"
+      ],
+      "summary": {}
+    },
+    "declared": true,
+    "error": null,
+    "lint": []
+  },
+  "evidence_scope": "completeness and audit_trace evaluated on the witness trace(s) only; campaign executions are judged per property by the trusted interpreter",
+  "exercise": {
+    "declared": {
+      "configured": true,
+      "fixed": true
+    },
+    "declared_note": "exercise is adapter-declared (the target's exercise hook): a count is only as good as that declaration",
+    "note": null,
+    "required": [
+      "read_authz",
+      "model_agreement"
+    ],
+    "required_source": "--require-exercise"
+  },
+  "exercise_measured": true,
+  "exercise_note": null,
+  "exit_code": 0,
+  "findings": [
+    {
+      "affected_components": {
+        "fault_events": [],
+        "fault_targets": [],
+        "violation_evidence": [
+          "db:state",
+          "harness:req"
+        ]
+      },
+      "build": "configured",
+      "build_params": {
+        "realtime": true,
+        "steps": 40,
+        "variant": "pc_stale_read_cache"
+      },
+      "case": {
+        "expect_violation": false,
+        "kind": "fix_verification",
+        "path": "<repo>/data/campaigns/m14_pocketbase_pc/cases/fail_76e6d79bb741.json",
+        "written": true
+      },
+      "compare": {
+        "affected": {
+          "config_hash": "cfg_38da749fbf64",
+          "fingerprint": "pocketbase@0.40.6:sha256:a632f8779884c9335c3c2716:pc_stale_read_cache",
+          "inconclusive": 0,
+          "inconclusive_reasons": [],
+          "k": 10,
+          "n": 10,
+          "name": "affected",
+          "overrides": {
+            "variant": "pc_stale_read_cache"
+          },
+          "statuses": {
+            "FAIL": 10
+          }
+        },
+        "exec_seeds": [
+          2060470302,
+          693665439,
+          1287016046,
+          169759654,
+          535827130,
+          850018950,
+          169504061,
+          2060745581,
+          590127572,
+          992709597
+        ],
+        "fixed": {
+          "config_hash": "cfg_ee4444146a66",
+          "fingerprint": "pocketbase@0.40.6:sha256:ea9238f07449e4e810e03675:safe",
+          "inconclusive": 0,
+          "inconclusive_reasons": [],
+          "k": 0,
+          "n": 10,
+          "name": "fixed",
+          "overrides": {
+            "variant": "safe"
+          },
+          "statuses": {
+            "PASS": 10
+          }
+        },
+        "invariant_id": "model_agreement",
+        "message": "FIXED: fixed build 0/N with no inconclusive run; affected reproduces. invariant model_agreement: affected 10/10 conclusive (0 inconclusive), fixed 0/10 conclusive (0 inconclusive) over N=10 shared seeds; rule min_k=1, alpha=0.01, max_inconclusive_frac=0.1; one-sided Fisher p=5.41e-06",
+        "p_value": 5.412544112234515e-06,
+        "rule": {
+          "alpha": 0.01,
+          "min_k": 1
+        },
+        "verdict": "FIXED"
+      },
+      "confirmation": {
+        "operation": "confirm_witness",
+        "verdict": "CONFIRMED",
+        "witnesses": [
+          {
+            "discovered_at_exec": 0,
+            "faults": [],
+            "one_minimal": true,
+            "repro": [
+              10,
+              10
+            ],
+            "verdict": "CONFIRMED"
+          },
+          {
+            "discovered_at_exec": 1,
+            "faults": [],
+            "one_minimal": true,
+            "repro": [
+              10,
+              10
+            ],
+            "verdict": "CONFIRMED"
+          },
+          {
+            "discovered_at_exec": 2,
+            "faults": [],
+            "one_minimal": true,
+            "repro": [
+              10,
+              10
+            ],
+            "verdict": "CONFIRMED"
+          }
+        ]
+      },
+      "description": "An operation the stored rule allows is not refused (over-restriction; low severity: usually a reference-model gap, not a security defect).",
+      "discovered_scenario": {
+        "base_seed": 1,
+        "faults": 0,
+        "schedule": []
+      },
+      "evidence": {
+        "audit_trace": [],
+        "channel": "truth (harness-recorded, not the system's own reports)",
+        "completeness": "COMPLETE",
+        "contract": true,
+        "inconclusive_when": [
+          "the database cannot be read after an operation: INFRA_ERROR (episode not judged)",
+          "a stored rule text the reference model does not know: UNRESOLVED",
+          "an operation in a concurrent group that depends on another op of the same group: not judged (counted as racy_unjudged), never PASS evidence for that op",
+          "a realtime subscription made before its token was revoked: delivery afterwards is a documented-behaviour gap (counted rt_after_revoke_spec_question), not a verdict",
+          "an episode without the harness:end marker or with a status other than DONE: UNRESOLVED",
+          "M16 concurrency oracle: a concurrent window whose stored state is explained only if an op with an unknown outcome (no status, 5xx) applied, or with no database read after it: incomplete_evidence (UNRESOLVED), never PASS or FAIL",
+          "M16 rules_enforced_as_stored: a rule change without a conclusive enforcement probe (target param concurrency_oracle off, rule text unknown to the model, probe answer not allow/deny, or a response shape other than the measured ones) or whose probes changed the modelled database columns: UNRESOLVED",
+          "M16 write_authz_under_rule_change: a write racing a rule change that some candidate rule texts allow and others do not (or whose actor's record also races): UNRESOLVED"
+        ],
+        "outcome_counts": {
+          "admin_refused:a_member": 2,
+          "pc_cache_hit": 5,
+          "reach:read": 14,
+          "reach:rt_event_judged": 19,
+          "reach:write_allowed": 8,
+          "reach:write_forbidden": 10
+        },
+        "scope": "witness trace only",
+        "trace": "data/runs/run_cab843784bd7.jsonl",
+        "trace_status": "DONE",
+        "truth_events": 114
+      },
+      "exec_seed": 1,
+      "failure_id": "fail_76e6d79bb741",
+      "fix_verified": true,
+      "invariant_id": "model_agreement",
+      "match": {
+        "data_key": "witness",
+        "equals": "list"
+      },
+      "minimization": {
+        "executions": 3,
+        "minimized": true,
+        "minimized_size": 0,
+        "one_minimal": true,
+        "original_size": 0,
+        "status": "minimized"
+      },
+      "observed": "list by ucarol000000000 omitted allowed ['dnew00000000020', 'dnew00000000024'] (status 200)",
+      "onset_t": 25.0,
+      "replay": {
+        "exact_seed": false,
+        "inconclusive": 0,
+        "infra": 0,
+        "k": 5,
+        "n": 5,
+        "operation": "replay_fixed_input",
+        "reasons": [],
+        "reference_trace_hash": null,
+        "seed_semantics": "nondeterministic",
+        "status": "FAIL",
+        "summary": "replay_fixed_input: CONFIRMED (model_agreement: 5/5; repeated trials of the same scenario (the seed draws only the noise))",
+        "unresolved": 0,
+        "verdict": "CONFIRMED"
+      },
+      "scenario": {
+        "base_seed": 1,
+        "faults": 0,
+        "schedule": []
+      },
+      "severity": "low",
+      "status": "FIXED"
+    },
+    {
+      "affected_components": {
+        "fault_events": [
+          "fault"
+        ],
+        "fault_targets": [
+          "policy"
+        ],
+        "violation_evidence": [
+          "db:state",
+          "harness:req"
+        ]
+      },
+      "build": "configured",
+      "build_params": {
+        "realtime": true,
+        "steps": 40,
+        "variant": "pc_stale_read_cache"
+      },
+      "case": {
+        "expect_violation": false,
+        "kind": "fix_verification",
+        "path": "<repo>/data/campaigns/m14_pocketbase_pc/cases/fail_a862e75a4fbb.json",
+        "written": true
+      },
+      "compare": {
+        "affected": {
+          "config_hash": "cfg_38da749fbf64",
+          "fingerprint": "pocketbase@0.40.6:sha256:a632f8779884c9335c3c2716:pc_stale_read_cache",
+          "inconclusive": 0,
+          "inconclusive_reasons": [],
+          "k": 10,
+          "n": 10,
+          "name": "affected",
+          "overrides": {
+            "variant": "pc_stale_read_cache"
+          },
+          "statuses": {
+            "FAIL": 10
+          }
+        },
+        "exec_seeds": [
+          2080954493,
+          1128377948,
+          660032228,
+          824315809,
+          481248734,
+          940847892,
+          1397816166,
+          2129442744,
+          1943916397,
+          1947388634
+        ],
+        "fixed": {
+          "config_hash": "cfg_ee4444146a66",
+          "fingerprint": "pocketbase@0.40.6:sha256:ea9238f07449e4e810e03675:safe",
+          "inconclusive": 0,
+          "inconclusive_reasons": [],
+          "k": 0,
+          "n": 10,
+          "name": "fixed",
+          "overrides": {
+            "variant": "safe"
+          },
+          "statuses": {
+            "PASS": 10
+          }
+        },
+        "invariant_id": "read_authz",
+        "message": "FIXED: fixed build 0/N with no inconclusive run; affected reproduces. invariant read_authz: affected 10/10 conclusive (0 inconclusive), fixed 0/10 conclusive (0 inconclusive) over N=10 shared seeds; rule min_k=1, alpha=0.01, max_inconclusive_frac=0.1; one-sided Fisher p=5.41e-06",
+        "p_value": 5.412544112234515e-06,
+        "rule": {
+          "alpha": 0.01,
+          "min_k": 1
+        },
+        "verdict": "FIXED"
+      },
+      "confirmation": {
+        "operation": "confirm_witness",
+        "verdict": "CONFIRMED",
+        "witnesses": [
+          {
+            "discovered_at_exec": 45,
+            "faults": [
+              "rule_change"
+            ],
+            "one_minimal": true,
+            "repro": [
+              10,
+              10
+            ],
+            "verdict": "CONFIRMED"
+          },
+          {
+            "discovered_at_exec": 34,
+            "faults": [
+              "rule_change"
+            ],
+            "one_minimal": true,
+            "repro": [
+              10,
+              10
+            ],
+            "verdict": "CONFIRMED"
+          }
+        ]
+      },
+      "description": "A list/view response with a valid token contains only records the stored list/view rule allows that user to see in the committed state.",
+      "discovered_scenario": {
+        "base_seed": 1,
+        "faults": 1,
+        "schedule": [
+          {
+            "at": 12.0,
+            "kind": "rule_change",
+            "params": {
+              "which": 1
+            },
+            "target": "policy"
+          }
+        ]
+      },
+      "evidence": {
+        "audit_trace": [],
+        "channel": "truth (harness-recorded, not the system's own reports)",
+        "completeness": "COMPLETE",
+        "contract": true,
+        "inconclusive_when": [
+          "the database cannot be read after an operation: INFRA_ERROR (episode not judged)",
+          "a stored rule text the reference model does not know: UNRESOLVED",
+          "an operation in a concurrent group that depends on another op of the same group: not judged (counted as racy_unjudged), never PASS evidence for that op",
+          "a realtime subscription made before its token was revoked: delivery afterwards is a documented-behaviour gap (counted rt_after_revoke_spec_question), not a verdict",
+          "an episode without the harness:end marker or with a status other than DONE: UNRESOLVED",
+          "M16 concurrency oracle: a concurrent window whose stored state is explained only if an op with an unknown outcome (no status, 5xx) applied, or with no database read after it: incomplete_evidence (UNRESOLVED), never PASS or FAIL",
+          "M16 rules_enforced_as_stored: a rule change without a conclusive enforcement probe (target param concurrency_oracle off, rule text unknown to the model, probe answer not allow/deny, or a response shape other than the measured ones) or whose probes changed the modelled database columns: UNRESOLVED",
+          "M16 write_authz_under_rule_change: a write racing a rule change that some candidate rule texts allow and others do not (or whose actor's record also races): UNRESOLVED"
+        ],
+        "outcome_counts": {
+          "admin_refused:a_member": 2,
+          "pc_cache_hit": 5,
+          "reach:read": 14,
+          "reach:rt_event_judged": 13,
+          "reach:write_allowed": 8,
+          "reach:write_forbidden": 10
+        },
+        "scope": "witness trace only",
+        "trace": "data/runs/run_b22f36dfbfcd.jsonl",
+        "trace_status": "DONE",
+        "truth_events": 112
+      },
+      "exec_seed": 290706733,
+      "failure_id": "fail_a862e75a4fbb",
+      "fix_verified": true,
+      "invariant_id": "read_authz",
+      "match": {
+        "data_key": "witness",
+        "equals": "list"
+      },
+      "minimization": {
+        "executions": 11,
+        "minimized": true,
+        "minimized_size": 1,
+        "one_minimal": true,
+        "original_size": 1,
+        "status": "minimized"
+      },
+      "observed": "list by ualice000000000 (valid token) returned ['dinit0000000002', 'dnew00000000004'], not allowed by the stored listRule",
+      "onset_t": 26.0,
+      "replay": {
+        "exact_seed": false,
+        "inconclusive": 0,
+        "infra": 0,
+        "k": 5,
+        "n": 5,
+        "operation": "replay_fixed_input",
+        "reasons": [],
+        "reference_trace_hash": null,
+        "seed_semantics": "nondeterministic",
+        "status": "FAIL",
+        "summary": "replay_fixed_input: CONFIRMED (read_authz: 5/5; repeated trials of the same scenario (the seed draws only the noise))",
+        "unresolved": 0,
+        "verdict": "CONFIRMED"
+      },
+      "scenario": {
+        "base_seed": 1,
+        "faults": 1,
+        "schedule": [
+          {
+            "at": 12.0,
+            "kind": "rule_change",
+            "params": {
+              "which": 1
+            },
+            "target": "policy"
+          }
+        ]
+      },
+      "severity": "critical",
+      "status": "FIXED"
+    }
+  ],
+  "fixed_campaign": {
+    "classes_confirmed": [],
+    "classes_found": [],
+    "config_hash": "cfg_ee4444146a66",
+    "confirm_executions": 0,
+    "diagnostics": {},
+    "executions": 100,
+    "exercise": {
+      "declared": true,
+      "error_executions": 0,
+      "error_reasons": {},
+      "hook": {
+        "declared_by": "module ordinum.targets.pocketbase.exercise",
+        "file": "<repo>/src/ordinum/targets/pocketbase/exercise.py",
+        "function": "ordinum.targets.pocketbase.exercise:exercised",
+        "sha256": "eba22962ac7027681f1b9ac6cb2c5131049dfbd6a9b901e235cf8bdea22ff6b5"
+      },
+      "load_error": null
+    },
+    "fingerprint": "pocketbase@0.40.6:sha256:ea9238f07449e4e810e03675:safe",
+    "inconclusive_executions": 0,
+    "inconclusive_fraction": 0.0,
+    "infra_errors": 0,
+    "infra_reasons": {},
+    "max_inconclusive_frac": null,
+    "properties": {
+      "ack_consistency": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 0
+      },
+      "model_agreement": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 0
+      },
+      "no_lost_update": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 0
+      },
+      "read_authz": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 0
+      },
+      "realtime_authz": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 0
+      },
+      "restart_durability": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 0
+      },
+      "stale_token_rejected": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 0
+      },
+      "write_authz": {
+        "executions": 100,
+        "inconclusive": 0,
+        "inconclusive_reasons": {},
+        "judged": 100,
+        "violated": 0
+      }
+    },
+    "property_scope": {
+      "ack_consistency": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 100,
+          "exercised_complete": 100,
+          "known": 100
+        },
+        "weak": false
+      },
+      "model_agreement": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 100,
+          "exercised_complete": 100,
+          "known": 100
+        },
+        "weak": false
+      },
+      "no_lost_update": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 1,
+          "exercised_complete": 1,
+          "known": 100
+        },
+        "weak": false
+      },
+      "read_authz": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 100,
+          "exercised_complete": 100,
+          "known": 100
+        },
+        "weak": false
+      },
+      "realtime_authz": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 100,
+          "exercised_complete": 100,
+          "known": 100
+        },
+        "weak": false
+      },
+      "restart_durability": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 22,
+          "exercised_complete": 22,
+          "known": 100
+        },
+        "weak": false
+      },
+      "stale_token_rejected": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 26,
+          "exercised_complete": 26,
+          "known": 100
+        },
+        "weak": false
+      },
+      "write_authz": {
+        "evidence": {
+          "complete": 100,
+          "incomplete": 0,
+          "unavailable": 0
+        },
+        "exercise": {
+          "exercised": 100,
+          "exercised_complete": 100,
+          "known": 100
+        },
+        "weak": false
+      }
+    },
+    "statuses": {
+      "PASS": 100
+    },
+    "wall_s": 90.11,
+    "weak": false,
+    "weak_reasons": []
+  },
+  "headline": [
+    "configured build {\"realtime\": true, \"steps\": 40, \"variant\": \"pc_stale_read_cache\"}: 2 confirmed violation(s)",
+    "fixed build {\"variant\": \"safe\"}: FIXED for these case(s) and no violation found in its own campaign of 100 executions"
+  ],
+  "oracle_note": null,
+  "ordinum_verify": 1,
+  "out_dir": "<repo>/data/campaigns/m14_pocketbase_pc/verify",
+  "property_outcomes": [
+    {
+      "artifacts": [
+        {
+          "build": "configured",
+          "failure_id": "fail_a862e75a4fbb",
+          "fix_verified": true,
+          "minimized": "1 -> 1 fault(s)",
+          "minimized_scenario": {
+            "base_seed": 1,
+            "faults": 1,
+            "schedule": [
+              {
+                "at": 12.0,
+                "kind": "rule_change",
+                "params": {
+                  "which": 1
+                },
+                "target": "policy"
+              }
+            ]
+          },
+          "regression_case": "<repo>/data/campaigns/m14_pocketbase_pc/cases/fail_a862e75a4fbb.json",
+          "regression_case_kind": "fix_verification",
+          "regression_case_written": true,
+          "status": "FIXED",
+          "witness_trace": "data/runs/run_b22f36dfbfcd.jsonl"
+        }
+      ],
+      "builds": {
+        "configured": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 100,
+          "exercised_complete": 100,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 6,
+          "weak": false
+        },
+        "fixed": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 100,
+          "exercised_complete": 100,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 0,
+          "weak": false
+        }
+      },
+      "completeness": "contract",
+      "detail": "affected build violated it; the fixed build passed the comparison and its own campaign, and exercised it",
+      "findings": [
+        "fail_a862e75a4fbb"
+      ],
+      "outcome": "FIX_VERIFIED",
+      "property": "read_authz",
+      "required": true
+    },
+    {
+      "artifacts": [],
+      "builds": {
+        "configured": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 100,
+          "exercised_complete": 100,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 0,
+          "weak": false
+        },
+        "fixed": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 100,
+          "exercised_complete": 100,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 0,
+          "weak": false
+        }
+      },
+      "completeness": "contract",
+      "detail": "no violation in executions that exercised it with complete evidence",
+      "findings": [],
+      "outcome": "EXERCISED_PASS",
+      "property": "write_authz",
+      "required": false
+    },
+    {
+      "artifacts": [],
+      "builds": {
+        "configured": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 26,
+          "exercised_complete": 26,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 0,
+          "weak": false
+        },
+        "fixed": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 26,
+          "exercised_complete": 26,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 0,
+          "weak": false
+        }
+      },
+      "completeness": "contract",
+      "detail": "no violation in executions that exercised it with complete evidence",
+      "findings": [],
+      "outcome": "EXERCISED_PASS",
+      "property": "stale_token_rejected",
+      "required": false
+    },
+    {
+      "artifacts": [],
+      "builds": {
+        "configured": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 100,
+          "exercised_complete": 100,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 0,
+          "weak": false
+        },
+        "fixed": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 100,
+          "exercised_complete": 100,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 0,
+          "weak": false
+        }
+      },
+      "completeness": "contract",
+      "detail": "no violation in executions that exercised it with complete evidence",
+      "findings": [],
+      "outcome": "EXERCISED_PASS",
+      "property": "ack_consistency",
+      "required": false
+    },
+    {
+      "artifacts": [],
+      "builds": {
+        "configured": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 100,
+          "exercised_complete": 100,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 0,
+          "weak": false
+        },
+        "fixed": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 100,
+          "exercised_complete": 100,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 0,
+          "weak": false
+        }
+      },
+      "completeness": "contract",
+      "detail": "no violation in executions that exercised it with complete evidence",
+      "findings": [],
+      "outcome": "EXERCISED_PASS",
+      "property": "realtime_authz",
+      "required": false
+    },
+    {
+      "artifacts": [],
+      "builds": {
+        "configured": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 22,
+          "exercised_complete": 22,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 0,
+          "weak": false
+        },
+        "fixed": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 22,
+          "exercised_complete": 22,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 0,
+          "weak": false
+        }
+      },
+      "completeness": "contract",
+      "detail": "no violation in executions that exercised it with complete evidence",
+      "findings": [],
+      "outcome": "EXERCISED_PASS",
+      "property": "restart_durability",
+      "required": false
+    },
+    {
+      "artifacts": [
+        {
+          "build": "configured",
+          "failure_id": "fail_76e6d79bb741",
+          "fix_verified": true,
+          "minimized": "0 -> 0 fault(s)",
+          "minimized_scenario": {
+            "base_seed": 1,
+            "faults": 0,
+            "schedule": []
+          },
+          "regression_case": "<repo>/data/campaigns/m14_pocketbase_pc/cases/fail_76e6d79bb741.json",
+          "regression_case_kind": "fix_verification",
+          "regression_case_written": true,
+          "status": "FIXED",
+          "witness_trace": "data/runs/run_cab843784bd7.jsonl"
+        }
+      ],
+      "builds": {
+        "configured": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 100,
+          "exercised_complete": 100,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 100,
+          "weak": false
+        },
+        "fixed": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 100,
+          "exercised_complete": 100,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 0,
+          "weak": false
+        }
+      },
+      "completeness": "contract",
+      "detail": "affected build violated it; the fixed build passed the comparison and its own campaign, and exercised it",
+      "findings": [
+        "fail_76e6d79bb741"
+      ],
+      "outcome": "FIX_VERIFIED",
+      "property": "model_agreement",
+      "required": true
+    },
+    {
+      "artifacts": [],
+      "builds": {
+        "configured": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 1,
+          "exercised_complete": 1,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 0,
+          "weak": false
+        },
+        "fixed": {
+          "coverage": "full",
+          "evidence": {
+            "complete": 100,
+            "incomplete": 0,
+            "unavailable": 0
+          },
+          "executions": 100,
+          "exercise": "exercised",
+          "exercise_known": 100,
+          "exercised": 1,
+          "exercised_complete": 1,
+          "hook_declared": true,
+          "hook_error": null,
+          "hook_errors": 0,
+          "violated": 0,
+          "weak": false
+        }
+      },
+      "completeness": "contract",
+      "detail": "no violation in executions that exercised it with complete evidence",
+      "findings": [],
+      "outcome": "EXERCISED_PASS",
+      "property": "no_lost_update",
+      "required": false
+    }
+  ],
+  "reasons": [],
+  "scope": {
+    "arm": "feedback_full",
+    "budget_executions": 100,
+    "budget_wall_s": null,
+    "determinism": "stochastic",
+    "executions": 100,
+    "faults": [
+      "role_change",
+      "member_change",
+      "rule_change",
+      "revoke",
+      "restart",
+      "concurrent"
+    ],
+    "fixed_build": {
+      "variant": "safe"
+    },
+    "max_faults_per_scenario": 6,
+    "max_inconclusive_frac": null,
+    "oracle_version": 1,
+    "properties": [
+      "read_authz",
+      "write_authz",
+      "stale_token_rejected",
+      "ack_consistency",
+      "realtime_authz",
+      "restart_durability",
+      "model_agreement",
+      "no_lost_update"
+    ],
+    "properties_not_checked": [
+      "no_lost_update_docs",
+      "no_lost_update_users",
+      "no_lost_update_rules",
+      "rules_enforced_as_stored",
+      "no_refused_write_applied",
+      "write_authz_under_rule_change"
+    ],
+    "seed": 1,
+    "seed_semantics": "nondeterministic",
+    "wall_s": 97.165
+  },
+  "stale_fix_cases": [],
+  "store": "data/failures.json",
+  "target": {
+    "config_file": "<repo>/examples/pocketbase/ordinum.pc.toml",
+    "config_hash": "cfg_38da749fbf64",
+    "fingerprint": "pocketbase@0.40.6:sha256:a632f8779884c9335c3c2716:pc_stale_read_cache",
+    "name": "ordinum.targets.pocketbase.target:PocketBaseTarget",
+    "params": {
+      "realtime": true,
+      "steps": 40,
+      "variant": "pc_stale_read_cache"
+    }
+  },
+  "unconfirmed": [],
+  "verdict": "FIX_VERIFIED"
+}

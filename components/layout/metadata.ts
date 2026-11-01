@@ -23,17 +23,38 @@ const TWITTER_BASE = {
   images: [TWITTER_IMAGE],
 };
 
-/** Metadata for an inner page: short <title> (root template appends " · Ordinum"), full OG/Twitter title, own canonical. */
+/** Metadata for an inner page: short <title> (root template appends " | Ordinum"), full OG/Twitter title, own canonical. */
 export function pageMetadata(key: PageKey): Metadata {
   const page = pages[key];
-  const fullTitle = seo.pages[key];
-  const description = page.meta.description;
-  return {
+  return routeMetadata({
+    href: page.href,
     title: page.meta.title,
+    fullTitle: seo.pages[key],
+    description: page.meta.description,
+  });
+}
+
+/** Same shape for routes generated from data (Labs articles, evidence packages). */
+export function routeMetadata({
+  href,
+  title,
+  fullTitle,
+  description,
+  type = "website",
+}: {
+  href: string;
+  title: string;
+  fullTitle?: string;
+  description: string;
+  type?: "website" | "article";
+}): Metadata {
+  const ogTitle = fullTitle ?? title;
+  return {
+    title,
     description,
-    alternates: { canonical: page.href },
-    openGraph: { ...OG_BASE, url: page.href, title: fullTitle, description },
-    twitter: { ...TWITTER_BASE, title: fullTitle, description },
+    alternates: { canonical: href },
+    openGraph: { ...OG_BASE, type, url: href, title: ogTitle, description },
+    twitter: { ...TWITTER_BASE, title: ogTitle, description },
   };
 }
 

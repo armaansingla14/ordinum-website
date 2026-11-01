@@ -1,5 +1,5 @@
 /**
- * Ordinum copy deck (focused, investor-ready site, 24 October 2026).
+ * Ordinum copy deck (labs + products release, 1 November 2026; focused site 24 October 2026).
  *
  * Single source of truth for every word and number on the site. Builders render these objects;
  * they do not write copy in components.
@@ -10,6 +10,10 @@
  *   - Internal claims registry (not published) built from the product repo, branch `ordinum-2`,
  *     HEAD 124dde072. `facts` arrays below hold its row ids (e.g. "A3", "F2"). "founder" = a
  *     founder-confirmed fact from the brief or plan.
+ *   - Release plan (1 November 2026, internal): facts re-checked against product head 44284b0,
+ *     evidence pinned at the stable checkpoint 768a9b5, plus the flagship PocketBase run
+ *     re-executed on 2026-11-01 at 768a9b5. Copy for products, demos, roadmap and security below;
+ *     Labs articles in ./labs.ts; proof packages in ./evidence-packages.ts.
  *   - Internal site claim map (not published).
  *   - Real proof artifacts: ./evidence.ts (numbers are read from there, not retyped).
  *
@@ -26,7 +30,8 @@
  *     pilots, revenue or ongoing conversations exist: design-partner copy is an invitation.
  *   - The head-level test count, reuse percentages and component ratios are not used. The only
  *     test figure is the validation-log figure (registry C1).
- *   - Reviews are "a separate adversarial review", never an external or named party.
+ *   - Reviews are "review by separate AI review agents": never described as independent, external
+ *     or by a named party. They are not independent human audits.
  *   - No first / only / leading / guaranteed / proven-better language. No caricatures, and no
  *     competitor is named.
  */
@@ -125,13 +130,70 @@ export function evidenceClassOf(label: EvidenceLabel): EvidenceClass {
 export const FACT_SOURCE = {
   repo: PRODUCT_SOURCE.repo,
   branch: PRODUCT_SOURCE.branch,
-  commit: "124dde072ab7d143cafa722bad80c61970740156",
-  commitShort: "124dde072",
-  checkedOn: "24 October 2026",
-  /** The demo artifacts in lib/evidence.ts were copied at this commit and are unchanged at `commit`. */
+  /** Product head the facts were re-checked against (release, 1 November 2026). */
+  commit: "44284b0443ad08e2cc8842831941695e48e2d764",
+  commitShort: "44284b0",
+  checkedOn: "1 November 2026",
+  /** Stable checkpoint the published evidence and the flagship run are pinned to. */
+  evidenceCommit: "768a9b555736a2da693bbeeb92d7fed2e65e2236",
+  evidenceCommitShort: "768a9b5",
+  /** Snapshot the research summary (toy, Nav2 pilot, testbed, MQTT sections) was written against. */
+  researchCommitShort: "124dde072",
+  researchCheckedOn: "24 October 2026",
+  /** The demo artifacts in lib/evidence.ts were copied at this commit and are unchanged at 768a9b5. */
   artifactsCommitShort: PRODUCT_SOURCE.commitShort,
-  note: `Technical statements on this site reflect the ${PRODUCT_SOURCE.branch} research branch at commit 124dde072, checked on 24 October 2026.`,
-  artifactsNote: `Demo artifacts were copied at commit ${PRODUCT_SOURCE.commitShort} and are unchanged at 124dde072.`,
+  note: "Facts checked against product ordinum-2 head 44284b0; evidence pinned at stable checkpoint 768a9b5 (checked 1 November 2026).",
+  researchNote:
+    "The results in this summary reflect the ordinum-2 research branch at commit 124dde072, checked on 24 October 2026. The Nav2 pilot and toy benchmark artifacts are unchanged at 768a9b5.",
+  artifactsNote: `Demo artifacts were copied at commit ${PRODUCT_SOURCE.commitShort} and are unchanged at the stable checkpoint 768a9b5.`,
+} as const;
+
+/** Founder-approved wording for hosted CI (1 November 2026). Use verbatim. */
+export const HOSTED_CI_STATUS =
+  "Light test jobs of Ordinum's own repo pass on GitHub Actions; the heavy Docker suite has not run hosted.";
+
+/** Methods note on every Labs article (founder decision, 1 November 2026). Use verbatim. */
+export const AI_METHODS_NOTE =
+  "Engineering and review used AI coding and review agents; reviews were not independent human audits.";
+
+/** The flagship planted-control label. Use verbatim wherever the PocketBase run appears. */
+export const FLAGSHIP_LABEL =
+  "Controlled positive control — a defect planted in Ordinum's own test harness, not a PocketBase bug";
+
+/**
+ * The flagship run: PocketBase planted positive control, re-executed on 2026-11-01 at product
+ * commit 768a9b5 (release plan, founder-run recording). Every number here is from that run.
+ */
+export const flagship = {
+  label: FLAGSHIP_LABEL,
+  labelClasses: ["positive-control"] as const satisfies readonly EvidenceClass[],
+  commitShort: "768a9b5",
+  date: "1 November 2026",
+  target: "PocketBase 0.40.6, unmodified, binary pinned by SHA-256",
+  planted: "pc_stale_read_cache",
+  plantedWhere: "Ordinum's own PocketBase client path",
+  properties: ["read_authz", "model_agreement"],
+  verdict: "FIX_VERIFIED",
+  verifyExit: "exit 0",
+  confirmed: "5/5",
+  minimized: "1-minimal",
+  affected: "10/10",
+  fixed: "0/10",
+  fisherP: "5.41e-06",
+  exercised: "100/100",
+  ciResult: "2 PASS",
+  ciExit: "exit 0",
+  runtime: "about 5.5 minutes",
+  host: "a 16-vCPU WSL2 laptop",
+  stats: [
+    { k: "Verdict", v: "FIX_VERIFIED (ordinum verify, exit 0)" },
+    { k: "Confirmed", v: "read_authz and model_agreement, 5/5 each" },
+    { k: "Minimized", v: "1-minimal" },
+    { k: "Affected vs fixed", v: "10/10 vs 0/10 (one-sided Fisher p = 5.41e-06)" },
+    { k: "Property exercised", v: "read_authz exercised 100/100 on each build" },
+    { k: "Regression", v: "ordinum ci: 2 PASS, exit 0" },
+    { k: "Run", v: "About 5.5 min on a 16-vCPU WSL2 laptop, no Docker" },
+  ],
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -159,26 +221,31 @@ export const site = {
 
 export const seo = {
   home: {
-    title: "Ordinum — Find failures that only appear when systems interact",
+    /** The home <title> is exactly the brand (absolute, no template). */
+    title: "Ordinum",
     description:
       "Ordinum runs adversarial tests against complex software, checks what actually happened, and turns reproducible failures into regression tests. Research-stage, with a working ROS 2 / Nav2 integration and experimental cross-system integrations.",
     ogTitle: "Ordinum — Find failures that only appear when systems interact",
     ogDescription:
-      "Adversarial testing and verification for systems built from interacting parts. Research-stage; see a real run, labeled for what it is.",
+      "Adversarial testing and verification for systems built from interacting parts. Research-stage; see real runs, labeled for what they are.",
     twitterTitle: "Ordinum — Find failures that only appear when systems interact",
     twitterDescription:
-      "Adversarial testing and verification for systems built from interacting parts. Research-stage; see a real run, labeled for what it is.",
+      "Adversarial testing and verification for systems built from interacting parts. Research-stage; see real runs, labeled for what they are.",
   },
   /** Organization JSON-LD description (app/layout.tsx). */
   organizationDescription:
     "Ordinum is building testing and verification infrastructure that runs adversarial failure scenarios against complex, interacting systems.",
-  /** Per-page full titles for OG/Twitter. pages[*].meta.title stays short for the "%s · Ordinum" template. */
+  /** Per-page full titles for OG/Twitter. pages[*].meta.title stays short for the "%s | Ordinum" template. */
   pages: {
-    demo: "See Ordinum in action — A real run, step by step",
-    product: "Product — What you connect and what you get back",
-    technology: "Technology — How Ordinum executes, verifies and reproduces",
-    research: "Research — What we have shown, and what we have not",
-    vision: "Vision — From working targets to a shared verification layer",
+    products: "Ordinum platform — Connect, stress-test, verify, reproduce",
+    software: "Software & APIs — From a failed authorization test to a verified fix",
+    agents: "AI Agents — Agent authority and resource effects",
+    robotics: "Robotics & Connected Systems — Nav2, MQTT and a four-process reference system",
+    roadmap: "Roadmap — What is in progress and what is planned",
+    demos: "Demos — Real runs, labeled for what they are",
+    nav2Walkthrough: "Nav2 walkthrough — A real run, step by step",
+    labs: "Ordinum Labs — Research and case studies with their evidence",
+    security: "Security — Ordinum's operating boundaries",
     about: "About — The founders building Ordinum",
     contact: "Contact — Talk to the founders",
     terms: "Website Terms",
@@ -190,23 +257,118 @@ export const seo = {
 /* Navigation                                                                  */
 /* -------------------------------------------------------------------------- */
 
+/** One destination inside a nav group: a one-line description and, for products, a maturity label. */
+export type NavItem = {
+  readonly label: string;
+  readonly href: string;
+  readonly description: string;
+  readonly maturity?: Maturity;
+  /** Scope shown next to the maturity label, e.g. "simulation only". */
+  readonly maturityNote?: string;
+};
+
+export type NavGroup = {
+  readonly kind: "group";
+  readonly id: string;
+  readonly label: string;
+  readonly items: readonly NavItem[];
+};
+
+export type NavLink = {
+  readonly kind: "link";
+  readonly label: string;
+  readonly href: string;
+  /** Extra route prefixes that mark this entry active (e.g. /evidence under Demos). */
+  readonly match?: readonly string[];
+};
+
+export type NavEntry = NavGroup | NavLink;
+
 export const nav = {
-  /** /demo is reached from the hero and CTAs; it is intentionally not a nav item. */
-  links: [
-    { label: "Product", href: "/product" },
-    { label: "Technology", href: "/technology" },
-    { label: "Research", href: "/research" },
-    { label: "Vision", href: "/vision" },
-    { label: "About", href: "/about" },
+  /**
+   * Top level: Products (disclosure), Demos, Ordinum Labs, Resources (disclosure), Company
+   * (disclosure). Groups open on click / Enter / Space, never on hover alone.
+   */
+  entries: [
+    {
+      kind: "group",
+      id: "products",
+      label: "Products",
+      items: [
+        {
+          label: "Platform overview",
+          href: "/products",
+          description: "One engine: connect, stress-test, verify, reproduce.",
+          maturity: "validated",
+          maturityNote: "core engine",
+        },
+        {
+          label: "Software & APIs",
+          href: "/products/software",
+          description: "Authorization and concurrency checks, with a verified-fix workflow.",
+          maturity: "experimental",
+          maturityNote: "PocketBase, planted control",
+        },
+        {
+          label: "AI Agents",
+          href: "/products/agents",
+          description: "Agent authority and resource effects.",
+          maturity: "experimental",
+          maturityNote: "reference fixtures only",
+        },
+        {
+          label: "Robotics & Connected Systems",
+          href: "/products/robotics",
+          description: "Nav2 in simulation, MQTT brokers, a four-process reference system.",
+          maturity: "validated",
+          maturityNote: "Nav2 · simulation only",
+        },
+        {
+          label: "Roadmap",
+          href: "/roadmap",
+          description: "Transactions, native fuzzing, firmware, devices and hardware.",
+          maturity: "planned",
+          maturityNote: "not built yet",
+        },
+      ],
+    },
+    { kind: "link", label: "Demos", href: "/demos", match: ["/evidence"] },
+    { kind: "link", label: "Ordinum Labs", href: "/labs" },
+    {
+      kind: "group",
+      id: "resources",
+      label: "Resources",
+      items: [
+        {
+          label: "Security",
+          href: "/security",
+          description: "Operating boundaries: where runs execute and what they can touch.",
+        },
+      ],
+    },
+    {
+      kind: "group",
+      id: "company",
+      label: "Company",
+      items: [
+        { label: "About", href: "/about", description: "The two co-founders building Ordinum." },
+        { label: "Contact", href: "/contact", description: "Talk to the founders or send a short note." },
+      ],
+    },
   ],
   bookCall: { label: "Book a call", href: site.calUrl },
   /** Primary header CTA. Key kept as `demo` so existing Navbar/MobileMenu code compiles. */
   demo: { label: "Talk to us", href: "/contact#talk" },
 } as const satisfies {
-  links: readonly Link[];
+  entries: readonly NavEntry[];
   bookCall: Link;
   demo: Link;
 };
+
+/** Every internal destination in the nav, flattened (tests, footer). */
+export const navDestinations: readonly string[] = nav.entries.flatMap((e) =>
+  e.kind === "group" ? e.items.map((i) => i.href) : [e.href],
+);
 
 /* -------------------------------------------------------------------------- */
 /* The four-stage workflow (home section 4 and the hero visual)                */
@@ -265,6 +427,8 @@ export const WORKFLOW_STAGES = [
 
 export type IntegrationId =
   | "core"
+  | "pocketbase"
+  | "agents"
   | "nav2"
   | "xsys"
   | "mqtt"
@@ -285,7 +449,7 @@ export type Integration = {
   readonly targetKind?: string;
   /** One sentence for the home page and product page. */
   readonly summary: string;
-  /** Longer description for /technology. */
+  /** Longer description (product pages). */
   readonly detail: string;
   readonly limits: readonly string[];
   readonly facts: readonly FactRef[];
@@ -302,10 +466,39 @@ export const integrations = [
       "One target-agnostic engine: search, a supervisor with deadlines and isolation, independent checks on harness-recorded evidence, delta-debugging minimization, exact or statistical reproduction, JSON regression cases and self-contained HTML reports.",
     limits: [
       "Runs on a single machine; there is no distributed runner.",
-      "No CI integration yet: regression cases are JSON files plus a pytest runner.",
-      "No language model in the loop.",
+      "Regression cases run locally (ordinum ci); there is no hosted CI integration yet.",
+      "Every end-to-end fix demonstration so far uses a planted control.",
     ],
-    facts: ["A1", "B1", "B3", "B6", "B7", "B8", "B9"],
+    facts: ["A1", "B1", "B3", "B6", "B7", "B8", "B9", "release"],
+  },
+  {
+    id: "pocketbase",
+    name: "PocketBase adapter",
+    maturity: "experimental",
+    maturityNote: "planted control · one host",
+    targetKind: "Real external target",
+    summary:
+      "Runs unmodified PocketBase 0.40.6 under our own authorization policy and workload. Fix verification shown on a planted control.",
+    detail:
+      "PocketBase 0.40.6, unmodified, with the binary pinned by SHA-256, driven on one host by Ordinum's own policy and workload. A defect planted in Ordinum's own client path (pc_stale_read_cache) is found, confirmed, reduced and then shown fixed by ordinum verify. A separate concurrency check reproduced a lost update the PocketBase maintainers have already acknowledged.",
+    limits: [
+      "The fix demonstration uses a defect we planted in our own client path, not a PocketBase bug.",
+      "Our policy and workload on one host, not a production deployment.",
+      "Concurrency findings are classified, not verified; the lost update was reproduced, not discovered.",
+    ],
+    facts: ["release"],
+  },
+  {
+    id: "agents",
+    name: "Agents kit",
+    maturity: "experimental",
+    maturityNote: "reference fixtures only",
+    targetKind: "Reference fixtures (planted)",
+    summary: "Checks agent authority and resource effects on reference fixtures with planted defects. No third-party agent tested.",
+    detail:
+      "A kit for testing what an AI agent is allowed to do and what it actually changes. Today it runs only against reference fixtures with planted defects; no third-party agent application has been tested.",
+    limits: ["Planted reference fixtures only.", "No third-party agent application has been tested."],
+    facts: ["release"],
   },
   {
     id: "nav2",
@@ -329,13 +522,12 @@ export const integrations = [
     maturity: "experimental",
     targetKind: "Our own testbed",
     summary:
-      "Four separate processes we built (authorization service, broker, controller, actuator), checked against four written policy clauses. Only the correctly behaving build exists so far.",
+      "Four separate processes we built (authorization service, broker, controller, actuator), checked against four written policy clauses. A reference fixture, with a planted-control build.",
     detail:
-      "A four-process software testbed that models a cloud-to-device command path. Each component is a separate OS process, connected only through a harness fabric. The engine judges runs against four written policy clauses with causal (happened-before) checks, because the components have independent clocks. Only the lockstep, correctly behaving build runs today, and it replays exactly in our measurements (one development machine; volatile resource metadata excluded from the hash).",
+      "A four-process software testbed that models a cloud-to-device command path. Each component is a separate OS process, connected only through a harness fabric. The engine judges runs against four written policy clauses with causal (happened-before) checks, because the components have independent clocks. The lockstep build replays exactly in our measurements (one development machine; volatile resource metadata excluded from the hash). A planted-control build checks that the policy checks catch a violation we put there on purpose.",
     limits: [
       "Our own system under test, not production software, hardware or a customer system.",
-      "Only the correctly behaving build exists; planted-defect variants are planned.",
-      "Broker message faults have no policy check yet.",
+      "Planted-control results are positive controls, not discoveries.",
     ],
     facts: ["A6", "D1", "D2", "D3", "B10"],
   },
@@ -345,13 +537,13 @@ export const integrations = [
     maturity: "experimental",
     targetKind: "Real external target",
     summary:
-      "Runs scenarios against the independently maintained Mosquitto 2.0.22 broker. One exploratory campaign; no confirmed finding.",
+      "Runs scenarios against the independently maintained Mosquitto 2.0.22 and NanoMQ 0.25.7 brokers. Results so far are negative: 0 FAIL.",
     detail:
       "The engine's own supervisor runs MQTT scenarios end to end against a locally isolated Mosquitto 2.0.22 broker, with three checks taken from the MQTT v5 specification and Mosquitto's dynamic-security rules: no duplicate delivery of a QoS 2 message (the at-most-once half of MQTT v5 §4.3.3; ambiguous cases are recorded as cannot-judge), no delivery after a committed publish-deny, and durable-session redelivery.",
     limits: [
-      "One 12-scenario exploratory campaign so far.",
+      "Negative results: 0 FAIL is not evidence that either broker is correct.",
       "Broker restarts can break the harness's own connections (recorded as infrastructure errors).",
-      "The full campaign needs Docker and has no committed artifact.",
+      "Campaigns need Docker.",
     ],
     facts: ["A4", "E1", "E2", "E4"],
   },
@@ -390,10 +582,10 @@ export const integrations = [
   },
   {
     id: "ci",
-    name: "CI integration",
+    name: "Hosted CI integration",
     maturity: "planned",
-    summary: "GitHub Actions and GitLab integration. Today, regression cases run through a pytest runner.",
-    detail: "Regression cases are self-contained JSON files executed by a pytest runner in the repository. A CI integration is planned.",
+    summary: "Running regression cases inside your hosted pipelines. Today, ordinum ci runs them locally.",
+    detail: "Regression cases are self-contained JSON files. ordinum ci replays them locally; integration with hosted pipelines is planned.",
     limits: [],
     facts: ["A9"],
   },
@@ -445,12 +637,12 @@ export const hero = {
   lede: "Ordinum runs adversarial tests against complex software, checks what actually happened, and turns reproducible failures into tests that help prevent regressions.",
   /** Who it is for first. A target audience, not a customer claim. */
   audience:
-    "Built first for engineering and product-security teams whose software spans cloud services, message brokers, devices and robots.",
-  primaryCta: { label: "See Ordinum in action", href: "/demo" },
-  secondaryCta: { label: "Talk to the founders", href: "/contact#talk" },
-  status: "Research-stage · Working robotics integration · Experimental MQTT and cross-system testbed integrations",
+    "Built first for engineering and product-security teams whose software spans services, AI agents, message brokers, devices and robots.",
+  primaryCta: { label: "Watch the demo", href: "/demos#demo-flagship" },
+  secondaryCta: { label: "Talk to us", href: "/contact#talk" },
+  status: "Research-stage · Working ROS 2 / Nav2 integration, simulation only · Experimental software, agent and MQTT integrations",
   /** Mono meta row; meta[0] is also the OG image footer. */
-  meta: ["RESEARCH-STAGE", "ROS 2 / NAV2 · MQTT · CROSS-SYSTEM TESTBED"],
+  meta: ["RESEARCH-STAGE", "SOFTWARE & APIS · AI AGENTS · ROBOTICS & CONNECTED SYSTEMS"],
   visual: {
     ariaLabel:
       "Diagram of Ordinum's four stages. Connect: a target adapter runs the system and records ground truth. Stress-test: delays, drops, restarts and permission changes. Verify: properties checked on harness ground truth. Reproduce and prevent: re-run on fresh seeds, reduced, saved as a JSON test.",
@@ -458,9 +650,9 @@ export const hero = {
     stages: WORKFLOW_STAGES.map((s) => ({ id: s.id, label: s.label, caption: s.caption })),
     regressionLabel: "Regression case",
     /** Connect readout: the adapters that exist today (maturity is in the status line). */
-    targets: "Nav2 · MQTT · testbed",
-    /** Under the visual: the four stages in full live on /technology. */
-    link: { label: "The full seven-stage lifecycle", href: "/technology#lifecycle" },
+    targets: "PocketBase · Nav2 · MQTT",
+    /** Under the visual: the seven stages in full live on /products#lifecycle. */
+    link: { label: "The full seven-stage lifecycle", href: "/products#lifecycle" },
   },
 } as const satisfies {
   eyebrow: string;
@@ -496,114 +688,85 @@ export type CausalStep = {
 
 const sm = nav2SuccessMismatch;
 
+/**
+ * Home (release, 1 November 2026), in order: hero; a short recorded run; the four-stage workflow;
+ * product areas with status; a failure-to-fix case (planted, labeled); selected Labs articles;
+ * operating boundaries with a pilot invitation; the CTA band. Budget: 960 words of main text.
+ */
 export const home = {
-  problem: {
-    kicker: "THE PROBLEM / 001",
-    title: "Every part passes its tests.",
-    titleMuted: "The system still does the wrong thing.",
-    /** Rendered as a compact causal sequence. Must carry the CONCEPTUAL tag. */
-    example: {
-      tag: "CONCEPTUAL EXAMPLE",
-      ariaLabel:
-        "Conceptual sequence: a cloud service authorizes a command, a broker delays the message, the permission is revoked, a controller restarts, and the device acts on a permission that no longer exists.",
-      steps: [
-        { n: "1", actor: "Cloud service", event: "Authorizes a command", tone: "info" },
-        { n: "2", actor: "Broker", event: "Delays the message", tone: "fault" },
-        { n: "3", actor: "Authorization", event: "Permission is revoked", tone: "info" },
-        { n: "4", actor: "Controller", event: "Restarts mid-operation", tone: "fault" },
-        { n: "5", actor: "Device", event: "Acts on a revoked permission", tone: "violation" },
-      ],
-      caption:
-        "Each component looks healthy on its own. Together, the resulting action may violate the intended authorization policy.",
-    },
-    body: "Component tests can miss these interactions: the delay, the restart and the permission change happen in different parts of the system, at the same moment. Integration suites, chaos experiments and distributed-systems testing tools address parts of this. Ordinum is testing whether coordinated faults across components, judged by independent checks, find what they miss.",
-    /** Optional footnote: a public, verified example of this class of failure. Not found by Ordinum. */
-    precedent: {
-      text: "A public example of this class: CVE-2021-34434. In Eclipse Mosquitto 2.0 to 2.0.11 with dynamic security, revoking a subscribe permission while a durable client was offline left its existing subscriptions active. Ordinum did not find this issue.",
-      href: "https://cveawg.mitre.org/api/cve/CVE-2021-34434",
-      label: "CVE record",
-    },
-    facts: ["J3", "D2"],
-  },
-
-  /** Section 3: the product working. Steps come from demoWalkthrough (shared with /demo). */
+  /** Section 2: one real recorded run (Nav2 pilot), short form. Steps come from demoWalkthrough. */
   demo: {
-    kicker: "A REAL RUN / 002",
+    kicker: "RECORDED RUN / 001",
+    /** Shown on the badge next to the trace. */
+    tag: "Recorded run",
     title: "Nav2 said it arrived.",
     titleMuted: `The robot was ${sm.verdict.distanceText} off.`,
-    lede: "One real failure on stock ROS 2 Nav2, open-source robot navigation software, under injected faults: caught, reproduced, reduced, then classified.",
+    lede: "A real run on stock ROS 2 Nav2 in simulation, under injected faults: caught, reproduced, reduced, then classified as our own harness artifact.",
     /** Which walkthrough fields the home page shows (short form only). */
-    showSteps: ["system", "property", "faults", "observed", "verdict", "reproduction", "regression"],
-    primaryCta: { label: "See the full walkthrough", href: "/demo" },
-    secondaryCta: { label: "Read the research", href: "/research" },
+    showSteps: ["property", "observed", "verdict", "reproduction"],
+    primaryCta: { label: "See the walkthrough", href: "/demos/nav2-walkthrough" },
+    secondaryCta: { label: "All demos", href: "/demos" },
   },
 
-  /*
-   * What Ordinum does (four stages): carried by the hero visual (WORKFLOW_STAGES captions),
-   * not repeated as a separate home section. The full lifecycle is on /technology#lifecycle.
-   */
+  /** Section 3: the four-stage workflow (PipelineHero carries the stages). */
+  workflow: {
+    kicker: "HOW IT WORKS / 002",
+    title: "Four stages,",
+    titleMuted: "one loop.",
+    link: { label: "How the platform works", href: "/products#how-it-works" },
+  },
 
-  /** Section 4: actual progress and platform vision. */
-  progress: {
-    kicker: "PROGRESS / 003",
-    title: "What works today.",
-    titleMuted: "Where it is going.",
-    items: ["core", "nav2", "xsys", "mqtt", "nanomq"] as const satisfies readonly IntegrationId[],
-    planned: {
-      name: "Next integrations",
-      label: MATURITY_LABELS.planned,
-      text: "CI integration, and specialized engines for APIs, firmware, AI agents and hardware.",
-    },
-    vision:
-      "Ordinum is building toward a common testing and verification layer for software, AI, infrastructure, firmware and physical systems.",
-    /** One sourced "why now" line; the full, cited version (with its caveat) is on /vision#why-now. */
-    whyNow: {
-      label: "Why now",
-      text: "From 11 September 2026, the EU Cyber Resilience Act requires manufacturers of hardware and software products to report actively exploited vulnerabilities and severe incidents.",
-      link: { label: "Why now, with sources", href: "/vision#why-now" },
-    },
+  /** Section 4: product areas, each with its own maturity label and scope. */
+  areas: {
+    kicker: "PRODUCT AREAS / 003",
+    title: "Three product areas.",
+    titleMuted: "Each with its own status.",
+    roadmap: { label: "Roadmap: firmware, devices, hardware", href: "/roadmap" },
+  },
+
+  /** Section 5: the flagship planted control, labeled before any number. */
+  fix: {
+    kicker: "FAILURE TO FIX / 004",
+    title: "From a failed authorization test",
+    titleMuted: "to a verified fix.",
+    lede: "Unmodified PocketBase 0.40.6. We planted a stale read cache in our own client path; Ordinum found it, confirmed it, verified that one fault is enough, then showed that the fix removes it.",
+    stats: ["Confirmed", "Affected vs fixed", "Property exercised", "Verdict"],
     links: [
-      { label: "How it is built", href: "/technology" },
-      { label: "The vision", href: "/vision" },
+      { label: "Evidence package", href: "/evidence/pocketbase-verified-fix" },
+      { label: "Read the case study", href: "/labs/from-failed-authorization-test-to-verified-fix" },
     ],
   },
 
-  /** Section 5: founders and closing CTA. */
-  founders: {
-    kicker: "FOUNDERS / 004",
-    title: "From fuzzing agents",
-    titleMuted: "to testing between systems.",
-    /** Team thesis from the verified /about story (about.story[0]). No employer endorsement. */
-    lede: "Armaan's work on fuzzing agents, production observability and multi-agent systems led to Ordinum's question: how do you continuously test for failures that emerge between components, not inside one?",
-    /** Short lines; full story on /about. Same people as about.founders. */
-    people: [
-      {
-        name: "Armaan Singla",
-        role: "Co-founder",
-        line: "Computer Engineering at Queen's University. Builds fuzzing agents as a software engineering intern in AMD's Product Security Office; earlier, production observability and multi-agent systems.",
-        linkedin: site.founderLinkedin,
-      },
-      {
-        name: "Aarav Singla",
-        role: "Co-founder",
-        line: "Computer Engineering student at McMaster University.",
-        linkedin: site.cofounderLinkedin,
-      },
+  /** Section 6: selected Labs articles (slugs in lib/labs.ts). */
+  labs: {
+    kicker: "ORDINUM LABS / 005",
+    title: "Research with its evidence.",
+    titleMuted: "Limitations included.",
+    slugs: ["from-failed-authorization-test-to-verified-fix", "what-a-robots-success-message-can-hide", "research-summary"],
+    link: { label: "All Labs articles", href: "/labs" },
+  },
+
+  /** Section 7: operating boundaries and the pilot invitation. */
+  boundaries: {
+    kicker: "OPERATING BOUNDARIES / 006",
+    title: "Where it runs,",
+    titleMuted: "and what it can touch.",
+    items: [
+      "Runs locally on one machine. No hosted service, no cloud execution.",
+      "Targets run with no network or loopback only, with resource limits.",
+      "Tests systems you are authorized to test. It does not scan external systems or drive physical actuators.",
+      "A set of safety nets, not a universal sandbox.",
     ],
-    link: { label: "About the team", href: "/about" },
+    link: { label: "Security and operating boundaries", href: "/security" },
+    pilot: {
+      title: "Pilot invitation",
+      text: "Bring one failure your team struggles to reproduce. We will tell you honestly whether Ordinum can test it today.",
+    },
   },
 } as const satisfies {
-  problem: {
-    kicker: string;
-    title: string;
-    titleMuted: string;
-    example: { tag: string; ariaLabel: string; steps: readonly CausalStep[]; caption: string };
-    body: string;
-    precedent: { text: string; href: string; label: string };
-    facts: readonly FactRef[];
-  };
   demo: {
     kicker: string;
+    tag: string;
     title: string;
     titleMuted: string;
     lede: string;
@@ -611,23 +774,17 @@ export const home = {
     primaryCta: Link;
     secondaryCta: Link;
   };
-  progress: {
+  workflow: { kicker: string; title: string; titleMuted: string; link: Link };
+  areas: { kicker: string; title: string; titleMuted: string; roadmap: Link };
+  fix: { kicker: string; title: string; titleMuted: string; lede: string; stats: readonly string[]; links: readonly Link[] };
+  labs: { kicker: string; title: string; titleMuted: string; slugs: readonly string[]; link: Link };
+  boundaries: {
     kicker: string;
     title: string;
     titleMuted: string;
-    items: readonly IntegrationId[];
-    planned: { name: string; label: string; text: string };
-    vision: string;
-    whyNow: { label: string; text: string; link: Link };
-    links: readonly Link[];
-  };
-  founders: {
-    kicker: string;
-    title: string;
-    titleMuted: string;
-    lede: string;
-    people: readonly { name: string; role: string; line: string; linkedin: string }[];
+    items: readonly string[];
     link: Link;
+    pilot: { title: string; text: string };
   };
 };
 
@@ -643,7 +800,7 @@ export const ctaBand = {
   note: "Research-stage. No pricing or pilot terms yet.",
   /** Primary button. Key kept as `demo` for the existing CtaBand component. */
   demo: { label: "Talk to the founders", href: "/contact#talk" },
-  secondary: { label: "See Ordinum in action", href: "/demo" },
+  secondary: { label: "See Ordinum in action", href: "/demos" },
   bookCall: { label: "Book a 30-min call", href: site.calUrl },
 } as const satisfies {
   kicker: string;
@@ -747,7 +904,7 @@ export const demoWalkthrough = {
   ],
   classification: {
     title: "Why this is not a Nav2 defect",
-    body: "The injected noise (σ 0.356 m on the odom→base_footprint transform, from 4.40 s to the end of the run) is physically unrealistic, and this setup has no state estimator to reject it, so the fault corrupted the robot's only position source. A separate adversarial review, briefed to argue against the classification, upheld it.",
+    body: "The injected noise (σ 0.356 m on the odom→base_footprint transform, from 4.40 s to the end of the run) is physically unrealistic, and this setup has no state estimator to reject it, so the fault corrupted the robot's only position source. Review by separate AI review agents, briefed to argue against the classification, upheld it. These were not independent human audits.",
   },
 } as const satisfies {
   artifact: string;
@@ -773,6 +930,9 @@ export const demoPage = {
   walkthrough: demoWalkthrough,
   /** Compact next step right after the classification (reuses the CTA band labels). */
   midCta: { primary: ctaBand.demo, call: ctaBand.bookCall },
+  /** Under the classification: the Labs case study and the Nav2 pilot section of the research summary. */
+  caseStudy: { label: "Read the case study", href: "/labs/what-a-robots-success-message-can-hide" },
+  pilot: { label: "The Nav2 pilot in the research summary", href: "/labs/research-summary#nav2-pilot" },
   fullTrace: {
     kicker: "FULL TRACE / 002",
     title: "The full trace.",
@@ -802,15 +962,15 @@ export const demoPage = {
     ],
     /** Path to the broker and cross-system evidence (Research), with each section's own label. */
     more: {
-      text: "Broker and cross-system testbed runs (experimental) are on the Research page:",
+      text: "Broker and cross-system testbed runs (experimental) are in the Labs research summary:",
       links: [
-        { label: "MQTT integration", href: "/research#mqtt", note: `${EVIDENCE_CLASS_LABELS["harness-artifact"]} · no confirmed finding` },
-        { label: "Cross-system testbed", href: "/research#cross-system-testbed", note: EVIDENCE_CLASS_LABELS["expected-behavior"] },
+        { label: "MQTT integration", href: "/labs/research-summary#mqtt", note: `${EVIDENCE_CLASS_LABELS["harness-artifact"]} · no confirmed finding` },
+        { label: "Cross-system testbed", href: "/labs/research-summary#cross-system-testbed", note: EVIDENCE_CLASS_LABELS["expected-behavior"] },
       ],
     },
   },
   /**
-   * Caption script for a FUTURE recorded walkthrough video (30-60 s). NOT rendered: no video
+   * Caption script for a FUTURE Nav2 walkthrough video (30-60 s). NOT rendered: no Nav2 video
    * exists yet. Every cue restates a value from the walkthrough above.
    */
   captionScript: [
@@ -818,7 +978,7 @@ export const demoPage = {
     { start: "00:05", end: "00:11", text: "The property: if Nav2 reports success, the robot must truly be within 0.35 m of the goal." },
     { start: "00:11", end: "00:18", text: "Ordinum injects faults: noise on the position transform at 4.40 s, reordered laser scans at 6.52 s." },
     { start: "00:18", end: "00:24", text: "At 11.61 s, Nav2 reports SUCCEEDED. Ground truth: 0.80 m from the goal." },
-    { start: "00:24", end: "00:30", text: "The independent check flags success_mismatch." },
+    { start: "00:24", end: "00:30", text: "The truth-vs-claimed check flags success_mismatch." },
     { start: "00:30", end: "00:37", text: "Re-run on 10 fresh seeds: 8 violate. Faults reduced from 4 to 2." },
     { start: "00:37", end: "00:43", text: "The scenario is saved as a regression case that re-runs on stored seeds." },
     { start: "00:43", end: "00:50", text: "Classified: the noise is physically unrealistic. A harness artifact, not a Nav2 defect." },
@@ -827,7 +987,8 @@ export const demoPage = {
   provenance: {
     kicker: "PROVENANCE / 004",
     title: "Provenance",
-    body: `Read from the Ordinum product repository (private research branch ${PRODUCT_SOURCE.branch}). ${FACT_SOURCE.artifactsNote} The original HTML reports are not yet published on this site.`,
+    body: `Read from the Ordinum product repository (private research branch ${PRODUCT_SOURCE.branch}). ${FACT_SOURCE.artifactsNote} The original HTML reports are listed in the evidence package, and can be downloaded there once published.`,
+    evidenceLink: { label: "Evidence package", href: "/evidence/nav2-success-mismatch" },
     files: [
       sm.source,
       ...sm.traceSources,
@@ -851,6 +1012,8 @@ export const demoPage = {
   intro: { kicker: string; title: string; lede: string };
   walkthrough: typeof demoWalkthrough;
   midCta: { primary: Link; call: Link };
+  caseStudy: Link;
+  pilot: Link;
   fullTrace: { kicker: string; title: string; titleMuted: string };
   timelineNote: string;
   others: {
@@ -867,7 +1030,7 @@ export const demoPage = {
     more: { text: string; links: readonly { label: string; href: string; note: string }[] };
   };
   captionScript: readonly CaptionCue[];
-  provenance: { kicker: string; title: string; body: string; files: readonly string[] };
+  provenance: { kicker: string; title: string; body: string; evidenceLink: Link; files: readonly string[] };
   media: {
     enabled: boolean;
     video: null | { src: string; captionsSrc: string; poster?: string; title: string };
@@ -876,100 +1039,7 @@ export const demoPage = {
 };
 
 /* -------------------------------------------------------------------------- */
-/* Platform vision (hero visual inputs, OG image, PlatformMap on /technology)  */
-/* -------------------------------------------------------------------------- */
-
-export type Domain = {
-  readonly id: string;
-  readonly name: string;
-  readonly examples: string;
-  readonly maturity: Maturity;
-  readonly statusNote: string;
-  /** Shown next to the maturity label so it is never read without its scope. */
-  readonly scope?: string;
-};
-
-export const platformVision = {
-  label: "Platform vision. Integrations are developed and validated one at a time.",
-  core: {
-    name: "Ordinum core",
-    layerName: "Ordinum verification layer",
-    maturity: "validated" as Maturity,
-    badge: "Built & validated · research-stage",
-    body: "Scenario execution, fault scheduling, independent verification, reproduction, minimization, regression cases and reports.",
-    statusNote: "One engine runs four targets: a toy robot, ROS 2 / Nav2, Eclipse Mosquitto and a four-process testbed.",
-    facts: ["A1", "H1"],
-  },
-  /** Stages of the shared layer in the platform map; node names match technology.architecture. */
-  spine: [
-    { id: "orchestration", label: "Orchestration", nodes: ["Scenario search", "Execution supervisor"] },
-    { id: "evidence", label: "Evidence", nodes: ["Two-channel traces", "HTML reports"] },
-    { id: "verification", label: "Verification", nodes: ["Independent checks", "Reproduction", "Minimization"] },
-    { id: "regression", label: "Regression", nodes: ["Regression cases", "CI integration"] },
-  ],
-  domains: [
-    {
-      id: "robotics",
-      name: "Robotics & physical systems",
-      examples: "Autonomy stacks, navigation, control",
-      maturity: "validated",
-      scope: "ROS 2 / Nav2 · simulation only",
-      statusNote: "ROS 2 / Nav2 in a simplified simulation. No physical hardware.",
-    },
-    {
-      id: "messaging",
-      name: "Messaging & distributed systems",
-      examples: "Brokers, cloud-to-device command paths",
-      maturity: "experimental",
-      scope: "Mosquitto MQTT · own four-process testbed",
-      statusNote: "Experimental: one MQTT broker campaign, and a testbed we built ourselves.",
-    },
-    {
-      id: "applications",
-      name: "Applications & APIs",
-      examples: "Web applications, public and internal APIs",
-      maturity: "planned",
-      statusNote: "Planned. No adapter yet.",
-    },
-    {
-      id: "ai",
-      name: "AI & agents",
-      examples: "Models, agents and tool-driven workflows",
-      maturity: "planned",
-      statusNote: "Planned. No adapter yet.",
-    },
-    {
-      id: "firmware",
-      name: "Firmware & embedded devices",
-      examples: "Controllers, drivers, hardware interfaces",
-      maturity: "planned",
-      statusNote: "Planned. No adapter yet.",
-    },
-    {
-      id: "hardware",
-      name: "Hardware in the loop",
-      examples: "Physical devices and test rigs",
-      maturity: "planned",
-      statusNote: "Planned. Nothing runs on physical hardware today.",
-    },
-  ],
-} as const satisfies {
-  label: string;
-  core: {
-    name: string;
-    layerName: string;
-    maturity: Maturity;
-    badge: string;
-    body: string;
-    statusNote: string;
-    facts: readonly FactRef[];
-  };
-  spine: readonly { id: string; label: string; nodes: readonly string[] }[];
-  domains: readonly Domain[];
-};
-
-/* -------------------------------------------------------------------------- */
-/* Seven-stage lifecycle (/technology only)                                    */
+/* Seven-stage lifecycle (/products#lifecycle)                                 */
 /* -------------------------------------------------------------------------- */
 
 export type LifecycleStageId = "define" | "generate" | "execute" | "observe" | "verify" | "reproduce" | "regress";
@@ -991,14 +1061,14 @@ export type LifecycleStage = {
 };
 
 export const lifecycle = {
-  /** Anchor id on /technology (linked from the home page). */
+  /** Anchor id on /products (linked from the home page). */
   id: "lifecycle",
-  kicker: "ARCHITECTURE · LIFECYCLE / 001",
+  kicker: "ARCHITECTURE · LIFECYCLE / 003",
   /** Below md the seven stages sit behind this disclosure (open from md up). */
   disclosure: "The seven stages in full",
   title: "Seven stages,",
   titleMuted: "from a scenario to a kept test.",
-  lede: "The four stages on the home page, in full. What changes between targets is the adapter and the source of truth the checks rely on.",
+  lede: "The four stages, in full. What changes between targets is the adapter and the source of truth the checks rely on.",
   stages: [
     {
       n: "01",
@@ -1094,7 +1164,7 @@ export const lifecycle = {
         name: "Regression case",
         detail: "A self-contained case: scenario, build fingerprint, property and replay data.",
       },
-      today: "Each failure is saved as a JSON case with a pytest runner. CI integration is planned.",
+      today: "Each failure is saved as a JSON case; ordinum ci replays saved cases locally. Hosted CI integration is planned.",
       workflowStage: "reproduce",
       facts: ["B8", "A9"],
     },
@@ -1110,7 +1180,7 @@ export const lifecycle = {
 };
 
 /* -------------------------------------------------------------------------- */
-/* Product page                                                                */
+/* Products: platform overview (/products) and the three product-area pages               */
 /* -------------------------------------------------------------------------- */
 
 export type ProductOutputId = "report" | "timeline" | "verdict" | "reproduction" | "reduced" | "regression";
@@ -1125,55 +1195,94 @@ export type ProductOutput = {
   readonly facts: readonly FactRef[];
 };
 
-export const product = {
-  connect: {
-    kicker: "WHAT YOU CONNECT / 001",
-    title: "A system,",
-    titleMuted: "through an adapter.",
-    body: "An adapter teaches Ordinum three things about a system: how to run a scenario, where to inject faults between its components, and how to record what actually happened, separately from what the system reports. Each new kind of system needs a new adapter; the engine behind it is shared.",
-    targetsLabel: "Systems Ordinum runs today",
-    /** One sentence, not a second maturity list (the full list is /technology#adapters). */
-    runsToday:
-      "Stock ROS 2 / Nav2 in simulation; experimentally, the Eclipse Mosquitto MQTT broker and our own four-process cross-system testbed; and a toy robot with planted bugs, used as a positive control.",
-    targetsLink: { label: "Maturity of each integration", href: "/technology#adapters" },
-    firstFor: {
-      title: "Who we are building for first",
-      items: [
-        "Connected-device and industrial IoT teams whose systems span a cloud backend, a message broker and devices, often led by product security or platform engineering.",
-        "Teams running ROS 2 robots or cloud-controlled robot fleets.",
-      ],
-      note: "Hypotheses, not validated customer segments: no interviews or design partnerships have happened yet. Ordinum is meant to add to your existing tests, not replace them.",
-    },
-    facts: ["B1", "I1", "I2", "I4"],
+export type Capability = {
+  readonly name: string;
+  readonly command?: string;
+  readonly maturity: Maturity;
+  readonly note?: string;
+  readonly body: string;
+};
+
+/** /products: the shared engine. #how-it-works and #architecture are redirect targets. */
+export const platform = {
+  howItWorks: {
+    id: "how-it-works",
+    kicker: "HOW IT WORKS / 001",
+    title: "Four stages,",
+    titleMuted: "one engine behind every area.",
+    lede: "Every product area runs on the same engine. What changes between areas is the adapter that connects a system and the properties it must hold.",
   },
-  runs: {
-    kicker: "WHAT ORDINUM RUNS / 002",
-    title: "Campaigns of faulted scenarios,",
-    titleMuted: "judged independently.",
-    body: "A campaign generates scenarios and fault schedules, runs each one under a supervisor with a deadline and isolation, and judges the result with checks the search cannot see. Infrastructure problems are recorded as such and never counted as findings.",
-    /** One compact architecture diagram (do not reuse the home-page visual). */
-    diagram: {
-      ariaLabel:
-        "Architecture: your system connects through an adapter to the Ordinum engine (search, supervisor, independent checks, reproduction and minimization), which produces a report, a trace, a verdict, a reproduction rate, a reduced scenario and a regression case.",
-      columns: [
-        { id: "system", label: "Your system", items: ["Components", "Messages", "State"] },
-        { id: "adapter", label: "Adapter", items: ["Runs scenarios", "Injects faults", "Records ground truth"] },
-        { id: "engine", label: "Ordinum engine", items: ["Search", "Supervisor", "Independent checks", "Reproduce & reduce"] },
-        { id: "outputs", label: "You receive", items: ["Report", "Trace", "Verdict", "Regression case"] },
-      ],
-    },
-    facts: ["A1", "B3", "B2"],
+  capabilities: {
+    id: "capabilities",
+    kicker: "CAPABILITY MAP / 002",
+    title: "What the engine does today,",
+    titleMuted: "command by command.",
+    lede: "The core engine and command-line tool at the stable checkpoint 768a9b5. Each capability carries its own maturity label.",
+    items: [
+      {
+        name: "Search",
+        command: "fuzz",
+        maturity: "validated",
+        body: "Campaigns of seeded scenarios with timed faults, from a scripted catalog and random search to feedback-guided search.",
+      },
+      {
+        name: "Confirmation",
+        command: "confirm",
+        maturity: "validated",
+        body: "Re-runs a violation to check that it recurs before it is reported.",
+      },
+      {
+        name: "Minimization",
+        command: "minimize",
+        maturity: "validated",
+        body: "Delta debugging toward a 1-minimal fault schedule. Not guaranteed to be the smallest possible.",
+      },
+      {
+        name: "Replay",
+        command: "replay",
+        maturity: "validated",
+        body: "Exact replay on deterministic targets; a measured reproduction rate with an interval on the rest.",
+      },
+      {
+        name: "Build comparison",
+        command: "compare",
+        maturity: "experimental",
+        body: "Runs a failure against an affected build and a fixed build, and tests the difference statistically.",
+      },
+      {
+        name: "Fix verification",
+        command: "verify",
+        maturity: "experimental",
+        note: "planted controls only",
+        body: "Returns FIX_VERIFIED only if every confirmed violation is gone on the fixed build, the fixed build's own campaign finds none, and each required property was actually exercised, so a vacuous pass does not count.",
+      },
+      {
+        name: "Local regression runs",
+        command: "ci",
+        maturity: "experimental",
+        note: "local only",
+        body: "Replays saved regression cases on your machine. No hosted CI integration yet.",
+      },
+      {
+        name: "Reports",
+        maturity: "validated",
+        body: "Self-contained HTML reports, plus Markdown and JSON reports for fix verification.",
+      },
+    ],
+    areasTitle: "Product areas",
+    ciStatus: HOSTED_CI_STATUS,
   },
   outputs: {
-    kicker: "WHAT AN ENGINEER RECEIVES / 003",
+    id: "outputs",
+    kicker: "WHAT AN ENGINEER RECEIVES / 005",
     title: "Evidence you can act on.",
-    lede: "For each reproduced failure, the current engine produces the following. Examples are from the real Nav2 run on the demo page.",
+    lede: "For each reproduced failure, the engine produces the following. Examples are from the real Nav2 run in the walkthrough.",
     items: [
       {
         id: "report",
         title: "Failure report",
         plain: "One self-contained HTML page showing what ran, what failed, and the original scenario next to the reduced one.",
-        example: "Committed report: nav2_success_mismatch_compare.html (in the private product repository; not yet published).",
+        example: "nav2_success_mismatch_compare.html, listed in the Nav2 evidence package.",
         facts: ["B9"],
       },
       {
@@ -1208,61 +1317,36 @@ export const product = {
         id: "regression",
         title: "Regression case",
         plain: "A self-contained test that re-runs the failure scenario against future builds.",
-        example: `${sm.failureId}.json, runnable with pytest.`,
+        example: `${sm.failureId}.json.`,
         facts: ["B8"],
       },
     ],
-    /** Under the report preview: the original is not public yet (same wording as /demo provenance). */
-    reportNote: "From the private product repository; the original reports are not yet published.",
+    reportNote: "Report preview rendered from the real run. The original files are listed in the evidence package.",
     links: [
-      { label: "The full run, step by step", href: "/demo" },
-      { label: "Provenance", href: "/demo#provenance" },
-    ],
-  },
-  status: {
-    kicker: "TODAY AND PLANNED / 004",
-    title: "What works today,",
-    titleMuted: "and what is planned.",
-    today: ["core", "nav2", "xsys", "mqtt", "toy"] as const satisfies readonly IntegrationId[],
-    next: ["nanomq", "xsysFree", "ci", "engines", "px4"] as const satisfies readonly IntegrationId[],
-    link: { label: "Full integration status", href: "/technology#adapters" },
-  },
-  alongside: {
-    title: "Alongside the tools you already use",
-    items: [
-      { name: "Unit and integration tests", text: "Ordinum's regression cases sit beside them, adding cases that come from system-level failures." },
-      { name: "Fuzzers", text: "Strong on inputs to parsers, binaries and protocols. Ordinum's own work focuses on timed faults across component boundaries." },
-      { name: "Chaos engineering", text: "Validates recovery in running infrastructure. Ordinum explores fault schedules before deployment and keeps reproducible evidence; the two can be used together." },
-      { name: "Penetration testing", text: "Expert judgment that automation does not replace. Ordinum aims to hand testers reproducible evidence." },
+      { label: "The full run, step by step", href: "/demos/nav2-walkthrough" },
+      { label: "Evidence package", href: "/evidence/nav2-success-mismatch" },
     ],
   },
   cta: {
     title: "Tell us how your team tests today.",
     body: "Thirty minutes with the founders about your system and the failures that are hardest to reproduce.",
-    primary: { label: "Discuss your testing workflow", href: "/contact#talk" },
-    secondary: { label: "See Ordinum in action", href: "/demo" },
+    primary: { label: "Talk to us", href: "/contact#talk" },
+    secondary: { label: "See Ordinum in action", href: "/demos" },
   },
 } as const satisfies {
-  connect: {
+  howItWorks: { id: string; kicker: string; title: string; titleMuted: string; lede: string };
+  capabilities: {
+    id: string;
     kicker: string;
     title: string;
     titleMuted: string;
-    body: string;
-    targetsLabel: string;
-    runsToday: string;
-    targetsLink: Link;
-    firstFor: { title: string; items: readonly string[]; note: string };
-    facts: readonly FactRef[];
-  };
-  runs: {
-    kicker: string;
-    title: string;
-    titleMuted: string;
-    body: string;
-    diagram: { ariaLabel: string; columns: readonly { id: string; label: string; items: readonly string[] }[] };
-    facts: readonly FactRef[];
+    lede: string;
+    items: readonly Capability[];
+    areasTitle: string;
+    ciStatus: string;
   };
   outputs: {
+    id: string;
     kicker: string;
     title: string;
     lede: string;
@@ -1270,16 +1354,590 @@ export const product = {
     reportNote: string;
     links: readonly Link[];
   };
-  status: {
+  cta: { title: string; body: string; primary: Link; secondary: Link };
+};
+
+/** Kept for the report preview and the outputs grid (same shape as before). */
+export const product = { outputs: platform.outputs } as const;
+
+/* ------------------------------ product-area pages ------------------------------ */
+
+export type ProductAreaKey = "software" | "agents" | "robotics";
+
+/** One lane of a sequence diagram. */
+export type SequenceActor = { readonly id: string; readonly label: string };
+
+/** One message. `from === to` draws a self-note. Tone: info, fault (disturbance), violation (orange), verdict. */
+export type SequenceStep = {
+  readonly from: string;
+  readonly to: string;
+  readonly label: string;
+  readonly tone: "info" | "fault" | "violation" | "verdict";
+};
+
+export type SequenceDiagramCopy = {
+  readonly title: string;
+  /** true = CONCEPTUAL tag. false = built from a real artifact, which `source` must cite. */
+  readonly conceptual: boolean;
+  readonly ariaLabel: string;
+  readonly caption: string;
+  readonly source?: string;
+  readonly actors: readonly SequenceActor[];
+  readonly steps: readonly SequenceStep[];
+};
+
+export type ProductBlock = {
+  readonly id: string;
+  readonly name: string;
+  readonly maturity: Maturity;
+  readonly maturityNote: string;
+  readonly body: string;
+  readonly boundaries: readonly string[];
+  readonly link?: Link;
+};
+
+export type ProductArea = {
+  readonly key: ProductAreaKey;
+  readonly maturity: Maturity;
+  readonly maturityNote: string;
+  /** Customer and job. A target audience, never a customer claim. */
+  readonly job: { readonly kicker: string; readonly title: string; readonly titleMuted: string; readonly who: string; readonly job: string; readonly note: string };
+  readonly connect: { readonly kicker: string; readonly title: string; readonly items: readonly { readonly term: string; readonly detail: string }[] };
+  /** Robotics: separate blocks, each with its own boundaries. */
+  readonly blocks?: { readonly kicker: string; readonly title: string; readonly items: readonly ProductBlock[] };
+  readonly sequence: SequenceDiagramCopy & { readonly kicker: string };
+  readonly demo: { readonly kicker: string; readonly title: string; readonly status: string; readonly video?: boolean; readonly body: string; readonly links: readonly Link[] };
+  readonly outputs: { readonly kicker: string; readonly title: string; readonly items: readonly { readonly name: string; readonly detail: string }[] };
+  readonly fit: {
+    readonly kicker: string;
+    readonly title: string;
+    readonly prerequisites: readonly string[];
+    readonly customWork: readonly string[];
+    readonly limitations: readonly string[];
+  };
+  readonly links: { readonly kicker: string; readonly labs: readonly Link[]; readonly evidence: readonly Link[] };
+  readonly cta: { readonly title: string; readonly body: string; readonly primary: Link; readonly secondary?: Link };
+};
+
+const fixLink = { label: "Evidence package: PocketBase verified fix", href: "/evidence/pocketbase-verified-fix" } as const;
+const fixArticle = { label: "Case study: from a failed authorization test to a verified fix", href: "/labs/from-failed-authorization-test-to-verified-fix" } as const;
+const nav2Article = { label: "Case study: what a robot's success message can hide", href: "/labs/what-a-robots-success-message-can-hide" } as const;
+const summaryArticle = { label: "Research summary: what we've measured", href: "/labs/research-summary" } as const;
+
+export const productAreas = {
+  software: {
+    key: "software",
+    maturity: "experimental",
+    maturityNote: "PocketBase · planted control · one host",
+    job: {
+      kicker: "WHO IT IS FOR / 001",
+      title: "Authorization and concurrency,",
+      titleMuted: "tested on the running service.",
+      who: "Engineering and product-security teams that own a service with access rules and many concurrent clients.",
+      job: "Find the case where a client sees or changes data it should not, keep it as a regression case, and show that a fix removes it, with numbers rather than a single green run.",
+      note: "A target audience, not a customer list. Ordinum is research-stage and has no customers yet.",
+    },
+    connect: {
+      kicker: "WHAT YOU CONNECT / 002",
+      title: "What you connect and define.",
+      items: [
+        { term: "The service", detail: "A build you can run locally. In the flagship run: PocketBase 0.40.6, unmodified, with the binary pinned by SHA-256." },
+        { term: "An adapter", detail: "Starts the service, drives clients and records what happened, separately from what the service reports." },
+        { term: "Policy and workload", detail: "Who may read and write what, and the client traffic to run. In the flagship run these are Ordinum's own." },
+        { term: "Properties", detail: "What must hold, for example read_authz (reads respect the access policy) and model_agreement (what clients observe agrees with a reference model)." },
+        { term: "Affected and fixed builds", detail: "For fix verification: the build that fails and the build that should not." },
+      ],
+    },
+    sequence: {
+      kicker: "ONE RUN, IN SEQUENCE / 003",
+      title: "Failure to verified fix.",
+      conceptual: true,
+      ariaLabel:
+        "Conceptual sequence of the flagship run: the Ordinum engine runs our workload through the client path against PocketBase; the planted stale read cache returns data the policy no longer allows; the check flags read_authz; the engine confirms and reduces the failure, compares the affected and fixed builds, and returns FIX_VERIFIED; ordinum ci then replays the saved cases.",
+      caption: "Simplified. The counts are from the recorded run at 768a9b5.",
+      actors: [
+        { id: "engine", label: "Ordinum engine" },
+        { id: "client", label: "Client path (ours)" },
+        { id: "service", label: "PocketBase 0.40.6" },
+        { id: "check", label: "Checks" },
+      ],
+      steps: [
+        { from: "engine", to: "client", label: "Run seeded workload", tone: "info" },
+        { from: "client", to: "service", label: "Reads under our access policy", tone: "info" },
+        { from: "client", to: "client", label: "Planted stale read cache", tone: "fault" },
+        { from: "client", to: "check", label: "Returns data no longer allowed", tone: "violation" },
+        { from: "check", to: "engine", label: "read_authz violated", tone: "violation" },
+        { from: "engine", to: "engine", label: "Confirm 5/5; 1-minimal", tone: "info" },
+        { from: "engine", to: "service", label: "Affected 10/10 vs fixed 0/10", tone: "info" },
+        { from: "check", to: "engine", label: "FIX_VERIFIED; ci: 2 PASS", tone: "verdict" },
+      ],
+    },
+    demo: {
+      kicker: "DEMO / 004",
+      title: "The flagship run.",
+      status: "Recorded run · 1:35 · captions",
+      video: true,
+      body: "The run behind these numbers was executed on 1 November 2026 at product commit 768a9b5. The recording replays its real terminal output; the evidence package carries the same logs, the reports and both regression cases.",
+      links: [
+        { label: "See it on the demos page", href: "/demos" },
+        fixLink,
+      ],
+    },
+    outputs: {
+      kicker: "ACTUAL OUTPUTS / 005",
+      title: "What the run produced.",
+      items: [
+        { name: "Verdict", detail: "FIX_VERIFIED from ordinum verify, exit 0." },
+        { name: "Confirmation", detail: "read_authz and model_agreement each confirmed 5/5." },
+        { name: "Reduced scenario", detail: "1-minimal fault schedule." },
+        { name: "Build comparison", detail: "Affected 10/10 vs fixed 0/10, one-sided Fisher p = 5.41e-06." },
+        { name: "Property exercise", detail: "read_authz exercised in 100/100 executions on each build." },
+        { name: "Regression cases", detail: "Two JSON cases; ordinum ci: 2 PASS, exit 0." },
+        { name: "Reports", detail: "report.md and report.json, plus the terminal logs." },
+      ],
+    },
+    fit: {
+      kicker: "FIT / 006",
+      title: "Prerequisites, custom work, limitations.",
+      prerequisites: [
+        "A Linux machine. The recorded run took about 5.5 minutes on a 16-vCPU WSL2 laptop, without Docker.",
+        "A service build you can start locally, and permission to test it.",
+        "A written access policy and a workload.",
+      ],
+      customWork: [
+        "Each new service needs its own adapter, built from the adapter template. Today that is custom work with us.",
+        "Properties and the reference model are written per service.",
+      ],
+      limitations: [
+        "Every end-to-end fix demonstration uses a planted control: the defect is in Ordinum's own client path, not in PocketBase.",
+        "No new third-party vulnerability has been found, and no historical third-party affected/fixed reproduction has been shown yet.",
+        "A concurrency check reproduced a lost update the PocketBase maintainers have already acknowledged. Reproduced, not discovered; its results are classified, not verified.",
+        "Exercise counts are declared by the adapter: a count is only as good as that declaration.",
+        "Ten runs per build is a statistical comparison, not a proof that the failure can never return.",
+      ],
+    },
+    links: { kicker: "EVIDENCE / 007", labs: [fixArticle, summaryArticle], evidence: [fixLink] },
+    cta: {
+      title: "Have an access rule that fails only under load?",
+      body: "Tell us about the service and the failure. We will say plainly whether the adapter template fits it today.",
+      primary: { label: "Talk to us", href: "/contact#talk" },
+      secondary: { label: "See Ordinum in action", href: "/demos" },
+    },
+  },
+
+  agents: {
+    key: "agents",
+    maturity: "experimental",
+    maturityNote: "reference fixtures only",
+    job: {
+      kicker: "WHO IT IS FOR / 001",
+      title: "What an agent may do,",
+      titleMuted: "and what it actually changed.",
+      who: "Teams giving AI agents tools, credentials and write access to real resources.",
+      job: "Check that an agent's actions stay inside the authority it was granted, including after that authority changes, and keep any violation as a reproducible case.",
+      note: "A target audience, not a customer list. No third-party agent application has been tested.",
+    },
+    connect: {
+      kicker: "WHAT YOU CONNECT / 002",
+      title: "What you connect and define.",
+      items: [
+        { term: "The agent", detail: "Run through the agents kit's harness, which records each tool call and its effect." },
+        { term: "Resources", detail: "The files, records or services the agent can touch, observed by the harness rather than by the agent's own account." },
+        { term: "Authority", detail: "What the agent is allowed to do, and when that changes." },
+        { term: "Properties", detail: "Statements about authority and resource effects, checked on what the harness recorded." },
+      ],
+    },
+    sequence: {
+      kicker: "ONE RUN, IN SEQUENCE / 003",
+      title: "A permission revoked mid-task.",
+      conceptual: true,
+      ariaLabel:
+        "Conceptual sequence: an operator grants an agent access; the agent starts a task; Ordinum revokes the permission mid-task; the agent acts on the resource anyway; the harness records the effect; the check flags an action outside the agent's authority.",
+      caption: "Conceptual example of the kind of property the kit checks. Not a recorded run.",
+      actors: [
+        { id: "engine", label: "Ordinum" },
+        { id: "agent", label: "Agent" },
+        { id: "resource", label: "Resource" },
+        { id: "check", label: "Checks" },
+      ],
+      steps: [
+        { from: "engine", to: "agent", label: "Grant access, start task", tone: "info" },
+        { from: "agent", to: "resource", label: "Read and plan", tone: "info" },
+        { from: "engine", to: "agent", label: "Revoke permission", tone: "fault" },
+        { from: "agent", to: "resource", label: "Writes anyway", tone: "violation" },
+        { from: "resource", to: "check", label: "Effect recorded by harness", tone: "info" },
+        { from: "check", to: "engine", label: "Action outside authority", tone: "verdict" },
+      ],
+    },
+    demo: {
+      kicker: "DEMO / 004",
+      title: "Honest status.",
+      status: "No recording yet",
+      body: "The agents kit runs today against reference fixtures with planted defects. A short recording on one of those fixtures is planned after the flagship recording passes review.",
+      links: [{ label: "Current demos", href: "/demos" }],
+    },
+    outputs: {
+      kicker: "ACTUAL OUTPUTS / 005",
+      title: "What a run produces.",
+      items: [
+        { name: "Verdicts", detail: "Pass, fail or Unresolved per property, judged on harness-recorded effects." },
+        { name: "Reproduction and reduction", detail: "The same confirmation and minimization the engine applies to every target." },
+        { name: "Regression cases", detail: "JSON cases that replay with ordinum ci." },
+        { name: "Reports", detail: "The engine's standard reports." },
+      ],
+    },
+    fit: {
+      kicker: "FIT / 006",
+      title: "Prerequisites, custom work, limitations.",
+      prerequisites: ["A Linux machine.", "An agent whose tool calls can be routed through a harness.", "Permission to test the agent and its resources."],
+      customWork: [
+        "Connecting a real agent means wrapping its tools in the harness. Today that is custom work with us.",
+        "Authority rules and properties are written per agent.",
+      ],
+      limitations: [
+        "Reference fixtures with planted defects only. Results show the kit catches what we planted, not anything about a real agent.",
+        "No third-party agent application has been tested.",
+        "No published results or evidence package for this area yet.",
+      ],
+    },
+    links: { kicker: "EVIDENCE / 007", labs: [summaryArticle], evidence: [] },
+    cta: {
+      title: "Giving agents real permissions?",
+      body: "Tell us what your agents can touch and how you check it today. It shapes which fixtures become real integrations first.",
+      primary: { label: "Talk to us", href: "/contact#talk" },
+    },
+  },
+
+  robotics: {
+    key: "robotics",
+    maturity: "validated",
+    maturityNote: "Nav2 · simulation only",
+    job: {
+      kicker: "WHO IT IS FOR / 001",
+      title: "Robots, brokers and devices,",
+      titleMuted: "tested where they meet.",
+      who: "Teams building ROS 2 robots, cloud-controlled fleets or connected devices that talk through message brokers.",
+      job: "Catch the case where the system reports success but the world disagrees, separate it from your own test setup, and keep it as a regression case.",
+      note: "A target audience, not a customer list. Nothing runs on physical hardware today.",
+    },
+    connect: {
+      kicker: "WHAT YOU CONNECT / 002",
+      title: "What you connect and define.",
+      items: [
+        { term: "The stack", detail: "A containerized ROS 2 stack, an MQTT broker, or a set of processes." },
+        { term: "Ground truth", detail: "What actually happened, recorded by the harness before any fault, for example the simulator's true robot pose." },
+        { term: "Faults", detail: "Delays, drops, noise, reordering, restarts and permission changes at the boundaries between components." },
+        { term: "Properties", detail: "For example: if the robot reports success, it must truly be within 0.35 m of the goal." },
+      ],
+    },
+    blocks: {
+      kicker: "THREE INTEGRATIONS / 003",
+      title: "Three integrations, three boundaries.",
+      items: [
+        {
+          id: "nav2",
+          name: "ROS 2 / Nav2",
+          maturity: "validated",
+          maturityNote: "simulation only",
+          body: "Stock Nav2 1.3.13 on ROS 2 Jazzy, unmodified, in a pinned container with no network, on a simplified loopback simulator. An exploratory pilot found three violations: all three were harness, oracle or configuration artifacts, and none was a Nav2 defect. The live compatibility gate passed 3/3.",
+          boundaries: ["Loopback simulation: no physics, no state estimator.", "No physical robot.", "Reproduction is statistical, not exact."],
+          link: { label: "Nav2 walkthrough", href: "/demos/nav2-walkthrough" },
+        },
+        {
+          id: "mqtt",
+          name: "MQTT brokers",
+          maturity: "experimental",
+          maturityNote: "Mosquitto 2.0.22 · NanoMQ 0.25.7",
+          body: "Real integrations with the independently maintained Eclipse Mosquitto 2.0.22 and NanoMQ 0.25.7 brokers, checked against rules from the MQTT v5 specification. Results so far are negative: 0 FAIL.",
+          boundaries: [
+            "Negative results are not evidence that a broker is correct.",
+            "The NanoMQ edge bridge is still in progress.",
+            "Reproduction is statistical, not exact.",
+          ],
+          link: { label: "MQTT results in the research summary", href: "/labs/research-summary#mqtt" },
+        },
+        {
+          id: "testbed",
+          name: "Four-process reference system",
+          maturity: "experimental",
+          maturityNote: "our own reference fixture",
+          body: "Four separate processes we built (authorization service, broker, controller, actuator), modeling a cloud-to-device command path and checked against four written policy clauses. A planted-control build checks that the policy checks catch a violation we put there on purpose.",
+          boundaries: ["Our own system, not production software or hardware.", "Planted-control results are positive controls, not discoveries.", "Exact replay in its lockstep mode only."],
+          link: { label: "Evidence package: testbed planted control", href: "/evidence/testbed-planted-control" },
+        },
+      ],
+    },
+    sequence: {
+      kicker: "ONE RUN, IN SEQUENCE / 004",
+      title: "Nav2 said it arrived.",
+      conceptual: false,
+      ariaLabel: `Sequence from the recorded Nav2 run: the harness sends a goal; transform noise is injected at 4.40 s and laser scans are reordered at 6.52 s; Nav2 reports ${sm.minimized.result.status} at ${sm.minimized.result.tS} s; the simulator's ground truth shows the robot ${sm.verdict.distanceText} from the goal; the truth-vs-claimed check flags success_mismatch.`,
+      caption: `Times from the minimized run's recorded trace. Classified as a harness artifact, not a Nav2 defect.`,
+      source: sm.traceSources[1],
+      actors: [
+        { id: "harness", label: "Ordinum harness" },
+        { id: "nav2", label: "Nav2 1.3.13" },
+        { id: "sim", label: "Simulator (truth)" },
+        { id: "check", label: "Check" },
+      ],
+      steps: [
+        { from: "harness", to: "nav2", label: "Goal sent, 0.00 s", tone: "info" },
+        { from: "harness", to: "nav2", label: "TF noise σ 0.356 m, 4.40 s", tone: "fault" },
+        { from: "harness", to: "nav2", label: "Scans reordered, 6.52 s", tone: "fault" },
+        { from: "nav2", to: "check", label: `Reports ${sm.minimized.result.status}, ${sm.minimized.result.tS} s`, tone: "info" },
+        { from: "sim", to: "check", label: `True pose ${sm.verdict.distanceText} from goal`, tone: "violation" },
+        { from: "check", to: "harness", label: "success_mismatch violated", tone: "verdict" },
+      ],
+    },
+    demo: {
+      kicker: "DEMO / 005",
+      title: "A real run, step by step.",
+      status: "Interactive walkthrough",
+      body: `The Nav2 run above, from the recorded traces: reproduced ${sm.reproduction.rate} on fresh seeds, reduced from ${sm.minimization.before} faults to ${sm.minimization.after}, and classified as a harness artifact.`,
+      links: [
+        { label: "Nav2 walkthrough", href: "/demos/nav2-walkthrough" },
+        { label: "Evidence package: Nav2 success mismatch", href: "/evidence/nav2-success-mismatch" },
+      ],
+    },
+    outputs: {
+      kicker: "ACTUAL OUTPUTS / 006",
+      title: "What the Nav2 run produced.",
+      items: [
+        { name: "Verdict", detail: `${sm.verdict.invariant} violated: reported success, true pose ${sm.verdict.distanceText} from the goal.` },
+        { name: "Reproduction", detail: `${sm.reproduction.rate} on fresh seeds (${sm.reproduction.wilson95Text}).` },
+        { name: "Reduced scenario", detail: `${sm.minimization.before} faults reduced to ${sm.minimization.after}; time cap reached, so not verified 1-minimal.` },
+        { name: "Trace and report", detail: "Two-channel trace and a self-contained HTML comparison report." },
+        { name: "Regression case", detail: `${sm.failureId}.json, which re-checks the failure on ${sm.regressionVerify.storedSeeds} stored seeds.` },
+      ],
+    },
+    fit: {
+      kicker: "FIT / 007",
+      title: "Prerequisites, custom work, limitations.",
+      prerequisites: ["A Linux machine with Docker for Nav2 and the MQTT brokers.", "A containerized stack, or processes you can start locally.", "Permission to test the system."],
+      customWork: [
+        "Each new stack needs its own adapter. Nav2 needed a large target-specific adapter, which we count as a weakness.",
+        "Properties and fault bounds are written per system.",
+      ],
+      limitations: [
+        "Simulation only. Nothing runs on physical hardware, emulated firmware or device transports yet.",
+        "The three reproduced Nav2 violations are harness, oracle or configuration artifacts, not Nav2 defects.",
+        "MQTT results are negative so far; the testbed is our own reference fixture.",
+      ],
+    },
+    links: { kicker: "EVIDENCE / 008", labs: [nav2Article, summaryArticle], evidence: [
+      { label: "Evidence package: Nav2 success mismatch", href: "/evidence/nav2-success-mismatch" },
+      { label: "Evidence package: testbed planted control", href: "/evidence/testbed-planted-control" },
+    ] },
+    cta: {
+      title: "Building robots or connected devices?",
+      body: "Tell us about the failure your team struggles to reproduce between the cloud, the broker and the device.",
+      primary: { label: "Talk to us", href: "/contact#talk" },
+      secondary: { label: "See Ordinum in action", href: "/demos" },
+    },
+  },
+} as const satisfies Record<ProductAreaKey, ProductArea>;
+
+/* -------------------------------------------------------------------------- */
+/* Roadmap (/roadmap)                                                          */
+/* -------------------------------------------------------------------------- */
+
+export type RoadmapItem = { readonly name: string; readonly maturity: Maturity; readonly body: string };
+
+/** Founder decision: Transactions is "In progress" only, with no numbers and no product page. */
+export const roadmap = {
+  items: {
+    kicker: "ROADMAP / 001",
+    title: "What is next,",
+    titleMuted: "labeled for what it is.",
+    lede: "Nothing below is built yet. In progress means partly built and not runnable as a product; Planned means not started.",
+    list: [
+      { name: "Transactions", maturity: "in-progress", body: "Testing for transaction and ledger systems. In development; no results are published." },
+      { name: "NanoMQ edge bridge", maturity: "in-progress", body: "A second broker bridged to Mosquitto, for edge-to-cloud scenarios." },
+      { name: "Native fuzzing", maturity: "planned", body: "Fuzzing native code and binaries, reporting into the same verification layer." },
+      { name: "Emulated firmware", maturity: "planned", body: "Firmware running under emulation, tested through the same adapters and checks." },
+      { name: "Device transport", maturity: "planned", body: "Driving real device links from the harness." },
+      { name: "Physical hardware", maturity: "planned", body: "Hardware in the loop. Nothing runs on physical hardware today." },
+    ],
+  },
+} as const satisfies {
+  items: { kicker: string; title: string; titleMuted: string; lede: string; list: readonly RoadmapItem[] };
+};
+
+/* -------------------------------------------------------------------------- */
+/* Demos (/demos)                                                              */
+/* -------------------------------------------------------------------------- */
+
+export type DemoCard = {
+  readonly id: string;
+  readonly title: string;
+  readonly label: string;
+  readonly classes: readonly EvidenceClass[];
+  readonly body: string;
+  readonly status: string;
+  readonly stats?: readonly { readonly k: string; readonly v: string }[];
+  readonly links: readonly Link[];
+};
+
+/* -------------------------------------------------------------------------- */
+/* Flagship recording (public/media). Rendered from the real terminal logs of the run on        */
+/* 1 November 2026 at product commit 768a9b5 (also published in /evidence/pocketbase-verified-fix). */
+/* Replay speeds are shown on screen; text is the logged output with local paths replaced.       */
+/* -------------------------------------------------------------------------- */
+
+export const flagshipVideo = {
+  title: "Failure to verified fix",
+  duration: "1:35",
+  recordedOn: "1 November 2026",
+  commit: "768a9b5",
+  label: "Recorded run · real terminal output · replayed at 20× and 4×",
+  classification: "Controlled positive control — a defect planted in Ordinum's own test harness, not a PocketBase bug",
+  mp4: "/media/flagship-failure-to-verified-fix.mp4",
+  webm: "/media/flagship-failure-to-verified-fix.webm",
+  poster: "/media/flagship-failure-to-verified-fix-poster.jpg",
+  captions: "/media/flagship-failure-to-verified-fix.en.vtt",
+  transcript: "/media/flagship-failure-to-verified-fix-transcript.txt",
+} as const;
+
+export const demos = {
+  kicker: "DEMOS / 001",
+  title: "Three runs.",
+  titleMuted: "Each labeled before any number.",
+  /** The flagship card plays the recorded run (flagshipVideo); the others link to their evidence. */
+  cards: [
+    {
+      id: "flagship",
+      title: "Failure to verified fix",
+      label: FLAGSHIP_LABEL,
+      classes: ["positive-control"],
+      body: "PocketBase 0.40.6, unmodified. We planted a stale read cache in our own client path; ordinum verify found it, confirmed it, showed it needs only one fault, then showed that the fix removes it.",
+      status: "Recorded run · 1:35 · captions",
+      stats: flagship.stats,
+      links: [
+        { label: "Evidence package", href: "/evidence/pocketbase-verified-fix" },
+        { label: "Case study", href: "/labs/from-failed-authorization-test-to-verified-fix" },
+      ],
+    },
+    {
+      id: "nav2",
+      title: "Nav2 said it arrived",
+      label: `${EVIDENCE_CLASS_LABELS["real-external-target"]} · ${EVIDENCE_CLASS_LABELS["harness-artifact"]}`,
+      classes: ["real-external-target", "harness-artifact"],
+      body: `Stock Nav2 reported ${sm.minimized.result.status} while the robot was ${sm.verdict.distanceText} from the goal. Reproduced ${sm.reproduction.rate}, reduced, and classified as our own fault configuration, not a Nav2 defect.`,
+      status: "Interactive walkthrough",
+      links: [
+        { label: "Step through the run", href: "/demos/nav2-walkthrough" },
+        { label: "Evidence package", href: "/evidence/nav2-success-mismatch" },
+      ],
+    },
+    {
+      id: "testbed",
+      title: "A planted violation in our own testbed",
+      label: EVIDENCE_CLASS_LABELS["positive-control"],
+      classes: ["positive-control"],
+      body: "A defect planted in a build of our four-process reference system (authorization service, broker, controller, actuator), used to check that its policy checks catch a violation end to end. Not a discovery.",
+      status: "Report and regression case",
+      links: [{ label: "Evidence package", href: "/evidence/testbed-planted-control" }],
+    },
+  ],
+  note: "The flagship recording replays real terminal output at the speeds shown on screen. Every number on this page comes from a recorded run, and each evidence package lists its source revision.",
+} as const satisfies {
+  kicker: string;
+  title: string;
+  titleMuted: string;
+  cards: readonly DemoCard[];
+  note: string;
+};
+
+/* -------------------------------------------------------------------------- */
+/* Security (/security): operating boundaries                                  */
+/* -------------------------------------------------------------------------- */
+
+export type BoundaryRow = { readonly id: string; readonly title: string; readonly body: string; readonly caveat?: string };
+
+export const security = {
+  scope: {
+    kicker: "SCOPE / 001",
+    title: "What Ordinum is allowed to test.",
+    body: "Ordinum tests local simulations, our own targets, authorized open-source software, or systems a user provides and is authorized to test. It does not scan external systems or drive physical actuators.",
+  },
+  boundaries: {
+    kicker: "OPERATING BOUNDARIES / 002",
+    title: "Where runs execute,",
+    titleMuted: "and what they can touch.",
+    rows: [
+      {
+        id: "local-execution",
+        title: "Local execution",
+        body: "Runs execute on the machine where you start them. The engine runs on a single machine; there is no hosted service and no cloud execution.",
+      },
+      {
+        id: "permissions",
+        title: "Permissions",
+        body: "The Nav2 container drops all Linux capabilities and sets no-new-privileges. Testbed components run as separate python -I processes with an audit-hook guard that restricts socket paths and file writes.",
+        caveat: "The Nav2 container runs as root, with capabilities dropped.",
+      },
+      {
+        id: "network",
+        title: "Network namespaces",
+        body: "The Nav2 container has no network. Each testbed component gets its own empty network namespace when available, which blocks IP but not filesystem sockets. MQTT brokers listen only on 127.0.0.1 random ports, on per-session networks. The recorded PocketBase run executed inside a fresh network namespace with only loopback (unshare -rn), without Docker.",
+        caveat: "Network namespaces may be unavailable on some CI runners. The MQTT setup has no explicit egress firewall, and the opt-in edge bridge proxy binds the Docker gateway interface, not loopback.",
+      },
+      {
+        id: "resource-limits",
+        title: "Resource limits",
+        body: "Nav2 runs with a memory cap and a host memory guard. Each testbed component has resource limits (512 MiB address space, file and core limits). Heavy jobs run in a memory-capped scope; infrastructure failures become INFRA_ERROR, never findings.",
+      },
+      {
+        id: "cleanup",
+        title: "Cleanup",
+        body: "All four testbed components are restarted for every run. The Nav2 compatibility gate checks that no containers are left behind.",
+      },
+      {
+        id: "artifacts",
+        title: "Artifacts and data",
+        body: "Traces, reports and regression cases are local files you keep. Evidence published on this site was exported by hand: each file was scanned for local paths, usernames, hostnames, emails, tokens and keys, and local paths were replaced with placeholders such as <repo>.",
+        caveat: "Do not send us credentials, customer data or unpatched vulnerability details through the contact form.",
+      },
+    ],
+  },
+  sandbox: {
+    kicker: "NOT A UNIVERSAL SANDBOX / 003",
+    title: "Safety nets, not a sandbox.",
+    body: "These measures keep tests of authorized systems contained. They are not a sandbox for running untrusted code, and the testbed's guard is a safety net rather than a security boundary. Run Ordinum only against systems you are allowed to test.",
+  },
+  fidelity: {
+    kicker: "WHAT RUNS WHERE / 004",
+    title: "Simulation, local software,",
+    titleMuted: "emulated devices, hardware.",
+    rows: [
+      { tier: "Simulation", examples: "ROS 2 / Nav2 on a loopback simulator", maturity: "validated", note: "simulation only" },
+      { tier: "Local software", examples: "PocketBase, Mosquitto and NanoMQ, the four-process testbed, agent fixtures", maturity: "experimental", note: "one host" },
+      { tier: "Emulated device", examples: "Firmware under emulation, device transports", maturity: "planned", note: "not built" },
+      { tier: "Physical hardware", examples: "Hardware in the loop", maturity: "planned", note: "not built" },
+    ],
+  },
+  ci: {
+    title: "Hosted CI",
+    body: HOSTED_CI_STATUS,
+  },
+  contact: {
+    kicker: "CONTACT / 005",
+    title: "Report a security concern.",
+    body: `Email ${site.email}. Please describe the issue without including credentials or unpatched details of third-party systems; we will reply with a safe way to share more.`,
+    cta: { label: `Email ${site.email}`, href: `mailto:${site.email}` },
+  },
+} as const satisfies {
+  scope: { kicker: string; title: string; body: string };
+  boundaries: { kicker: string; title: string; titleMuted: string; rows: readonly BoundaryRow[] };
+  sandbox: { kicker: string; title: string; body: string };
+  fidelity: {
     kicker: string;
     title: string;
     titleMuted: string;
-    today: readonly IntegrationId[];
-    next: readonly IntegrationId[];
-    link: Link;
+    rows: readonly { tier: string; examples: string; maturity: Maturity; note: string }[];
   };
-  alongside: { title: string; items: readonly { name: string; text: string }[] };
-  cta: { title: string; body: string; primary: Link; secondary: Link };
+  ci: { title: string; body: string };
+  contact: { kicker: string; title: string; body: string; cta: Link };
 };
 
 /* -------------------------------------------------------------------------- */
@@ -1350,12 +2008,12 @@ export const XSYS_POLICY_CLAUSES = [
 
 export const technology = {
   architecture: {
-    /** Section 1. */
+    /** /products #architecture. */
     id: "architecture",
-    kicker: "ARCHITECTURE / 001",
+    kicker: "ARCHITECTURE / 003",
     title: "Three tiers.",
     titleMuted: "One verification layer in the middle.",
-    lede: "Systems connect through adapters into a shared engine, which feeds engineering workflows. Maturity of each adapter is detailed in section 002.",
+    lede: "Systems connect through adapters into a shared engine, which feeds engineering workflows. Every node carries its own maturity label.",
     tiers: [
       {
         id: "adapters",
@@ -1363,10 +2021,12 @@ export const technology = {
         nodes: [
           { name: "ROS 2 / Nav2, in simulation", maturity: "validated", note: "Simulation only.", facts: ["A3"] },
           { name: "Toy robot (our own)", maturity: "validated", note: "Planted bugs as positive controls.", facts: ["A2"] },
-          { name: "Eclipse Mosquitto MQTT, cloud-only", maturity: "experimental", facts: ["A4"] },
-          { name: "Four-process testbed (our own), lockstep", maturity: "experimental", facts: ["A6"] },
+          { name: "PocketBase 0.40.6, local", maturity: "experimental", note: "Fix verification on a planted control.", facts: ["release"] },
+          { name: "Agents kit", maturity: "experimental", note: "Planted reference fixtures only.", facts: ["release"] },
+          { name: "Mosquitto 2.0.22 and NanoMQ 0.25.7", maturity: "experimental", note: "Negative results so far.", facts: ["release"] },
+          { name: "Four-process testbed (our own)", maturity: "experimental", note: "Reference fixture with a planted control.", facts: ["A6"] },
           { name: "NanoMQ edge bridge", maturity: "in-progress", facts: ["A5"] },
-          { name: "PX4, APIs, AI agents, firmware, hardware", maturity: "planned", facts: ["A10"] },
+          { name: "Native fuzzing, emulated firmware, devices, hardware", maturity: "planned", facts: ["release"] },
         ],
       },
       {
@@ -1385,110 +2045,26 @@ export const technology = {
             note: "Single-target view validated; multi-process lanes view experimental; no committed MQTT or testbed report.",
             facts: ["B9"],
           },
-          { name: "Build comparison", maturity: "experimental", note: "Affected vs fixed build; not yet used in a published run.", facts: ["B5"] },
+          { name: "Build comparison", maturity: "experimental", note: "Affected vs fixed build, with a statistical test.", facts: ["B5", "release"] },
+          { name: "Fix verification", maturity: "experimental", note: "FIX_VERIFIED requires the property to be exercised. Planted controls only.", facts: ["release"] },
         ],
       },
       {
         id: "workflows",
         name: "Engineering workflows",
         nodes: [
-          { name: "Regression cases", maturity: "validated", note: "JSON cases run by pytest.", facts: ["B8"] },
-          { name: "CI integration", maturity: "planned", facts: ["A9"] },
+          { name: "Regression cases", maturity: "validated", note: "Self-contained JSON cases.", facts: ["B8"] },
+          { name: "Local runner: ordinum ci", maturity: "experimental", note: "Local only.", facts: ["release"] },
+          { name: "Hosted CI integration", maturity: "planned", facts: ["A9"] },
         ],
       },
     ],
-    note: "Single machine, Python today. Four targets demonstrate the contract; that does not mean every kind of system is supported.",
-  },
-  adapters: {
-    /** Section 2. */
-    id: "adapters",
-    kicker: "ADAPTERS / 002",
-    title: "What is built,",
-    titleMuted: "and how mature it is.",
-    lede: "Four labels, applied strictly: Built & validated, Built, experimental, In progress, and Planned.",
-    notBuiltTitle: "Not yet built, or not yet stable",
-    items: ["core", "toy", "nav2", "mqtt", "xsys", "nanomq", "xsysFree", "ci", "px4", "engines"] as const satisfies readonly IntegrationId[],
-    reuse: {
-      title: "One engine, four targets",
-      body: "The toy robot, Nav2, Mosquitto and the cross-system testbed all run through the same path: target registry, supervisor, search, checks and report.",
-      reused: {
-        label: "What every target reuses (not reimplemented)",
-        items: [
-          "The same search, supervisor, minimization, reproduction, regression-case and report code runs every target; none has its own copy.",
-          "Once multi-process support was in the core, adding the testbed changed the shared engine only by registering the new targets (plus one unrelated regression-case fix).",
-        ],
-      },
-      changed: {
-        label: "What needed engine changes or target work",
-        items: [
-          "Multi-process systems first needed core extensions: Unresolved verdicts, out-of-process systems under test, an event-time model, causal merging of traces, per-component guidance, scenario validation, build comparison and an HTML lanes view for multi-process traces.",
-          "Nav2 needed a large target-specific adapter and tooling, which we count as an architectural weakness.",
-          "The MQTT adapter predates those extensions and works around them on the target side.",
-        ],
-      },
-      facts: ["H1", "H2"],
-    },
-  },
-  contract: {
-    /** Section 3. */
-    id: "contract",
-    kicker: "EXECUTION & VERIFICATION CONTRACT / 003",
-    title: "What \"target-agnostic\"",
-    titleMuted: "means here.",
-    body: [
-      "Every target implements one episode-level contract: describe itself, open a session, report a fingerprint of the exact build, and run one scenario with a given seed and deadline, returning a trace. The target declares its time model and whether it is deterministic.",
-      "The generic layers never import a target, and the search never reads ground truth. Tests enforce both rules.",
-    ],
-    points: [
-      { title: "Two channels", body: "What the system reports about itself guides the search. What the harness records (ground truth) is read only by the checks." },
-      { title: "Supervised outcomes", body: "Each run ends as PASS, FAIL, TIMEOUT, HANG, CRASH or INFRA_ERROR. Infrastructure errors are never counted as findings." },
-      { title: "Three-valued verdicts", body: "When evidence is ambiguous, a check returns Unresolved, never FAIL. Replay, minimization and regression treat it as inconclusive." },
-      { title: "Causal checks", body: "On the cross-system testbed, components have independent clocks, so safety and security clauses use happened-before order from vector clocks, not timestamps." },
-    ],
-    caveat: "Designed to be generic; demonstrated on four targets so far. The MQTT adapter does not yet use the core Unresolved verdict.",
-    facts: ["B1", "B2", "B3", "B4", "B10"],
-  },
-  faults: {
-    /** Section 4. */
-    id: "faults",
-    kicker: "FAULT INJECTION & OBSERVATION / 004",
-    title: "Faults at the boundaries,",
-    titleMuted: "evidence on both sides.",
-    lede: "Each target has its own fault vocabulary. A fault is scheduled at a time or on an event the system reports, and every fault is recorded as applied or ignored. On MQTT, brokers run in real time, so a fault's time sets its order in the workload rather than an exact instant; the testbed uses virtual time, which is what makes exact replay possible.",
-    targets: [
-      {
-        id: "nav2",
-        name: "ROS 2 / Nav2",
-        kinds: NAV2_FAULT_KINDS,
-        observation: "An agent interposes on scan, odometry, transform and velocity-command topics and keeps a ground-truth record taken before any fault.",
-        checks: "Seven properties per run (collision, speed, claimed-versus-true success, motion while unsafe, stuck, liveness) plus a topology check.",
-      },
-      {
-        id: "mqtt",
-        name: "Eclipse Mosquitto (MQTT)",
-        kinds: MQTT_FAULT_KINDS,
-        observation: "An instrumented MQTT v5 client logs every delivery; the harness records permission commits and broker restarts.",
-        checks: "No duplicate delivery of a QoS 2 message (the at-most-once half of MQTT v5 §4.3.3; ambiguous cases are recorded as cannot-judge), no delivery after a committed publish-deny, durable-session redelivery.",
-      },
-      {
-        id: "xsys",
-        name: "Cross-system testbed",
-        kinds: [...XSYS_FAULT_KINDS.process, ...XSYS_FAULT_KINDS.link, ...XSYS_FAULT_KINDS.broker],
-        observation: "A harness fabric stamps every recorded event with a vector clock: actuator effects, requests and acknowledgements, network sends and drops, process lifecycle.",
-        checks: "The four policy clauses below.",
-        kindsNote:
-          "Process faults are OS signals to the component processes (SIGKILL, SIGTERM, SIGSTOP); power_loss is simulated as a kill plus losing the un-fsynced write-ahead-log tail; clock_skew offsets one process's local clock; link faults act on the harness fabric's sockets.",
-      },
-    ],
-    policyTitle: "Testbed policy clauses",
-    policy: XSYS_POLICY_CLAUSES,
-    note: "MQTT bridge faults need the edge bridge, which is not yet stable. Testbed broker-message faults have no policy clause yet.",
-    facts: ["A3", "E2", "E3", "D2", "B10"],
+    note: "Single machine, Python today. A handful of targets demonstrate the contract; that does not mean every kind of system is supported.",
   },
   reproduction: {
-    /** Section 5. */
+    /** /products #reproduction. */
     id: "reproduction",
-    kicker: "REPRODUCTION & MINIMIZATION / 005",
+    kicker: "REPRODUCTION & MINIMIZATION / 004",
     title: "Measured, reduced,",
     titleMuted: "kept as a test.",
     items: [
@@ -1506,46 +2082,25 @@ export const technology = {
       },
       {
         title: "Regression",
-        body: "Each reproduced failure becomes a self-contained JSON case: scenario, configuration hash, build fingerprint, violated property, minimization and reproduction data, run by pytest. A case first asserts that the failure still occurs, and is flipped to a guard after a fix.",
-        caveat: "Checking a fix is basic, and on stochastic targets zero failures in 10 seeded runs is weak evidence, not proof. No CI integration yet.",
+        body: "Each reproduced failure becomes a self-contained JSON case: scenario, configuration hash, build fingerprint, violated property, minimization and reproduction data. ordinum ci replays saved cases locally. A case first asserts that the failure still occurs, and is flipped to a guard after a fix.",
+        caveat: "On stochastic targets, zero failures in 10 seeded runs is evidence, not proof. Fix verification has so far been shown only on planted controls. No hosted CI integration yet.",
         facts: ["B8", "A9"],
       },
     ],
   },
-  safety: {
-    /** Section 6. */
-    id: "safety",
-    kicker: "ISOLATION & SAFETY / 006",
-    title: "Contained by design.",
-    policy: "Ordinum tests local simulations, our own targets, authorized open-source software, or systems a user provides. It does not scan external systems or drive physical actuators.",
-    items: [
-      { target: "ROS 2 / Nav2", text: "Runs in a container with no network, all Linux capabilities dropped, no-new-privileges, a memory cap and a host memory guard." },
-      { target: "Cross-system testbed", text: "Each component is a separate python -I process with resource limits (512 MiB address space, file and core limits), its own empty network namespace when available (blocks IP, not filesystem sockets), and an audit-hook guard restricting socket paths and file writes. All four are restarted for each run." },
-      { target: "MQTT", text: "In the default cloud-only topology, the broker listens only on 127.0.0.1 random ports, on per-session networks, from digest-verified images that are never pulled at launch." },
-      { target: "All heavy jobs", text: "Run in a memory-capped scope. Infrastructure failures become INFRA_ERROR, never findings." },
-    ],
-    caveats: [
-      "The Nav2 container runs as root, with capabilities dropped.",
-      "The testbed's guard is a safety net, not a sandbox, and network namespaces may be unavailable on some CI runners.",
-      "The MQTT setup has no explicit egress firewall.",
-      "The opt-in edge bridge proxy binds the Docker gateway interface, not loopback.",
-    ],
-    facts: ["G1", "G2", "G3", "G4", "G5"],
-  },
   limitations: {
-    /** Section 7. */
+    /** /security #limitations. */
     id: "limitations",
-    kicker: "CURRENT LIMITATIONS / 007",
+    kicker: "CURRENT LIMITATIONS / 006",
     title: "What it does not do yet.",
     items: [
       "Runs on a single machine. No distributed runner, no cloud execution.",
-      "No CI integration: regression cases run through pytest.",
+      "Regression cases run locally with ordinum ci; there is no hosted CI integration.",
       "No hardware, firmware or hardware-in-the-loop support. Nav2 runs in a simplified simulation.",
-      "The Nav2 fault vocabulary allowed physically impossible setups, and check bounds are not yet fault-aware.",
-      "The cross-system testbed is our own system, with only its correctly behaving build. Free-running mode does not run yet.",
-      "The MQTT edge bridge is unstable; only the cloud-only topology is reported.",
+      "Every end-to-end fix demonstration uses a planted control.",
+      "The cross-system testbed is our own reference fixture, not production software.",
+      "The NanoMQ edge bridge is still in progress.",
       "Minimization is 1-minimal at best, and the in-process watchdog cannot kill a hung thread.",
-      "No language model in the loop.",
     ],
     facts: ["A1", "A3", "A5", "A6", "A7", "A9", "A10", "B3", "B6"],
   },
@@ -1560,66 +2115,12 @@ export const technology = {
     tiers: readonly { id: string; name: string; nodes: readonly ArchitectureNode[] }[];
     note: string;
   };
-  adapters: {
-    id: string;
-    kicker: string;
-    title: string;
-    titleMuted: string;
-    lede: string;
-    notBuiltTitle: string;
-    items: readonly IntegrationId[];
-    reuse: {
-      title: string;
-      body: string;
-      reused: { label: string; items: readonly string[] };
-      changed: { label: string; items: readonly string[] };
-      facts: readonly FactRef[];
-    };
-  };
-  contract: {
-    id: string;
-    kicker: string;
-    title: string;
-    titleMuted: string;
-    body: readonly string[];
-    points: readonly { title: string; body: string }[];
-    caveat: string;
-    facts: readonly FactRef[];
-  };
-  faults: {
-    id: string;
-    kicker: string;
-    title: string;
-    titleMuted: string;
-    lede: string;
-    targets: readonly {
-      id: string;
-      name: string;
-      kinds: readonly string[];
-      observation: string;
-      checks: string;
-      kindsNote?: string;
-    }[];
-    policyTitle: string;
-    policy: readonly { id: string; text: string }[];
-    note: string;
-    facts: readonly FactRef[];
-  };
   reproduction: {
     id: string;
     kicker: string;
     title: string;
     titleMuted: string;
     items: readonly { title: string; body: string; caveat: string; facts: readonly FactRef[] }[];
-  };
-  safety: {
-    id: string;
-    kicker: string;
-    title: string;
-    policy: string;
-    items: readonly { target: string; text: string }[];
-    caveats: readonly string[];
-    facts: readonly FactRef[];
   };
   limitations: { id: string; kicker: string; title: string; items: readonly string[]; facts: readonly FactRef[] };
   note: string;
@@ -1659,6 +2160,7 @@ export const research = {
         "The full loop (execution, verification, reproduction, minimization, regression case and report) on stock ROS 2 Nav2; execution, verification and replay, experimentally, on the Eclipse Mosquitto broker.",
         "Independent checks that catch a mismatch between what a system reports and what actually happened.",
         "Every result classified before it is reported, including mistakes in our own harness.",
+        "Fix verification on unmodified PocketBase 0.40.6, on a planted control: FIX_VERIFIED, affected 10/10 vs fixed 0/10 (1 November 2026, at 768a9b5).",
       ],
     },
     unproven: {
@@ -1673,11 +2175,11 @@ export const research = {
       label: "Testing next",
       items: [
         "Cross-system fault discovery on independently maintained services.",
-        "Planted-defect controls on the cross-system testbed, and a stable MQTT edge bridge.",
+        "A stable MQTT edge bridge, and planted controls on more targets.",
         "Broader real-world integration, with design partners if they agree.",
       ],
     },
-    asOf: FACT_SOURCE.note,
+    asOf: FACT_SOURCE.researchNote,
     facts: ["F1", "F2", "F5", "E4", "A8", "A5", "I5"],
   },
   nav2: {
@@ -1701,7 +2203,7 @@ export const research = {
       })),
     ],
     conclusion:
-      "All three reproduced violations are artifacts of our faults, harness or check bounds. No Nav2 defect was found, and nothing was filed upstream. A separate adversarial review, briefed to argue against each classification, upheld all three.",
+      "All three reproduced violations are artifacts of our faults, harness or check bounds. No Nav2 defect was found, and nothing was filed upstream. Review by separate AI review agents, briefed to argue against each classification, upheld all three.",
     classifications: [
       {
         invariant: "success_mismatch",
@@ -1743,7 +2245,7 @@ export const research = {
       perArmNote:
         "Random found all three violation classes; the feedback strategy found none. With three seeds and about 40 executions per campaign, this does not show that either is generally better.",
     },
-    traceLink: { label: "Step through one of these runs", href: "/demo" },
+    traceLink: { label: "Step through one of these runs", href: "/demos/nav2-walkthrough" },
     facts: ["F1", "F2", "F3", "C3"],
   },
   toy: {
@@ -1785,7 +2287,7 @@ export const research = {
       "One narrow result: the full-feedback strategy reached one planted three-fault bug in 16 of 30 campaigns, random in 0 of 30 (Holm p 4.3 × 10⁻⁵). The ablation (9 of 30 vs 4 of 30, Holm p 0.51) does not attribute this to feedback, and random was as fast or faster on the other three deep classes.",
     notes: [
       "The equal-wall-clock run is a sensitivity check, not a replication.",
-      "Nine corrections from a separate adversarial review pass are appended to the report.",
+      "Nine corrections from a review pass by separate AI review agents are appended to the report.",
       "We saw outcomes on one seed before the lock; this is disclosed in the report.",
     ],
     facts: ["A2", "F5"],
@@ -1808,7 +2310,7 @@ export const research = {
     ],
     cost: "One run takes about 0.5 s (median) and about 100 MiB for all four processes plus the harness, measured on one development machine.",
     notYet: [
-      "No planted-defect builds yet, so the testbed has not yet shown that its checks catch real violations end to end. They are authored separately, after the fault vocabulary is frozen.",
+      "At 124dde072 there were no planted-defect builds. A planted-control build has since been run; its report is in the testbed evidence package.",
       "Free-running (nondeterministic) mode is registered but not runnable.",
       "Broker message faults have no policy clause yet.",
     ],
@@ -1842,11 +2344,12 @@ export const research = {
         label: labelOf(["real-external-target", "harness-artifact"]),
       },
     ],
-    conclusion: "No confirmed finding and no Unresolved result. Nothing here is a Mosquitto bug.",
+    conclusion:
+      "No confirmed finding and no Unresolved result. Nothing here is a Mosquitto bug. Since then, Mosquitto 2.0.22 and NanoMQ 0.25.7 run as real integrations, and campaigns at the stable checkpoint 768a9b5 returned 0 FAIL: negative results.",
     limits: [
       "One exploratory campaign. It ran before a later round of review fixes, and it needs Docker, with no committed artifact.",
       "The MQTT adapter records ambiguous cases with target-side markers rather than the core Unresolved verdict.",
-      "The NanoMQ edge bridge is not stable, so two-broker results are not reported.",
+      "The NanoMQ edge bridge is still in progress.",
     ],
     facts: ["A4", "A5", "E1", "E2", "E4"],
   },
@@ -1858,7 +2361,7 @@ export const research = {
       "A general advantage of guided search over random search, on any target.",
       "An independently confirmed defect in Nav2, Mosquitto or any other system.",
       "Results beyond a simplified ROS 2 loopback simulation: no physics, no state estimator, no physical hardware.",
-      "Cross-system fault discovery: the testbed has only its correctly behaving build so far.",
+      "Cross-system fault discovery: the testbed results are expected behavior and planted controls only.",
       "Use by customers or design partners. There are none yet.",
     ],
     closing: "More realistic targets and more research are needed. We would rather publish that than overstate what we have.",
@@ -1873,7 +2376,8 @@ export const research = {
       { k: "Pre-registration", v: "The frozen pre-registered evidence re-verifies at tag prereg-frozen-2026-10-23: code and configuration locks, not a recomputation of raw results." },
       { k: "Nav2 compatibility", v: "Live gate passed on 23 October 2026: 2 of 2 nominal runs, 1 of 1 fault smoke test, no leftover containers." },
       { k: "Artifacts", v: FACT_SOURCE.artifactsNote },
-      { k: "Source", v: FACT_SOURCE.note },
+      { k: "Source", v: FACT_SOURCE.researchNote },
+      { k: "Hosted CI", v: HOSTED_CI_STATUS },
     ],
     files: [
       "docs/demo/nav2_success_mismatch_compare.html",
@@ -1885,7 +2389,7 @@ export const research = {
       "docs/research/xsys_spike.md",
       "docs/design/XSYS_POLICY.md",
     ],
-    access: "The product repository is private during the research stage. Ask us for access to specific artifacts.",
+    access: "The product repository is private during the research stage. Selected artifacts are published as evidence packages; ask us for access to others.",
     facts: ["C1", "C3", "C4", "F6"],
   },
   methodology: {
@@ -1895,7 +2399,7 @@ export const research = {
     principles: [
       { title: "Two channels", body: "The search reads only what the system reports. Checks read only harness-recorded ground truth." },
       { title: "Pre-registration", body: "Benchmark hypotheses, configuration and analysis code are hash-locked before campaigns run. Deviations are documented." },
-      { title: "Separate adversarial review", body: "A reviewer who did not produce a result is briefed to argue against its classification." },
+      { title: "Review by separate AI review agents", body: "AI review agents that did not produce a result are briefed to argue against its classification. These are not independent human audits." },
       { title: "Statistics", body: "Reproduction as k of N with 95% Wilson intervals; benchmark comparisons with Mann-Whitney U, Vargha-Delaney A12 and Holm correction." },
     ],
     labelsTitle: "Evidence labels",
@@ -2030,44 +2534,11 @@ export type Phase = {
 
 export const vision = {
   intro: {
-    kicker: "THE AMBITION / 001",
+    kicker: "THE AMBITION / 002",
     title: "Reliability and security live at the boundaries.",
     body: [
       "Modern systems are assembled from software, AI models, infrastructure, firmware and hardware, built by different teams and tested in different ways. We think many of the hardest failures and security problems begin where those parts meet.",
       "Ordinum's ambition is a continuous adversarial testing and verification platform that spans software and hardware: one layer where specialized testing engines run, failures are verified and reproduced, and the evidence becomes tests that keep problems fixed.",
-    ],
-  },
-  phases: {
-    kicker: "HOW WE GET THERE / 002",
-    title: "Three phases.",
-    items: [
-      {
-        n: "01",
-        name: "Initial phase",
-        title: "Working test and verification infrastructure for selected complex systems.",
-        body: "A target-agnostic engine that runs, checks, reproduces and keeps failures, tested on a few systems before widening.",
-        items: ["Core engine and ROS 2 / Nav2: built & validated", "MQTT and the cross-system testbed: built, experimental", "Design partners on their own systems"],
-        maturity: "experimental",
-        statusNote: "Under way. Parts are built; design partnerships have not started.",
-      },
-      {
-        n: "02",
-        name: "Expansion",
-        title: "Specialized security and reliability engines, across more domains.",
-        body: "Integrate engines for APIs and protocols, binaries and firmware, AI agents and hardware in the loop, all reporting into the same verification layer.",
-        items: ["Additional adapters", "Specialized engine integrations", "CI integration"],
-        maturity: "planned",
-        statusNote: "Planned.",
-      },
-      {
-        n: "03",
-        name: "Long term",
-        title: "A shared, continuous verification workflow across software and hardware stacks.",
-        body: "Teams use one workflow to test, verify and keep evidence across the systems they build and operate. A long-term aspiration, not something available today.",
-        items: ["Software to hardware", "Security and correctness together", "Continuous, not periodic"],
-        maturity: "planned",
-        statusNote: "Aspiration.",
-      },
     ],
   },
   scope: {
@@ -2106,7 +2577,6 @@ export const vision = {
   closing: "Every system deserves to be tested beyond its assumptions.",
 } as const satisfies {
   intro: { kicker: string; title: string; body: readonly string[] };
-  phases: { kicker: string; title: string; items: readonly Phase[] };
   scope: { title: string; items: readonly string[]; note: string };
   whyNow: {
     kicker: string;
@@ -2169,7 +2639,7 @@ export const about = {
     body: [
       "Armaan's work on low-level fuzzing, multi-agent engineering and production systems led to one question: how can complex systems be continuously tested for failures that emerge from their interactions, rather than inside one component?",
       "We started with ROS 2 / Nav2 because it is public, independently maintained and built from many communicating components, so we could test code we did not write and build a repeatable adapter pattern.",
-      "The question was never about robots. The same engine now runs an MQTT broker and a four-process software testbed that models a cloud-to-device command path, and the vision covers software, AI, infrastructure, firmware and hardware.",
+      "The question was never about robots. The same engine now runs PocketBase, two MQTT brokers, a four-process software testbed that models a cloud-to-device command path, and agent fixtures, and the vision covers software, AI, infrastructure, firmware and hardware.",
     ],
   },
   fit: {
@@ -2179,7 +2649,7 @@ export const about = {
       { title: "Fuzzing and product security", body: "Automated search for inputs and conditions nobody wrote a test for." },
       { title: "Production observability", body: "Turning what happened in a running system into something an engineer can act on." },
       { title: "Multi-agent systems", body: "Many components acting on shared, imperfect state." },
-      { title: "Evidence discipline", body: "The engine, its four targets and the research on this site were built in-house and are reported with their limitations." },
+      { title: "Evidence discipline", body: "The engine, its targets and the research on this site were built in-house and are reported with their limitations." },
     ],
   },
   team: {
@@ -2495,20 +2965,28 @@ export const footer = {
   thesis: "Adversarial testing and verification for systems whose failures emerge between components.",
   columns: [
     {
-      title: "Company",
+      title: "Products",
       links: [
-        { label: "Product", href: "/product" },
-        { label: "Technology", href: "/technology" },
-        { label: "Research", href: "/research" },
-        { label: "Vision", href: "/vision" },
-        { label: "About", href: "/about" },
-        { label: "See it in action", href: "/demo" },
+        { label: "Platform overview", href: "/products" },
+        { label: "Software & APIs", href: "/products/software" },
+        { label: "AI Agents", href: "/products/agents" },
+        { label: "Robotics & Connected Systems", href: "/products/robotics" },
+        { label: "Roadmap", href: "/roadmap" },
       ],
     },
     {
-      title: "Contact",
+      title: "Evidence",
       links: [
-        { label: "Talk to the founders", href: "/contact#talk" },
+        { label: "Demos", href: "/demos" },
+        { label: "Ordinum Labs", href: "/labs" },
+        { label: "Security", href: "/security" },
+      ],
+    },
+    {
+      title: "Company",
+      links: [
+        { label: "About", href: "/about" },
+        { label: "Talk to us", href: "/contact#talk" },
         { label: "Book a 30-min call", href: site.calUrl, external: true },
         { label: site.email, href: `mailto:${site.email}` },
       ],
@@ -2557,96 +3035,171 @@ export const notFound = {
 /* Pages: inner-page headers, metadata, reading order                          */
 /* -------------------------------------------------------------------------- */
 
-export type PageKey = "demo" | "product" | "technology" | "research" | "vision" | "about" | "contact" | "terms" | "privacy";
+export type PageKey =
+  | "products"
+  | "software"
+  | "agents"
+  | "robotics"
+  | "roadmap"
+  | "demos"
+  | "nav2Walkthrough"
+  | "labs"
+  | "security"
+  | "about"
+  | "contact"
+  | "terms"
+  | "privacy";
+
+export type PageHeaderCopy = {
+  readonly kicker: string;
+  readonly title: string;
+  readonly titleMuted?: string;
+  readonly lede: string;
+};
 
 type PageCopy = {
   readonly href: string;
   readonly label: string;
   /** Optional: /contact has no PageHeader (its heading comes from `contact.talk`). */
-  readonly header?: {
-    readonly kicker: string;
-    readonly title: string;
-    readonly titleMuted?: string;
-    readonly lede: string;
-  };
-  /** meta.title is short; the root layout appends " · Ordinum". */
+  readonly header?: PageHeaderCopy;
+  /** meta.title is short; the root layout template appends " | Ordinum". */
   readonly meta: { readonly title: string; readonly description: string };
 };
 
 export const pages = {
-  demo: {
-    href: "/demo",
-    label: "See it in action",
+  products: {
+    href: "/products",
+    label: "Platform overview",
+    header: {
+      kicker: "Platform overview",
+      title: "One engine.",
+      titleMuted: "Three product areas.",
+      lede: "Ordinum connects a system through an adapter, runs it under controlled faults, checks what actually happened, and keeps reproducible failures as regression cases. The same engine runs software, agent fixtures and robotics stacks.",
+    },
+    meta: {
+      title: "Platform overview",
+      description:
+        "How Ordinum works: the four-stage workflow, the engine's capabilities at the stable checkpoint (search, confirm, minimize, replay, compare, verify, local ci, reports), its architecture and what an engineer receives.",
+    },
+  },
+  software: {
+    href: "/products/software",
+    label: "Software & APIs",
+    header: {
+      kicker: "Software & APIs",
+      title: "From a failed authorization test",
+      titleMuted: "to a verified fix.",
+      lede: "Ordinum drives a running service under your access policy, catches the read or write that should not happen, and shows with numbers that a fix removes it. Shown so far on unmodified PocketBase with a defect we planted ourselves.",
+    },
+    meta: {
+      title: "Software & APIs",
+      description:
+        "Authorization and concurrency testing for local services, with a verified-fix workflow. Flagship run on unmodified PocketBase 0.40.6: a planted control, FIX_VERIFIED, affected 10/10 vs fixed 0/10.",
+    },
+  },
+  agents: {
+    href: "/products/agents",
+    label: "AI Agents",
+    header: {
+      kicker: "AI Agents",
+      title: "Agent authority",
+      titleMuted: "and resource effects.",
+      lede: "Check that an AI agent's actions stay inside the authority it was granted, judged on what actually changed. Today the agents kit runs on reference fixtures with planted defects only.",
+    },
+    meta: {
+      title: "AI Agents",
+      description:
+        "Testing AI agent authority and resource effects with Ordinum's agents kit. Reference fixtures with planted defects only; no third-party agent application tested yet.",
+    },
+  },
+  robotics: {
+    href: "/products/robotics",
+    label: "Robotics & Connected Systems",
+    header: {
+      kicker: "Robotics & Connected Systems",
+      title: "When the robot says it arrived,",
+      titleMuted: "check where it is.",
+      lede: "ROS 2 / Nav2 in simulation, MQTT brokers, and a four-process reference system modeling a cloud-to-device command path, each with its own boundaries.",
+    },
+    meta: {
+      title: "Robotics & Connected Systems",
+      description:
+        "Ordinum for robotics and connected systems: ROS 2 / Nav2 in simulation (built & validated), Mosquitto and NanoMQ brokers and a four-process reference testbed (experimental), with their boundaries.",
+    },
+  },
+  roadmap: {
+    href: "/roadmap",
+    label: "Roadmap",
+    header: {
+      kicker: "Roadmap",
+      title: "Every system deserves to be tested",
+      titleMuted: "beyond its assumptions.",
+      lede: "What is in progress, what is planned, and the long-term direction: one verification layer from software to hardware.",
+    },
+    meta: {
+      title: "Roadmap",
+      description:
+        "Ordinum's roadmap: transactions in progress; native fuzzing, emulated firmware, device transport and physical hardware planned. The long-term direction and why now.",
+    },
+  },
+  demos: {
+    href: "/demos",
+    label: "Demos",
     header: {
       kicker: "See Ordinum in action",
+      title: "Real runs,",
+      titleMuted: "labeled for what they are.",
+      lede: "A planted failure taken to a verified fix, a real Nav2 run classified as our own harness artifact, and a planted violation in our own testbed. Each links to its evidence.",
+    },
+    meta: {
+      title: "Demos",
+      description:
+        "Real Ordinum runs: failure to verified fix on PocketBase (planted control), a Nav2 walkthrough (harness artifact, not a Nav2 defect) and a testbed planted control, each with its evidence package.",
+    },
+  },
+  nav2Walkthrough: {
+    href: "/demos/nav2-walkthrough",
+    label: "Nav2 walkthrough",
+    header: {
+      kicker: "Demos · Nav2 walkthrough",
       title: "A real run,",
       titleMuted: "step by step.",
       lede: "Ordinum testing stock ROS 2 Nav2 under injected faults: what it checked, what it saw, how it reproduced the failure, and why we classified it as our own harness artifact.",
     },
     meta: {
-      title: "See Ordinum in action",
+      title: "Nav2 walkthrough",
       description:
         "An interactive walkthrough of a real Ordinum run on ROS 2 Nav2: system, property, injected faults, observed behavior, verdict, reproduction and the regression case, labeled as a harness artifact, not a Nav2 defect.",
     },
   },
-  product: {
-    href: "/product",
-    label: "Product",
+  labs: {
+    href: "/labs",
+    label: "Ordinum Labs",
     header: {
-      kicker: "Product",
-      title: "What you connect,",
-      titleMuted: "and what you get back.",
-      lede: "Ordinum runs a system under controlled faults, checks the result independently, and hands engineers evidence they can reproduce.",
+      kicker: "Ordinum Labs",
+      title: "Research and case studies,",
+      titleMuted: "with their evidence.",
+      lede: "Each article states its question, the system under test, the method, the results and their limitations, and links to the files behind them.",
     },
     meta: {
-      title: "Product",
+      title: "Labs",
       description:
-        "What a team connects to Ordinum, what it runs, and what an engineer receives: failure report, trace timeline, independent verdict, reproduction rate, reduced scenario and regression case. What works today and what is planned.",
+        "Ordinum Labs: case studies and research with their evidence: a verified fix on a planted PocketBase control, a Nav2 success mismatch classified as a harness artifact, and a research summary.",
     },
   },
-  technology: {
-    href: "/technology",
-    label: "Technology",
+  security: {
+    href: "/security",
+    label: "Security",
     header: {
-      kicker: "Technology",
-      title: "How Ordinum executes,",
-      titleMuted: "verifies and reproduces.",
-      lede: "Architecture, adapters and their maturity, the execution and verification contract, fault injection, reproduction, isolation and current limitations.",
+      kicker: "Security",
+      title: "Operating boundaries.",
+      titleMuted: "What a run can touch.",
+      lede: "Where Ordinum runs, the permissions, network and resource limits it applies, how it handles artifacts, and what it is not.",
     },
     meta: {
-      title: "Technology",
+      title: "Security",
       description:
-        "Ordinum's architecture: one engine running four targets (a toy robot, ROS 2 / Nav2, Eclipse Mosquitto and a four-process testbed), with independent checks, exact or statistical reproduction, minimization and regression cases.",
-    },
-  },
-  research: {
-    href: "/research",
-    label: "Research",
-    header: {
-      kicker: "Research",
-      title: "What we have shown,",
-      titleMuted: "and what we have not.",
-      lede: "Every result with its evidence label: the Nav2 pilot, the toy benchmark, the cross-system testbed and the MQTT campaign, with limitations and methods.",
-    },
-    meta: {
-      title: "Research",
-      description:
-        "Ordinum's research: an exploratory ROS 2 / Nav2 pilot, a pre-registered toy benchmark, a cross-system testbed and an MQTT campaign, each result labeled, with limitations and withdrawn earlier results.",
-    },
-  },
-  vision: {
-    href: "/vision",
-    label: "Vision",
-    header: {
-      kicker: "Vision",
-      title: "Every system deserves to be tested",
-      titleMuted: "beyond its assumptions.",
-      lede: "From working infrastructure for a few complex systems to a shared, continuous verification workflow across software and hardware.",
-    },
-    meta: {
-      title: "Vision",
-      description:
-        "Ordinum's ambition: a continuous adversarial testing and verification platform spanning software and hardware, in three phases, and why now.",
+        "Ordinum's operating boundaries: local execution, permissions, network namespaces, resource limits, cleanup, artifact handling, simulation vs local software vs hardware, and how to report a concern.",
     },
   },
   about: {
@@ -2669,7 +3222,7 @@ export const pages = {
     /* No header: /contact renders ClosingCTA (contact.talk) as its page heading. */
     meta: {
       title: "Contact",
-      description: "Talk to Ordinum's founders about design partnerships, technical demonstrations and research collaboration.",
+      description: "Talk to Ordinum's founders about pilots, technical demonstrations and research collaboration.",
     },
   },
   terms: {
@@ -2700,5 +3253,5 @@ export const pages = {
   },
 } as const satisfies Record<PageKey, PageCopy>;
 
-/** Reading order for the "Next" link at the bottom of each inner page. */
-export const pageOrder = ["product", "technology", "research", "vision", "about"] as const satisfies readonly PageKey[];
+/** Reading order for the "Next" link at the bottom of each product page. */
+export const pageOrder = ["products", "software", "agents", "robotics", "roadmap"] as const satisfies readonly PageKey[];

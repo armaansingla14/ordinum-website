@@ -106,9 +106,9 @@ export default function Footer({ onHome = true }: FooterProps) {
           </div>
 
           {/* Link columns */}
-          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-11 sm:grid-cols-3">
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-11 md:grid-cols-4">
             {footer.columns.map((column) => (
-              <div key={column.title} className={cn(column.title === "Contact" && "order-last col-span-2 sm:order-none sm:col-span-1")}>
+              <div key={column.title} className="min-w-0">
                 <h2 className="label-mono border-b border-line pb-4 text-subtle">{column.title}</h2>
                 <ul className="mt-5 space-y-3">
                   {column.links.map((link) => {

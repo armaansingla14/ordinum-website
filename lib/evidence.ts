@@ -12,7 +12,7 @@
  *           experiments/results/v2/nav2_pilot/raw/confirm/traces/success_mismatch_{original,minimized}.jsonl
  *           experiments/results/v2/nav2_pilot/regression/fail_{ca43c26f7e96,e02c1f1ece56,687b91a7b44b}.json
  *           experiments/results/v2/nav2_pilot/summary.json
- *           docs/research/nav2_pilot.md (sections 6 and 9: classification + independent review)
+ *           docs/research/nav2_pilot.md (sections 6 and 9: classification + review by separate AI review agents)
  *           docs/LIMITATIONS.md, MORNING_REPORT.md (toy target is in-house with planted bugs)
  *   re-checked: 24 October 2026 against product HEAD 124dde072ab7d143cafa722bad80c61970740156
  *           (merge of the cross-system testbed). Every file listed above is unchanged between
@@ -125,7 +125,7 @@ export const nav2SuccessMismatch = {
         "Classified as a configuration/harness artifact, not a Nav2 defect: the injected fault corrupts the only pose source of this loopback setup (no EKF/AMCL to reject outliers).",
     },
     {
-      source: "docs/research/nav2_pilot.md §9.1 (separate adversarial review, verdict upheld)",
+      source: "docs/research/nav2_pilot.md §9.1 (review by separate AI review agents, verdict upheld)",
       quote:
         "Under physically unrealistic noise on the odometry transform, in a stack with no state estimator, Nav2 reported SUCCEEDED while the simulator's true pose was 0.4-0.8 m from the goal (8/10 replays). This is a robustness observation under an unrealistic fault configuration and a demonstration of the truth-vs-claimed oracle. It is not a Nav2 defect.",
     },

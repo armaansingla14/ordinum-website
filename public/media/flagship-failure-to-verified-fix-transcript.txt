@@ -1,0 +1,12 @@
+[00:00] Failure to verified fix: a recorded Ordinum run. Planted positive control — a defect in Ordinum's own test harness, not a PocketBase bug.
+[00:07] System: PocketBase 0.40.6, unmodified. Property read_authz: responses contain only records the stored rule allows. The planted defect is a stale read cache in Ordinum's client path.
+[00:19] ordinum verify runs a fault-injection campaign on the affected and the fixed build. Real output, replayed at 20×; the clock shows real elapsed time (about 5.5 minutes).
+[00:37] Verdict: FIX_VERIFIED, exit 0. Every confirmed violation is fixed on the declared fixed build.
+[00:41] read_authz was exercised in 100 of 100 runs on each build, so the passing result is not vacuous.
+[00:46] The read_authz failure was confirmed 5 times out of 5.
+[00:50] Minimization: one fault, verified 1-minimal.
+[00:54] Affected build violated it 10/10, the fixed build 0/10 (one-sided Fisher p = 5.41e-06).
+[00:59] ordinum ci re-runs the two saved regression cases against both builds. Real output, replayed at 4×.
+[01:10] 2 cases, 2 PASS: the regression expectations hold.
+[01:14] Shows: campaign to verified fix in one run. Does not show: a PocketBase bug, a third-party discovery, or results beyond one host.
+[01:27] Inspect the report, cases and logs at ordinum.org/evidence/pocketbase-verified-fix.

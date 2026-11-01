@@ -4,7 +4,7 @@ import Section from "@/components/ui/Section";
 import { technology } from "@/lib/content";
 import { SECTION_PAD, SectionIntro, pad } from "./shared";
 
-/** Section 7: current limitations, then the facts-snapshot footnote. */
+/** /security: current limitations, then the facts-snapshot footnote. */
 export default function Limitations() {
   const l = technology.limitations;
   return (
@@ -23,10 +23,10 @@ export default function Limitations() {
       <Reveal className="mt-10 flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-10">
         <p className="max-w-[640px] font-mono text-[11px] leading-[1.7] tracking-[0.04em] text-subtle">{technology.note}</p>
         <Link
-          href="/research"
+          href="/labs/research-summary"
           className="inline-flex min-h-11 shrink-0 items-center gap-2 font-mono text-[11px] tracking-[0.12em] text-lime uppercase underline decoration-lime/40 underline-offset-4 hover:decoration-lime md:min-h-0"
         >
-          Results and their labels on Research
+          Results and their labels in Ordinum Labs
           <span aria-hidden="true">→</span>
         </Link>
       </Reveal>

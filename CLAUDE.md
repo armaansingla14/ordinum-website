@@ -1,11 +1,13 @@
 # Ordinum Website
 
-Marketing site for ordinum.org. It has a home page plus /demo, /product, /technology, /research, /vision, /about and /contact, and the interim legal pages /terms and /privacy. Stack: Next.js 15 (App Router), React 19, TypeScript (strict), Tailwind CSS v4 and Motion (`motion/react`), deployed on Vercel. The repo is public.
+Marketing site for ordinum.org. It has a home page plus /products (overview) with /products/software, /products/agents and /products/robotics, /roadmap, /demos and /demos/nav2-walkthrough, /labs and /labs/[slug], /evidence/[case], /security, /about and /contact, and the interim legal pages /terms and /privacy. Old URLs (/product, /technology, /research, /vision, /demo, /solution, /how-it-works, /problem) are single-hop 308 redirects in `next.config.ts`. Stack: Next.js 15 (App Router), React 19, TypeScript (strict), Tailwind CSS v4 and Motion (`motion/react`), deployed on Vercel. The repo is public.
 
 Positioning: Ordinum is building continuous adversarial testing and verification infrastructure for interconnected software and hardware (software, AI, infrastructure, firmware, hardware, robotics). The headline is "Find failures that only appear when systems interact." It is research-stage.
 - **ROS 2 / Nav2 (simulation)** is the first integration that is Built & validated.
 - **The MQTT (Eclipse Mosquitto) adapter and the four-process cross-system testbed** are Built, experimental.
 - **The NanoMQ bridge** is In progress.
+- **PocketBase 0.40.6** (Software & APIs) and the **agents kit** (planted reference fixtures only; no third-party agent tested) are Built, experimental. Mosquitto 2.0.22 and NanoMQ 0.25.7 are real integrations with negative results (0 FAIL).
+- **Roadmap only:** Transactions (In progress, no numbers, no page); native fuzzing, emulated firmware, device transport, physical hardware (Planned).
 - Do not describe Ordinum as a robotics-only or "coverage-guided fuzzing for autonomous systems" company.
 
 ## Commands
@@ -15,50 +17,53 @@ Positioning: Ordinum is building continuous adversarial testing and verification
 - `npm run lint`: ESLint (should report 0 errors)
 - `npm run typecheck`: `tsc --noEmit`
 - `npm test`: Playwright tests. It starts `next start` on port 3000, so run `npm run build` first. If Chromium's system libraries live outside the default path, set `PLAYWRIGHT_CHROMIUM_LIBS` (see `playwright.config.ts`).
+  - `tests/routes.ts`: the shared ROUTES and REDIRECTS lists.
   - `tests/site.spec.ts`:
     - all routes at 320–1920 px: one h1, no overflow, no console errors
-    - nav, CTA, redirects and hash forwarding
-    - canonical, OG and JSON-LD, sitemap
-    - form labels
-    - `/demo` steps, without JS and by keyboard
+    - nav disclosures by keyboard (Escape returns focus, outside click / focus-out close, not hover-only), the mobile accordion and focus trap, the CTA
+    - every internal href on every route returns 200 with no redirect; old URLs redirect in one hop; hash forwarding
+    - titles (home exactly "Ordinum", others end " | Ordinum"), canonical, OG and JSON-LD, sitemap
+    - evidence packages (only published files linked; SHA-256 matches), Labs articles, /demos media status
+    - form labels; Nav2 walkthrough steps, without JS and by keyboard
     - the homepage word budget: at most 960 words, 60% of the 1,600-word pre-focus baseline
-  - `tests/claims.site.spec.ts`: the forbidden-claims guard over rendered text, head, sitemap and source, plus the LinkedIn allowlist for client JS.
-- `npm run screenshots`: full-page and per-section screenshots of every page at 320–1920, with reduced and full motion. Set the output directory with `SHOTS_DIR`.
+  - `tests/claims.site.spec.ts`: the forbidden-claims guard over rendered text, head, sitemap and source (skipping the verbatim artifacts in `public/evidence/`), plus the LinkedIn allowlist for client JS.
+- `npm run screenshots`: full-page and per-section screenshots of every page at 320–1920, with reduced and full motion. Set the output directory with `SHOTS_DIR`; filter with `SHOTS_ROUTES` (names like `products-software`), `SHOTS_WIDTHS`, `SHOTS_MODES`, `SHOTS_EXTRAS=0`.
 
 ## Structure
 - `app/`:
   - `layout.tsx`: fonts, root metadata from `seo` in `lib/content.ts`, and Organization + WebSite JSON-LD. The founders in the JSON-LD come from `about.founders`.
   - `globals.css`: Tailwind v4 `@theme` tokens
   - `not-found.tsx`
-  - `opengraph-image.tsx`: generated at build, with a maturity strip from `platformVision.domains`. `twitter-image.tsx` re-exports it.
-  - `sitemap.ts`: iterates `pages`, so it includes /demo, /terms and /privacy
+  - `opengraph-image.tsx`: generated at build, with a maturity strip of the product areas from the nav's Products group. `twitter-image.tsx` re-exports it.
+  - `sitemap.ts`: iterates `pages`, `labsArticles` and `evidencePackages` (never a redirected URL)
   - `robots.ts`
   - `actions/request-demo.ts`: the server action that writes to `inquiries`
-- **Page metadata:** use `pageMetadata(key)` and `homeMetadata` from `components/layout/metadata.ts`. They set the short title, description, own canonical, and full OG/Twitter titles from `seo.pages`.
+- **Page metadata:** use `pageMetadata(key)`, `routeMetadata({...})` (data-driven routes) and `homeMetadata` from `components/layout/metadata.ts`. They set the short title, description, own canonical, and full OG/Twitter titles from `seo.pages`. The root template is `"%s | Ordinum"`; the home `<title>` is exactly "Ordinum" (absolute).
   - Root metadata sets no OG/Twitter title, description or url, so it never stamps the home title onto inner pages.
   - A page that defines its own `openGraph` replaces the root object. It must repeat `type`/`siteName`/`locale`, and it loses the file-based image, so it must reference `/opengraph-image` and `/twitter-image` explicitly. The helper (`components/layout/metadata.ts`) does both.
 - `app/(site)/`: the route group.
   - `layout.tsx` renders Navbar + `<main>` + Footer for every page.
   - `page.tsx` is home.
-  - There is one folder per page: `demo/`, `product/`, `technology/`, `research/`, `vision/`, `about/`, `contact/`, `terms/` and `privacy/`.
-- **Home** has six sections: hero, one conceptual problem example, a real run (links to /demo), the four-stage workflow (Connect, Stress-test, Verify, Reproduce & prevent), progress with maturity labels, and founders followed by the CTA band.
-  - The seven-stage lifecycle (`lifecycle`, anchor `#lifecycle`) lives on /technology only.
+  - One folder per route: `products/` (+ `software/`, `agents/`, `robotics/`), `roadmap/`, `demos/` (+ `nav2-walkthrough/`), `labs/` (+ `[slug]/`), `evidence/[case]/`, `security/`, `about/`, `contact/`, `terms/` and `privacy/`. Dynamic routes use `generateStaticParams` with `dynamicParams = false`.
+- **Home** sections, in order: hero (CTAs "See Ordinum in action" → /demos and "Talk to us"), a short recorded Nav2 run (`#recorded-run`, labeled "Recorded run"), the four-stage workflow (`#workflow`, PipelineHero), product areas with status, the failure-to-fix flagship case (planted, labeled), selected Labs articles, operating boundaries with the pilot invitation, then the CTA band.
+  - The seven-stage lifecycle (`lifecycle`, anchor `#lifecycle`) and the architecture (`#architecture`) live on /products.
   - Keep home copy within the word budget.
+- **Product-area pages** use `components/sections/products/ProductArea.tsx` with `productAreas` copy: customer & job, what you connect/define, (robotics: one block per integration with its boundaries), one `SequenceDiagram` (CONCEPTUAL unless built from real data, which cites its artifact), demo or honest status, actual outputs, prerequisites / custom work / limitations, Labs + evidence links, one CTA.
 - `components/sections/`: shared and home sections at the top level, and page-specific sections in subfolders.
   - `PageHeader`: the inner-page h1, with optional `children` under the lede.
-  - `NextPage`: follows `pageOrder`, which is product → technology → research → vision → about.
+  - `NextPage`: follows `pageOrder`, which is products → software → agents → robotics → roadmap.
   - `CtaBand`: the sage design-partner band closing each page except /contact.
-    - Pass `current` so a button never links to its own page. On /demo, the secondary button becomes "Book a call".
+    - Pass `current` so a button never links to its own page. On /demos, the secondary button becomes "Book a call".
     - The optional `copy` prop takes page-specific text, for example `product.cta`.
 - `components/visuals/`: diagram and animated client components. `TraceTimeline` and `EvidenceReport` render real Nav2 trace and report data from `lib/evidence.ts`. Lazy-load heavy interactive visuals below the fold, and keep an accessible SSR fallback.
 - `components/layout/`:
-  - `Navbar`:
-    - Nav items are Product, Technology, Research, Vision and About, with the active item taken from the current route.
+  - `Navbar` + `NavDisclosure`:
+    - Top level (`nav.entries`): Products (disclosure: Platform overview, Software & APIs, AI Agents, Robotics & Connected Systems, Roadmap, each with a one-line description and maturity label), Demos, Ordinum Labs, Resources (disclosure: Security), Company (disclosure: About, Contact).
+    - Disclosures are buttons with `aria-expanded`/`aria-controls`; click, Enter or Space open them, never hover alone. Escape closes and returns focus; an outside click, focus leaving the group and a route change close them.
     - The primary CTA is "Talk to us" → `/contact#talk`, plus "Book a call".
-    - /demo is not a nav item.
-  - `MobileMenu`
+  - `MobileMenu`: the same entries; groups are accordion sections inside the sheet (focus trap kept). The section owning the current route starts expanded.
   - `Footer`: a one-line thesis, one status line, link columns, and Terms + Privacy links
-  - `HashRedirect`: forwards old `/#section` links to their pages
+  - `HashRedirect`: forwards old `/#section` links to their final pages (never to a redirecting URL)
   - `metadata.ts`
 - `components/ui/`: primitives (Section, Container, Topline, Kicker, Heading, Button, Reveal). Reuse these.
 - `components/brand/OrdinumMark.tsx`: the Saturn logo as a single SVG path. Do not modify it.
@@ -69,10 +74,14 @@ Positioning: Ordinum is building continuous adversarial testing and verification
 - `lib/content.ts`: ALL site copy and numbers live here. Edit copy here, not in components. It includes:
   - `seo`, `nav`, `pages`, `pageOrder`
   - `MATURITY_LABELS`, `EVIDENCE_CLASS_LABELS`, `integrations`, `demoWalkthrough`
+  - `platform`, `productAreas`, `roadmap`, `demos`, `security`, `home`
+  - `flagship` + `FLAGSHIP_LABEL`, `HOSTED_CI_STATUS`, `AI_METHODS_NOTE` (founder-approved wording; use verbatim)
   - `contact`, `legal`, `footer`
-  - `FACT_SOURCE`: the product-repo commit the technical statements were checked against (currently `124dde072`, checked 24 October 2026)
+  - `FACT_SOURCE`: facts checked against product `ordinum-2` head `44284b0`; evidence pinned at the stable checkpoint `768a9b5` (checked 1 November 2026). `researchNote` dates the research summary (`124dde072`).
   - `content_contract.md` (outside the repo) documents the shapes.
-- `lib/evidence.ts`: typed data copied from real artifacts in the product repo (`armaansingla14/ordinum`, branch `ordinum-2`, private). The artifacts were copied at `c25ba4f` and are unchanged at `124dde072`; the header lists the source files. Do not edit a value without re-checking the source file.
+- `lib/evidence.ts`: typed data copied from real artifacts in the product repo (`armaansingla14/ordinum`, branch `ordinum-2`, private). The artifacts were copied at `c25ba4f` and are unchanged at `768a9b5`; the header lists the source files. Do not edit a value without re-checking the source file.
+- `lib/labs.ts`: typed Ordinum Labs articles (slug, category, leading result + label, author Armaan Singla, date/revision, question, system, method, results, limitations, related, reproducibility links to /evidence/*, correction history, `AI_METHODS_NOTE`). "In preparation" entries have a title only: no results, no page, no link.
+- `lib/evidence-packages.ts`: the manifest of EXPECTED files per `/evidence/<case>`. `lib/evidence-files.ts` (server-only) links a file only if `public/evidence/<case>/<file>` exists at build time, with size and a build-time SHA-256; otherwise "Artifact pending publication".
 - `lib/schema.ts`: the zod schema shared by the form and the server action. Option allowlists come from `lib/content.ts`.
 - `lib/notify.server.ts`: the Resend notification (server-only)
 - `lib/supabase/`: the server client and DB types
@@ -105,6 +114,7 @@ Positioning: Ordinum is building continuous adversarial testing and verification
 - Do not use any of these:
   - "parts built" progress ratios
   - the test count 764 (the only test figure is "523 passed, 1 skipped", from the validation log)
+  - "independent review", treasury numbers or "M17" (transactions is a roadmap entry only)
   - reuse percentages
   - "beats random" or superiority over baselines
   - comparisons with named competitors
@@ -115,8 +125,11 @@ Positioning: Ordinum is building continuous adversarial testing and verification
   - Exact replay works only on deterministic targets: the toy robot, and the testbed's lockstep build.
   - Nav2 and MQTT use statistical reproduction.
 - **Nav2 violations:** the three reproduced Nav2 violations are harness, oracle or configuration artifacts, not Nav2 defects. Never relabel them.
-- **Video:** there is no demo video yet. Do not write "Watch the demo" or call anything a video. The CTA is "See Ordinum in action" → /demo.
-- **Private repo:** do not copy files, reports, traces or logs from the private product repo into this repo or `public/` without separate founder authorization.
+- **Video:** there is no demo video yet. Do not write "Watch the demo" or call anything a video. The CTA is "See Ordinum in action" → /demos. `demoPage.media` stays disabled; the flagship card on /demos shows "Recording in production". The claims guard allows "Watch the demo" only once `demoPage.media` has a reviewed video.
+- **Flagship:** every PocketBase number travels with `FLAGSHIP_LABEL` ("Controlled positive control — a defect planted in Ordinum's own test harness, not a PocketBase bug"). Every end-to-end fix demonstration uses a planted control.
+- **Reviews:** write "review by separate AI review agents", never "independent review". Labs articles carry `AI_METHODS_NOTE`.
+- **Hosted CI:** use `HOSTED_CI_STATUS` verbatim.
+- **Private repo:** do not copy files, reports, traces or logs from the private product repo into this repo or `public/` without separate founder authorization. The only authorized path is the founder-run export script into `public/evidence/{pocketbase-verified-fix,nav2-success-mismatch,testbed-planted-control}/`; never edit those files.
 - **Team:** two co-founders, Armaan Singla and Aarav Singla. Both profiles, including Aarav's LinkedIn (`/in/aaravsinglaa`), were approved for publication on 2026-10-24, so `ABOUT_PROFILES_PENDING` is false. Any profile with `pendingConfirmation: true` must not be rendered.
 - **Legal:** /terms (Website Terms) and /privacy (Privacy Notice) are interim pages approved by the founders on 25 October 2026, pending legal review. Do not change their text without founder (ideally legal) approval.
 

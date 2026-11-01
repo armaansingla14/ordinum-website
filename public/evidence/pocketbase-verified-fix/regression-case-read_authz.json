@@ -1,0 +1,147 @@
+{
+  "compare_result": {
+    "affected": {
+      "config_hash": "cfg_38da749fbf64",
+      "fingerprint": "pocketbase@0.40.6:sha256:a632f8779884c9335c3c2716:pc_stale_read_cache",
+      "inconclusive": 0,
+      "inconclusive_reasons": [],
+      "k": 10,
+      "n": 10,
+      "name": "affected",
+      "overrides": {
+        "variant": "pc_stale_read_cache"
+      },
+      "statuses": {
+        "FAIL": 10
+      }
+    },
+    "exec_seeds": [
+      2080954493,
+      1128377948,
+      660032228,
+      824315809,
+      481248734,
+      940847892,
+      1397816166,
+      2129442744,
+      1943916397,
+      1947388634
+    ],
+    "fixed": {
+      "config_hash": "cfg_ee4444146a66",
+      "fingerprint": "pocketbase@0.40.6:sha256:ea9238f07449e4e810e03675:safe",
+      "inconclusive": 0,
+      "inconclusive_reasons": [],
+      "k": 0,
+      "n": 10,
+      "name": "fixed",
+      "overrides": {
+        "variant": "safe"
+      },
+      "statuses": {
+        "PASS": 10
+      }
+    },
+    "invariant_id": "read_authz",
+    "message": "FIXED: fixed build 0/N with no inconclusive run; affected reproduces. invariant read_authz: affected 10/10 conclusive (0 inconclusive), fixed 0/10 conclusive (0 inconclusive) over N=10 shared seeds; rule min_k=1, alpha=0.01, max_inconclusive_frac=0.1; one-sided Fisher p=5.41e-06",
+    "p_value": 5.412544112234515e-06,
+    "rule": {
+      "alpha": 0.01,
+      "min_k": 1
+    },
+    "verdict": "FIXED"
+  },
+  "config": {
+    "deadline_s": 60.0,
+    "guidance": "full",
+    "invariants": {
+      "enabled": [
+        "ack_consistency",
+        "model_agreement",
+        "no_lost_update",
+        "read_authz",
+        "realtime_authz",
+        "restart_durability",
+        "stale_token_rejected",
+        "write_authz"
+      ]
+    },
+    "isolation": null,
+    "label": "default",
+    "max_mutations": 6,
+    "target": "ordinum.targets.pocketbase.target:PocketBaseTarget",
+    "target_params": {
+      "realtime": true,
+      "steps": 40,
+      "variant": "pc_stale_read_cache"
+    },
+    "trajectory_len_cap": 200,
+    "version": 2
+  },
+  "config_hash": "cfg_38da749fbf64",
+  "detail": "list by ualice000000000 (valid token) returned ['dinit0000000002', 'dnew00000000004'], not allowed by the stored listRule",
+  "exec_seed": 290706733,
+  "expect_violation": false,
+  "failure_id": "fail_a862e75a4fbb",
+  "invariant_id": "read_authz",
+  "match": {
+    "data_key": "witness",
+    "equals": "list"
+  },
+  "min_info": {
+    "executions": 11,
+    "minimized_size": 1,
+    "one_minimal": true,
+    "oracle": "statistical(n=10,k=3)",
+    "original_size": 1
+  },
+  "minimal_mutation_count": 1,
+  "minimized": true,
+  "original_mutation_count": 1,
+  "scenario": {
+    "base_seed": 1,
+    "mutations": [
+      {
+        "at": 12.0,
+        "kind": "rule_change",
+        "params": {
+          "which": 1
+        },
+        "target": "policy",
+        "trigger": null
+      }
+    ],
+    "origin": "minimized",
+    "parent_id": "scn_6c83a70b26e1"
+  },
+  "severity": "critical",
+  "target_fingerprint": "pocketbase@0.40.6:sha256:a632f8779884c9335c3c2716:pc_stale_read_cache",
+  "verify": {
+    "builds": {
+      "affected": {
+        "variant": "pc_stale_read_cache"
+      },
+      "fixed": {
+        "variant": "safe"
+      }
+    },
+    "exec_seeds": [
+      2080954493,
+      1128377948,
+      660032228,
+      824315809,
+      481248734,
+      940847892,
+      1397816166,
+      2129442744,
+      1943916397,
+      1947388634
+    ],
+    "mode": "compare",
+    "n": 10,
+    "rule": {
+      "alpha": 0.01,
+      "min_k": 1
+    }
+  }
+}

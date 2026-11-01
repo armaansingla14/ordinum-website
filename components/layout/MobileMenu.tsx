@@ -16,8 +16,9 @@ import { createPortal } from "react-dom";
 import Button from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
 import { cn } from "@/lib/cn";
-import { nav, site } from "@/lib/content";
-import { resolveHref } from "@/lib/nav";
+import { nav, site, type NavEntry, type NavGroup } from "@/lib/content";
+import { entryOwns, isCurrent, resolveHref } from "@/lib/nav";
+import { NavMaturity } from "./NavDisclosure";
 
 /**
  * Anchor that uses next/link for route paths and a plain <a> for in-page hashes,
@@ -55,8 +56,8 @@ function lockScroll() {
 type MobileMenuProps = {
   /** On the home page links are in-page hashes; elsewhere they are prefixed with "/". */
   onHome: boolean;
-  /** Nav href of the current page, if any. */
-  active: string | null;
+  /** Current route, for aria-current and the initially expanded section. */
+  pathname: string;
 };
 
 /**
@@ -65,8 +66,13 @@ type MobileMenuProps = {
  * backdrop-filter doesn't become its containing block. Focus is trapped between the toggle
  * and the sheet, Escape closes and restores focus, links close the sheet, body scroll is locked.
  */
-export default function MobileMenu({ onHome, active }: MobileMenuProps) {
+export default function MobileMenu({ onHome, pathname }: MobileMenuProps) {
   const [open, setOpen] = useState(false);
+  // Accordion: the section that owns the current route starts expanded.
+  const owner = (nav.entries as readonly NavEntry[]).find((e): e is NavGroup => e.kind === "group" && entryOwns(e, pathname));
+  const ownerId = owner ? owner.id : null;
+  const [expanded, setExpanded] = useState<string | null>(ownerId);
+  const sectionIdBase = useId();
   const isClient = useIsClient();
   const sheetId = useId();
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -86,6 +92,11 @@ export default function MobileMenu({ onHome, active }: MobileMenuProps) {
     },
     [unlock],
   );
+
+  // Each time the sheet opens, start from the section that owns the current route.
+  useEffect(() => {
+    if (open) setExpanded(ownerId);
+  }, [open, ownerId]);
 
   // Scroll lock + initial focus while open.
   useEffect(() => {
@@ -193,46 +204,98 @@ export default function MobileMenu({ onHome, active }: MobileMenuProps) {
           <Container className="relative flex flex-1 flex-col pb-[max(28px,env(safe-area-inset-bottom))] pt-7">
             <p className="label-mono flex items-center justify-between text-subtle">
               <span>Index</span>
-              <span aria-hidden="true">{String(nav.links.length).padStart(2, "0")} pages</span>
+              <span aria-hidden="true">{String(nav.entries.length).padStart(2, "0")} sections</span>
             </p>
 
             <nav aria-label="Mobile" className="mt-4">
               <ul className="border-t border-line">
-                {nav.links.map((link, i) => {
-                  const href = resolveHref(link.href, onHome);
-                  const isActive = active === link.href;
+                {nav.entries.map((entry, i) => {
+                  const owns = entryOwns(entry, pathname);
+                  const number = (
+                    <span
+                      aria-hidden="true"
+                      className={cn("font-mono text-[11px] tracking-[0.14em]", owns ? "text-lime" : "text-subtle")}
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                  );
+                  const labelClass = cn(
+                    "text-[clamp(28px,8vw,38px)] font-semibold leading-none tracking-display transition-colors duration-200",
+                    owns ? "text-lime" : "text-text group-hover:text-lime",
+                  );
+                  if (entry.kind === "link") {
+                    const href = resolveHref(entry.href, onHome);
+                    return (
+                      <motion.li
+                        key={entry.href}
+                        className="border-b border-line"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.45, delay: 0.04 + i * 0.045, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        <NavAnchor
+                          href={href}
+                          onClick={(event) => onLinkClick(event, href)}
+                          aria-current={pathname === entry.href ? "page" : undefined}
+                          className="group flex items-center justify-between gap-6 py-[17px] focus-visible:outline-offset-[-2px]"
+                        >
+                          <span className={labelClass}>{entry.label}</span>
+                          {number}
+                        </NavAnchor>
+                      </motion.li>
+                    );
+                  }
+                  const isOpen = expanded === entry.id;
+                  const panelId = `${sectionIdBase}-${entry.id}`;
                   return (
                     <motion.li
-                      key={link.href}
+                      key={entry.id}
                       className="border-b border-line"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.45, delay: 0.04 + i * 0.045, ease: [0.16, 1, 0.3, 1] }}
                     >
-                      <NavAnchor
-                        href={href}
-                        onClick={(event) => onLinkClick(event, href)}
-                        aria-current={isActive ? "page" : undefined}
-                        className="group flex items-center justify-between gap-6 py-[19px] focus-visible:outline-offset-[-2px]"
+                      <button
+                        type="button"
+                        aria-expanded={isOpen}
+                        aria-controls={panelId}
+                        onClick={() => setExpanded(isOpen ? null : entry.id)}
+                        className="group flex w-full items-center justify-between gap-6 py-[17px] text-left focus-visible:outline-offset-[-2px]"
                       >
-                        <span
-                          className={cn(
-                            "text-[clamp(30px,8.6vw,40px)] font-semibold leading-none tracking-display transition-colors duration-200",
-                            isActive ? "text-lime" : "text-text group-hover:text-lime",
-                          )}
-                        >
-                          {link.label}
+                        <span className={labelClass}>{entry.label}</span>
+                        <span className="flex items-center gap-4">
+                          <span aria-hidden="true" className="font-mono text-[16px] leading-none text-lime">
+                            {isOpen ? "−" : "+"}
+                          </span>
+                          {number}
                         </span>
-                        <span
-                          aria-hidden="true"
-                          className={cn(
-                            "font-mono text-[11px] tracking-[0.14em]",
-                            isActive ? "text-lime" : "text-subtle",
-                          )}
-                        >
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
-                      </NavAnchor>
+                      </button>
+                      <ul id={panelId} hidden={!isOpen} className="-mt-1 pb-4">
+                        {entry.items.map((item) => {
+                          const current = isCurrent(item, pathname);
+                          return (
+                            <li key={item.href} className="border-t border-line/70 first:border-t-0">
+                              <NavAnchor
+                                href={item.href}
+                                onClick={(event) => onLinkClick(event, item.href)}
+                                aria-current={current ? "page" : undefined}
+                                className="group/item flex flex-col gap-1 py-3 pl-1 focus-visible:outline-offset-[-2px]"
+                              >
+                                <span
+                                  className={cn(
+                                    "text-[17px] leading-[1.3] font-semibold tracking-[-0.02em]",
+                                    current ? "text-lime" : "text-text group-hover/item:text-lime",
+                                  )}
+                                >
+                                  {item.label}
+                                </span>
+                                <span className="text-[13.5px] leading-[1.5] text-muted">{item.description}</span>
+                                <NavMaturity item={item} className="mt-0.5" />
+                              </NavAnchor>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </motion.li>
                   );
                 })}

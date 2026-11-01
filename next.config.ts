@@ -31,11 +31,19 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   async redirects() {
+    // Every old URL goes to its final page in one hop (308). Keep REDIRECTS in tests/site.spec.ts in step.
     return [
-      // Legacy routes from the previous site.
-      { source: "/problem", destination: "/#problem", permanent: true },
-      { source: "/solution", destination: "/product", permanent: true },
-      { source: "/how-it-works", destination: "/technology", permanent: true },
+      // Pages retired in the labs + products release (1 November 2026).
+      { source: "/product", destination: "/products", permanent: true },
+      { source: "/technology", destination: "/products#architecture", permanent: true },
+      { source: "/research", destination: "/labs/research-summary", permanent: true },
+      { source: "/vision", destination: "/roadmap", permanent: true },
+      { source: "/demo", destination: "/demos/nav2-walkthrough", permanent: true },
+      // Legacy routes from the previous site, repointed directly (no chains).
+      { source: "/solution", destination: "/products", permanent: true },
+      { source: "/how-it-works", destination: "/products#how-it-works", permanent: true },
+      // The home page no longer has a #problem section.
+      { source: "/problem", destination: "/", permanent: true },
     ];
   },
   async headers() {

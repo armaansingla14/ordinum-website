@@ -1,10 +1,8 @@
-import PipelineHero from "@/components/visuals/PipelineHero";
 import Button from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
 import Kicker from "@/components/ui/Kicker";
 import { hero, type Maturity } from "@/lib/content";
 import { MaturityMark } from "@/components/visuals/pipeline/maturity";
-import { ArrowLink } from "@/components/sections/home/shared";
 
 /**
  * "Research-stage · Working robotics integration · Experimental cross-system integrations" ->
@@ -21,11 +19,9 @@ const statusItems = hero.status.split(" · ").map((text) => {
 });
 
 /**
- * Hero: thesis, plain-language lede, who it is for, CTAs, honest build status, and the
- * conceptual four-stage PipelineHero (the home page's only statement of the four stages),
- * with a link to the full lifecycle on /technology.
- * Desktop: copy on top, the pipeline band anchored to the bottom of a viewport-high
- * (capped) frame. Mobile: copy first, then the vertical pipeline.
+ * Hero: thesis, plain-language lede, who it is for, CTAs ("See Ordinum in action" -> /demos,
+ * "Talk to us"), and the honest build status. The four-stage PipelineHero now sits in its own
+ * home section (components/sections/home/Workflow.tsx), after the recorded run.
  */
 export default function Hero() {
   return (
@@ -48,7 +44,7 @@ export default function Hero() {
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-40 bg-gradient-to-b from-bg to-transparent"
       />
 
-      <Container className="flex flex-col pt-14 pb-[56px] sm:pt-20 md:pb-16 lg:min-h-[min(calc(100svh-72px),900px)] lg:pt-[clamp(56px,9svh,96px)] lg:pb-10">
+      <Container className="flex flex-col pt-14 pb-[56px] sm:pt-20 md:pb-20 lg:pt-[clamp(64px,11svh,120px)] lg:pb-[clamp(64px,10svh,112px)]">
         <div>
           <Kicker dot>{hero.eyebrow}</Kicker>
 
@@ -95,13 +91,6 @@ export default function Hero() {
               ))}
             </ul>
           </div>
-        </div>
-
-        <div className="pt-12 md:pt-14 lg:mt-auto lg:pt-12">
-          <PipelineHero />
-          <ArrowLink href={hero.visual.link.href} className="mt-3">
-            {hero.visual.link.label}
-          </ArrowLink>
         </div>
       </Container>
     </section>
