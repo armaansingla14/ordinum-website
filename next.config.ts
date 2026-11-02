@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
     return [
       // Pages retired in the labs + products release (1 November 2026).
       { source: "/product", destination: "/products", permanent: true },
-      { source: "/technology", destination: "/security#architecture", permanent: true },
+      { source: "/technology", destination: "/products#architecture", permanent: true },
       { source: "/research", destination: "/labs/research-summary", permanent: true },
       { source: "/vision", destination: "/roadmap", permanent: true },
       { source: "/demo", destination: "/demos/nav2-walkthrough", permanent: true },

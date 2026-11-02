@@ -4,11 +4,11 @@ import Section from "@/components/ui/Section";
 import { technology } from "@/lib/content";
 import { SECTION_PAD, SectionIntro, pad } from "./shared";
 
-/** /security: current limitations, then the facts-snapshot footnote. */
+/** /products #limitations: current limitations, then the facts-snapshot footnote. */
 export default function Limitations() {
   const l = technology.limitations;
   return (
-    <Section id={l.id} aria-labelledby={`${l.id}-title`} className={SECTION_PAD}>
+    <Section id={l.id} variant="charcoal" aria-labelledby={`${l.id}-title`} className={SECTION_PAD}>
       <SectionIntro kicker={l.kicker} title={l.title} titleId={`${l.id}-title`} />
 
       <Reveal as="ol" amount={0.05} className="mt-12 grid gap-x-12 border-t border-line md:mt-16 md:grid-cols-2">

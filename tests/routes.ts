@@ -8,6 +8,7 @@ export const ROUTES = [
   "/products/software",
   "/products/agents",
   "/products/robotics",
+  "/products/transactions",
   "/roadmap",
   "/demos",
   "/demos/nav2-walkthrough",
@@ -24,7 +25,7 @@ export const ROUTES = [
 /** Old URL -> final URL, one 308 hop each (next.config.ts). */
 export const REDIRECTS = [
   ["/product", "/products"],
-  ["/technology", "/security#architecture"],
+  ["/technology", "/products#architecture"],
   ["/research", "/labs/research-summary"],
   ["/vision", "/roadmap"],
   ["/demo", "/demos/nav2-walkthrough"],

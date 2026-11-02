@@ -53,7 +53,7 @@ const pocketbase = {
   classes: flagship.labelClasses,
   qualifier: "PocketBase itself is unmodified.",
   summary:
-    "The run in the demo. A stale read cache in our PocketBase client path violates read authorization; ordinum verify finds it, confirms it, reduces it to one fault, compares the failing and fixed builds and returns FIX_VERIFIED, and ordinum ci replays the saved cases.",
+    "The run in the demo. A stale read cache in our PocketBase client path violates read authorization; ordinum verify finds it, confirms it, shows one fault is enough, compares the failing and fixed builds and returns FIX_VERIFIED, and ordinum ci replays the saved cases.",
   identity: [
     { k: "Source revision", v: `Product commit ${flagship.commitShort} (stable checkpoint)` },
     { k: "Run date", v: flagship.date },
@@ -100,7 +100,7 @@ const pocketbase = {
     "Ten runs per build is a statistical comparison, not a proof.",
   ],
   related: [
-    { label: "Watch the demo", href: "/demos#demo-flagship" },
+    { label: "Watch demo", href: "/#demo" },
     { label: "Case study", href: "/labs/from-failed-authorization-test-to-verified-fix" },
     { label: "Software & APIs", href: "/products/software" },
   ],
@@ -171,10 +171,67 @@ const testbed = {
   ],
   sanitization: "Copied as committed. Scanned for local paths, usernames, hostnames, emails, tokens and keys.",
   limitations: ["Our own system under test, not production software or hardware.", "A planted control: it checks the engine. It is not a discovery."],
-  related: [{ label: "Robotics & Connected Systems", href: "/products/robotics" }],
+  related: [{ label: "Robotics & connected systems", href: "/products/robotics" }],
 } as const satisfies EvidencePackage;
 
-export const evidencePackages = [pocketbase, nav2, testbed] as const satisfies readonly EvidencePackage[];
+/**
+ * The real bug Ordinum found in OUR OWN hardened reference agent (release candidate). Files are
+ * exported by the founder-run script (~/scratch/ordinum-9/export_agent_evidence.sh) into
+ * public/evidence/agent-reference-cancel/; until then every row shows PENDING_LABEL.
+ */
+const agentCancel = {
+  slug: "agent-reference-cancel",
+  title: "Reference agent: a cancel that missed an in-flight call",
+  label: "Our own reference application · real, unplanted bug · release candidate",
+  classes: [],
+  qualifier: "Not third-party software. Found while checking a planted variant; fixed test-first in 9a70c5c.",
+  summary:
+    "In the hardened build of Ordinum's own reference agent, cancelling delegated work did not reach a sub-agent call already in flight. The strict comparison against the planted variant pc_delegate_parent came back NOT_FIXED because the hardened build violated the property too.",
+  identity: [
+    { k: "Application", v: "examples/agent_reference (Ordinum's own), release candidate ordinum-2-release" },
+    { k: "Pre-fix run", v: "Strict per-defect matrix at commit 6806931; variant pc_delegate_parent vs the hardened build" },
+    { k: "Fix", v: "Commit 9a70c5c (test-first)" },
+    { k: "Post-fix run", v: "Strict matrix on agentref@0.1.0-4f1bacd749c7" },
+  ],
+  prerequisites: ["Ordinum at the listed revisions (private repository; ask us for access).", "No Docker needed for the reference agent."],
+  properties: [
+    {
+      name: "stale_authorization_on_retry_or_cancel",
+      detail: "After a retry or a cancel, no action may run on an authorization that is no longer current.",
+    },
+  ],
+  counts: [
+    { k: "Before the fix", v: "NOT_FIXED: 12/12 planted-build runs vs 12/12 hardened-build runs" },
+    { k: "Confirmation", v: "5/5" },
+    { k: "Minimization", v: "3 faults to 2; 1-minimality not verified" },
+    { k: "After the fix", v: "No NOT_FIXED; overall strict verdict CANNOT_VERIFY (sibling defects inconclusive)" },
+    { k: "Planted cases", v: "9/9 PASS FIXED on the fixed build (2af351c)" },
+  ],
+  comparisonRule:
+    "The strict matrix compares each planted variant with the hardened build. NOT_FIXED means the property was still violated on the build meant to be correct; here that pointed at a bug in the hardened build itself.",
+  files: [
+    { name: "pre-fix-report.md", description: "Strict verify report for pc_delegate_parent before the fix (Markdown)" },
+    { name: "pre-fix-report.json", description: "The same report (JSON)" },
+    { name: "pre-fix-case-not-fixed.json", description: "The NOT_FIXED case before the fix" },
+    { name: "pre-fix-matrix.json", description: "Strict per-defect matrix before the fix" },
+    { name: "post-fix-report.md", description: "Strict verify report for pc_delegate_parent after the fix (Markdown)" },
+    { name: "post-fix-report.json", description: "The same report (JSON)" },
+    { name: "post-fix-matrix.json", description: "Strict per-defect matrix after the fix" },
+  ],
+  sanitization: "Local paths replaced with <deliverables> and <repo>. No other edits. No source code is published.",
+  limitations: [
+    "Our own reference application, not third-party software.",
+    "Release candidate, not the stable checkpoint.",
+    "The overall strict verdict after the fix is CANNOT_VERIFY, not FIX_VERIFIED.",
+    "No review round is logged for this finding.",
+  ],
+  related: [
+    { label: "Case study", href: "/labs/ordinum-found-a-bug-in-our-own-reference-agent" },
+    { label: "AI agent security", href: "/products/agents" },
+  ],
+} as const satisfies EvidencePackage;
+
+export const evidencePackages = [agentCancel, pocketbase, nav2, testbed] as const satisfies readonly EvidencePackage[];
 
 export function evidencePackage(slug: string): EvidencePackage | undefined {
   return (evidencePackages as readonly EvidencePackage[]).find((p) => p.slug === slug);

@@ -7,7 +7,7 @@ import { platform } from "@/lib/content";
 export default function Capabilities() {
   const c = platform.capabilities;
   return (
-    <Section id={c.id} aria-labelledby={`${c.id}-title`} className={SECTION_PAD}>
+    <Section id={c.id} variant="charcoal" aria-labelledby={`${c.id}-title`} className={SECTION_PAD}>
       <SectionIntro kicker={c.kicker} title={c.title} titleMuted={c.titleMuted} titleId={`${c.id}-title`} lede={c.lede} />
 
       <Reveal as="ul" stagger={0.03} amount={0.03} className="mt-12 border-t border-line-2 md:mt-16">

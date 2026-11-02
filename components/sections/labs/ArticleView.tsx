@@ -5,7 +5,9 @@ import PageHeader from "@/components/sections/PageHeader";
 import Research from "@/components/sections/Research";
 import { EvidenceLabel } from "@/components/sections/demo/parts";
 import { Bullets } from "@/components/sections/research/shared";
+import { Disclosure } from "@/components/sections/technology/shared";
 import Container from "@/components/ui/Container";
+import GoalPlot from "@/components/visuals/GoalPlot";
 import { cn } from "@/lib/cn";
 import type { LabsArticle } from "@/lib/labs";
 
@@ -55,16 +57,31 @@ function Links({ links }: { links: readonly { label: string; href: string }[] })
   );
 }
 
+/** Key/value rows (what it shows, technical details). */
+function Rows({ rows }: { rows: readonly { k: string; v: string }[] }) {
+  return (
+    <dl className="border-t border-line">
+      {rows.map((r) => (
+        <div key={r.k} className="grid grid-cols-1 gap-1 border-b border-line py-3.5 sm:grid-cols-[170px_minmax(0,1fr)] sm:gap-5">
+          <dt className="font-mono text-[10.5px] tracking-[0.1em] text-subtle uppercase sm:pt-[3px]">{r.k}</dt>
+          <dd className="text-[15px] leading-[1.6] break-words text-text">{r.v}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 /**
- * A Labs article: the question and the result first (with its evidence label), then the results
- * in detail, the system under test and the method (research summary: the full research sections),
- * the evidence links, limitations, related work, corrections, and the AI methods note last.
+ * A Labs article, in this order: the finding (with its evidence label); what was tested; why it
+ * matters; how it worked; what it shows (research summary: the full research sections follow);
+ * what it does not establish; artifacts and reproduction (evidence links, collapsed technical
+ * details, related work, corrections); and the AI methods note last.
  */
 export default function ArticleView({ article }: { article: LabsArticle }) {
   return (
     <article aria-labelledby="page-title">
       <PageHeader header={{ kicker: `Ordinum Labs · ${article.category}`, title: article.title, lede: article.summary }}>
-        <p className={cn(mono, "mt-8 flex flex-wrap gap-x-4 gap-y-1 text-subtle")}>
+        <p className={cn(mono, "mt-7 flex flex-wrap gap-x-4 gap-y-1 text-subtle")}>
           <span>By {article.authors.join(", ")}</span>
           <span aria-hidden="true">·</span>
           <span>
@@ -76,68 +93,65 @@ export default function ArticleView({ article }: { article: LabsArticle }) {
       </PageHeader>
 
       <Container>
-        <section id="question" aria-labelledby="question-title" className="pt-10 md:pt-14">
-          <h2 id="question-title" className={cn(mono, "text-subtle")}>
-            Question
+        <section id="finding" aria-labelledby="finding-title" className="border-b border-line pt-10 pb-10 md:pt-12 md:pb-12">
+          <h2 id="finding-title" className={cn(mono, "text-lime")}>
+            The finding
           </h2>
-          <p className="mt-4 max-w-[920px] text-[17px] leading-[1.7] text-text md:text-[18px]">{article.question}</p>
-        </section>
-        <section id="leading-result" aria-labelledby="leading-result-title" className="border-b border-line pt-10 pb-10 md:pt-12 md:pb-14">
-          <h2 id="leading-result-title" className={cn(mono, "text-lime")}>
-            Result
-          </h2>
-          <p className="mt-5 max-w-[920px] text-[clamp(21px,2.2vw,28px)] leading-[1.4] tracking-[-0.03em] text-balance text-text">
+          <p className="mt-5 max-w-[920px] text-[clamp(20px,2vw,26px)] leading-[1.4] tracking-[-0.03em] text-balance text-text">
             {article.leadingResult}
           </p>
           <EvidenceLabel size="lg" text={article.label.text} classes={article.label.classes} className="mt-6" />
         </section>
 
-        <Block id="results" n="01" title="Results in detail">
-          <dl className="border-t border-line">
-            {article.results.map((r) => (
-              <div key={r.k} className="grid grid-cols-1 gap-1 border-b border-line py-3.5 sm:grid-cols-[170px_minmax(0,1fr)] sm:gap-5">
-                <dt className="font-mono text-[10.5px] tracking-[0.1em] text-subtle uppercase sm:pt-[3px]">{r.k}</dt>
-                <dd className="text-[15px] leading-[1.6] text-text">{r.v}</dd>
-              </div>
-            ))}
-          </dl>
-          {article.resultsNote && <p className="mt-4 text-[14px] leading-[1.65] text-subtle">{article.resultsNote}</p>}
-        </Block>
-        <Block id="system" n="02" title="System under test">
+        <Block id="tested" n="01" title="What was tested">
+          <p className="mb-4 text-[16px] leading-[1.75] text-text">{article.question}</p>
           <Paragraphs items={article.system} />
         </Block>
-        <Block id="method" n="03" title="Method">
+        <Block id="why-it-matters" n="02" title="Why it matters">
+          <Paragraphs items={article.whyItMatters} />
+        </Block>
+        <Block id="how-it-worked" n="03" title="How it worked">
           <Paragraphs items={article.method} />
+        </Block>
+        <Block id="what-it-shows" n="04" title="What it shows" className={article.body === "research-summary" ? "border-b-0" : undefined}>
+          <Rows rows={article.results} />
+          {article.resultsNote && <p className="mt-4 text-[14px] leading-[1.65] text-subtle">{article.resultsNote}</p>}
+          {article.visual === "goalPlot" && <GoalPlot className="mt-8" />}
         </Block>
       </Container>
 
       {article.body === "research-summary" && (
-        <div className="mt-[-1px] border-t border-line">
+        <div className="border-t border-line">
           <Research />
         </div>
       )}
 
       <Container>
-        <Block id="reproduce" n="04" title="Evidence">
-          <Links links={article.reproducibility} />
-        </Block>
-        <Block id="article-limitations" n="05" title="Limitations">
+        <Block id="not-established" n="05" title="What it does not establish">
           <Bullets items={article.limitations} mark="dashed" />
         </Block>
-        <Block id="related" n="06" title="Related">
-          <Links links={article.related} />
-        </Block>
-        <Block id="corrections" n="07" title="Corrections">
-          <ol className="space-y-4">
+        <Block id="artifacts" n="06" title="Artifacts and reproduction">
+          <Links links={article.reproducibility} />
+          <Disclosure summary="Technical details" className="mt-5">
+            <div className="mt-2">
+              <Rows rows={article.technical} />
+            </div>
+          </Disclosure>
+          <p className={cn(mono, "mt-8 text-subtle")}>Related</p>
+          <div className="mt-2">
+            <Links links={article.related} />
+          </div>
+          <p className={cn(mono, "mt-8 text-subtle")}>Corrections</p>
+          <ol className="mt-3 space-y-3">
             {article.corrections.map((c) => (
               <li key={c.date + c.text.slice(0, 20)} className="grid gap-1 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-5">
                 <span className="font-mono text-[11px] tracking-[0.06em] text-subtle sm:pt-[3px]">{c.date}</span>
-                <span className="text-[15px] leading-[1.65] text-muted">{c.text}</span>
+                <span className="text-[14.5px] leading-[1.65] text-muted">{c.text}</span>
               </li>
             ))}
           </ol>
         </Block>
-        <Block id="methods-note" n="08" title="Methods note" className="border-b-0">
+        <Block id="methods-note" n="07" title="Methods note" className="border-b-0">
           <p className="text-[15px] leading-[1.7] text-muted">{article.methodsNote}</p>
         </Block>
       </Container>

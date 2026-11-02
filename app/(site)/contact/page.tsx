@@ -4,7 +4,7 @@ import ClosingCTA from "@/components/sections/ClosingCTA";
 
 export const metadata: Metadata = pageMetadata("contact");
 
-/** Two paths: talk to the founders (#talk) or send an inquiry (#inquiry, form at #contact-form). */
+/** Request an evaluation: how it starts (#talk, kept for old links) and the form (#inquiry, form at #contact-form). */
 export default function ContactPage() {
   return <ClosingCTA asPageHeading />;
 }

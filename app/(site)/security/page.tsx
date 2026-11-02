@@ -2,29 +2,24 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/components/layout/metadata";
 import CtaBand from "@/components/sections/CtaBand";
 import PageHeader from "@/components/sections/PageHeader";
-import { Boundaries, Fidelity, NetworkIsolation, Scope, SecurityContact } from "@/components/sections/security/Security";
-import Architecture from "@/components/sections/technology/Architecture";
-import Limitations from "@/components/sections/technology/Limitations";
-import Reproduction from "@/components/sections/technology/Reproduction";
+import { Boundaries, DataHandling, Deployment, HostedCi, NetworkIsolation, SecurityContact } from "@/components/sections/security/Security";
 
 export const metadata: Metadata = pageMetadata("security");
 
 /**
- * /security: scope, network isolation per integration (#network), operating limits, how a run
- * works (#architecture with the seven-stage #lifecycle; redirect target of /technology),
- * reproduction (#reproduction), what runs where, limitations and how to report a concern.
+ * /security: deployment (#deployment), data handling (#data), network isolation per integration
+ * (#network), operating limits, hosted CI (#ci) and how to report a concern (#report). How a run
+ * works moved to /products (#architecture, #lifecycle, #reproduction).
  */
 export default function SecurityPage() {
   return (
     <>
       <PageHeader page="security" />
-      <Scope />
+      <Deployment />
+      <DataHandling />
       <NetworkIsolation />
       <Boundaries />
-      <Architecture />
-      <Reproduction />
-      <Fidelity />
-      <Limitations />
+      <HostedCi />
       <SecurityContact />
       <CtaBand current="security" />
     </>

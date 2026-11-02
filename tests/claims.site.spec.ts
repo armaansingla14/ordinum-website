@@ -11,7 +11,7 @@ import { ROUTES as SITE_ROUTES } from "./routes";
  * element marked [data-withdrawn] (the history note in the Labs research summary).
  */
 
-/** "Watch the demo" is allowed only while the flagship recording (lib/content.ts flagshipVideo) exists in public/. */
+/** "Watch demo" is allowed only while the flagship recording (lib/content.ts flagshipVideo) exists in public/. */
 const VIDEO_PUBLISHED = ["mp4", "webm", "captions", "poster"].every((k) =>
   fs.existsSync(path.resolve(__dirname, "..", "public", flagshipVideo[k as "mp4"].replace(/^\//, ""))),
 );
@@ -45,13 +45,12 @@ const FORBIDDEN: readonly (string | RegExp)[] = [
   "Antithesis",
   "our customers",
   "design partners include",
-  // Release (2026-11-01): reviews were by separate AI review agents, never "independent review";
-  // transactions are a roadmap entry only (no treasury numbers, no M17 milestone).
+  // Release (2026-11-01): reviews were by separate AI review agents, never "independent review".
+  // (The treasury/M17 rule was replaced on 1 November 2026 by the transaction "reference
+  // application" rule below: transactions now have a page, about our own reference application.)
   "independent review",
   "independently reviewed",
-  "treasury",
-  /(?<![\w.])M17(?!\w|\.\d)/,
-  // Copy pass (2026-11-01): the only test figure is TEST_SUITE_STATUS (2229 passed, 32 skipped);
+  // Copy pass (2026-11-01): the test figures are TEST_SUITE_STATUS / TEST_SUITE_STABLE;
   // no "independent checks" (they are ground-truth checks); no stale recording, CI or bridge
   // status; no meta or self-congratulatory headings.
   "523 passed",
@@ -73,8 +72,20 @@ const FORBIDDEN: readonly (string | RegExp)[] = [
   "command by command",
   "Agent authority and resource effects",
   "Targets run with no network or loopback only",
+  // 9/10 pass (2026-11-01): one primary CTA ("Request an evaluation") and one secondary ("Watch
+  // demo"); no competing calls to action; no self-serve install lines; the old local-tool framing
+  // and the old headline are retired.
+  // ("Book a call" as a link or button is checked in tests/site.spec.ts; the approved Privacy
+  // Notice text mentions booking a call through Cal.com, so the phrase itself is allowed.)
+  "Watch the demo",
+  "Talk to us",
+  "Talk to the founders",
+  "pip install",
+  "installed from source",
+  "local testing tool",
+  "Find failures that only appear",
   // No video until a reviewed recording exists.
-  ...(VIDEO_PUBLISHED ? [] : ["Watch the demo", "watch the video"]),
+  ...(VIDEO_PUBLISHED ? [] : ["Watch demo", "watch the video"]),
 ];
 
 /**
@@ -84,6 +95,11 @@ const FORBIDDEN: readonly (string | RegExp)[] = [
 const FORBIDDEN_RENDERED: readonly (string | RegExp)[] = [
   // No em dashes in visible copy, titles, OG text or aria labels.
   "\u2014",
+  // Copy rules (9/10 pass): no hype words. Rendered-only, because code uses "unlock" for scroll locks.
+  "revolutionary",
+  "seamless",
+  "unlock",
+  "military-grade",
 ];
 
 const ROUTES = [...SITE_ROUTES, "/no-such-page"];
@@ -187,4 +203,36 @@ test("claims: client JavaScript links only to approved founder LinkedIn profiles
   };
   walk(root);
   expect(offenders).toEqual([]);
+});
+
+/**
+ * Transaction and agent copy carries its label (9/10 pass, replacing the treasury/M17 rule): every
+ * transaction claim is about Ordinum's own reference application, and agent results say whether
+ * they are planted or real, ours, and from the release candidate.
+ */
+test("claims: transaction copy says 'reference application' wherever it appears", async ({ page }) => {
+  await page.goto("/products/transactions");
+  const main = (await page.locator("main").textContent()) ?? "";
+  expect(main).toContain("reference application");
+  expect(main.toLowerCase()).toContain("not real payment software");
+  expect(main).toContain("Release candidate");
+  for (const route of ["/", "/products"]) {
+    await page.goto(route);
+    const rows = page.locator("main li").filter({ hasText: "Transaction assurance" });
+    expect(await rows.count(), route).toBeGreaterThan(0);
+    for (const text of await rows.allTextContents()) expect(text, route).toContain("reference application");
+  }
+});
+
+test("claims: agent copy labels planted vs real, ours, and release candidate", async ({ page }) => {
+  await page.goto("/products/agents");
+  const main = (await page.locator("main").textContent()) ?? "";
+  for (const text of ["reference application", "planted", "Release candidate", "No third-party agent application has been tested"]) {
+    expect(main, text).toContain(text);
+  }
+  await page.goto("/labs/ordinum-found-a-bug-in-our-own-reference-agent");
+  const article = ((await page.locator("main").textContent()) ?? "").toLowerCase();
+  for (const text of ["our own reference application", "not third-party software", "release candidate", "real, unplanted bug"]) {
+    expect(article, text).toContain(text);
+  }
 });

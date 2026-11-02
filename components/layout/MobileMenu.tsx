@@ -316,14 +316,6 @@ export default function MobileMenu({ onHome, pathname }: MobileMenuProps) {
               >
                 {nav.demo.label}
               </Button>
-              <Button
-                href={nav.bookCall.href}
-                variant="secondary"
-                className="w-full justify-between"
-                onClick={() => close(false)}
-              >
-                {nav.bookCall.label}
-              </Button>
               <a
                 href={`mailto:${site.email}`}
                 className="mt-4 flex items-center justify-between border-t border-line pt-5 font-mono text-[11px] uppercase tracking-[0.12em] text-muted transition-colors hover:text-lime"

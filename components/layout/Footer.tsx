@@ -100,7 +100,7 @@ export default function Footer({ onHome = true }: FooterProps) {
               <span className="text-[20px] font-bold leading-none tracking-[-0.065em]">ORDINUM</span>
             </FooterLink>
 
-            <p className="mt-9 text-[24px] font-semibold leading-[1.18] tracking-title text-text md:text-[28px]">
+            <p className="mt-8 text-[20px] font-semibold leading-[1.3] tracking-title text-text md:text-[22px]">
               {footer.thesis}
             </p>
           </div>

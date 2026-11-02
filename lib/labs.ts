@@ -10,6 +10,12 @@
  *     each qualifier once, where its claim appears.
  *   - Nav2 violations are harness, oracle or configuration artifacts, never Nav2 defects.
  *   - Reproducibility links point only at /evidence/* pages that exist (lib/evidence-packages.ts).
+ *   - The agent article is about OUR OWN reference application (release candidate), never
+ *     third-party software. Its facts come from the internal claim table (1 November 2026).
+ *
+ * ORDER on the page (components/sections/labs/ArticleView.tsx): the finding; what was tested; why
+ * it matters; how it worked; what it shows; what it does not establish; artifacts and
+ * reproduction (technical details collapsed); methods note.
  */
 
 import {
@@ -17,6 +23,9 @@ import {
   EVIDENCE_CLASS_LABELS,
   FACT_SOURCE,
   FLAGSHIP_LABEL,
+  HOSTED_CI_STATUS,
+  TEST_SUITE_STABLE,
+  TEST_SUITE_STATUS,
   flagship,
   type EvidenceClass,
   type Link,
@@ -34,21 +43,30 @@ export type LabsArticle = {
   readonly status: "published";
   readonly title: string;
   readonly category: LabsCategory;
-  /** One or two sentences: the result first, with its label. */
+  /** The finding, first: one or two sentences with its label. */
   readonly leadingResult: string;
-  /** Evidence label shown with the leading result. */
+  /** Evidence label shown with the finding. */
   readonly label: { readonly text: string; readonly classes: readonly EvidenceClass[] };
+  /** Short label on cards (what kind of result this is). */
+  readonly cardLabel: string;
   /** Index card text. */
   readonly summary: string;
   readonly authors: readonly string[];
   readonly date: string;
   readonly revision: string;
+  /** Opens "What was tested". */
   readonly question: string;
+  /** What was tested. */
   readonly system: readonly string[];
+  readonly whyItMatters: readonly string[];
+  /** How it worked. */
   readonly method: readonly string[];
   readonly results: readonly LabsResult[];
   readonly resultsNote?: string;
+  /** What it does not establish. */
   readonly limitations: readonly string[];
+  /** Collapsed "Technical details" under artifacts and reproduction. */
+  readonly technical: readonly LabsResult[];
   readonly related: readonly Link[];
   /** Links to /evidence/* (and the walkthrough). */
   readonly reproducibility: readonly Link[];
@@ -56,10 +74,89 @@ export type LabsArticle = {
   readonly methodsNote: string;
   /** Renders the migrated /research sections after the results. */
   readonly body?: "research-summary";
+  /** Optional real-data visual under "What it shows". */
+  readonly visual?: "goalPlot";
 };
 
 const AUTHOR = "Armaan Singla";
 const PUBLISHED = "1 November 2026";
+
+/**
+ * The real, unplanted bug Ordinum found in our OWN hardened reference agent (examples/agent_reference,
+ * release candidate ordinum-2-release). Facts from the internal claim table, 1 November 2026:
+ * pre-fix strict verify at 6806931; fix 9a70c5c (test-first); planted cases regenerated on
+ * agentref@0.1.0-4f1bacd749c7, regress 9/9 PASS FIXED at 2af351c. No review round logged.
+ */
+const AGENT_LABEL = "Our own reference application · real, unplanted bug · release candidate";
+
+const agentArticle = {
+  slug: "ordinum-found-a-bug-in-our-own-reference-agent",
+  status: "published",
+  title: "Ordinum found a bug in our own reference agent",
+  category: "Case Studies",
+  leadingResult:
+    "While checking a planted defect, Ordinum found a real bug we had not planted, in the hardened build of our own reference agent: cancelling delegated work did not reach a sub-agent call that was already in flight. Ordinum confirmed it 5/5, and we fixed it test-first.",
+  label: { text: AGENT_LABEL, classes: [] },
+  cardLabel: AGENT_LABEL,
+  summary:
+    "A cancel that never reached an in-flight sub-agent call, in the build we believed was correct. Found by a planted-defect comparison, confirmed, reduced and fixed. Our own reference application, not third-party software.",
+  authors: [AUTHOR],
+  date: PUBLISHED,
+  revision: "Revision 1 · release candidate ordinum-2-release · fix at 9a70c5c",
+  question:
+    "Does the hardened build of our own reference agent really keep its permissions when work is retried or cancelled, including work handed to a sub-agent?",
+  system: [
+    "examples/agent_reference: the reference agent application in Ordinum's own repository, at the release candidate ordinum-2-release. It is ours. It is not third-party software and not a customer system.",
+    "It comes as a hardened build, meant to be correct, and planted variants, each with one defect we added on purpose: 9 in total. One of them, pc_delegate_parent, plants a defect in delegated work.",
+    "The property: stale_authorization_on_retry_or_cancel. In the report's words: a retried call is re-authorized against the current state, and a cancelled task executes nothing.",
+  ],
+  whyItMatters: [
+    "Agents increasingly hand work to other agents and call tools on someone's behalf. If a cancel stops the parent but not a call already in flight, an action can still run after the user or a policy said stop.",
+    "The hardened build was the version we believed was correct, and its own search campaign had not caught this. The planted-defect comparison did, because a violation on the build that was meant to be the fix is itself a finding.",
+  ],
+  method: [
+    "The strict per-defect matrix runs ordinum verify for each planted variant against the hardened build, using the feedback_full search arm with a budget of 40.",
+    "For pc_delegate_parent, the comparison came back NOT_FIXED: stale_authorization_on_retry_or_cancel was violated in 12/12 runs on the planted build and in 12/12 runs on the hardened build. The hardened build also violated it.",
+    "Ordinum confirmed the violation 5/5 and minimized the fault schedule from 3 faults to 2. Whether the result is 1-minimal was not verified.",
+    "We then wrote a regression unit test first, test_hardened_cancel_reaches_a_delegated_call_already_in_flight, and checked that it fails before the fix. The fix in commit 9a70c5c makes the cancel reach a delegated call that is already in flight.",
+    "After the fix, the 9 planted cases were regenerated on the fixed build and replayed.",
+  ],
+  results: [
+    { k: "Finding", v: "A cancel of delegated work did not reach a sub-agent call already in flight" },
+    { k: "Property", v: "stale_authorization_on_retry_or_cancel" },
+    { k: "Before the fix", v: "NOT_FIXED: violated in 12/12 planted-build runs and 12/12 hardened-build runs" },
+    { k: "Confirmation", v: "5/5" },
+    { k: "Reduction", v: "3 faults to 2; 1-minimality not verified" },
+    { k: "Fix", v: "Commit 9a70c5c, test-first; the regression unit test fails before the fix" },
+    { k: "After the fix", v: "No NOT_FIXED in the strict matrix. Overall strict verdict: CANNOT_VERIFY, because strict evidence for sibling defects was inconclusive" },
+    { k: "Planted cases", v: "Regenerated on the fixed build: 9/9 PASS FIXED (2af351c)" },
+  ],
+  resultsNote: "The hardened build's own 40-run campaign did not catch the bug; the comparison against a planted variant did.",
+  limitations: [
+    "This is our own reference application, not third-party software. It is not a vulnerability in any external project.",
+    "It is from the release candidate ordinum-2-release, not the stable checkpoint.",
+    "The overall strict verdict after the fix is CANNOT_VERIFY, not FIX_VERIFIED.",
+    "1-minimality of the reduced case was not verified.",
+    "No review round is logged for this finding.",
+    "One bug in one application says nothing about how often such bugs occur in other agents.",
+  ],
+  technical: [
+    { k: "Application", v: "examples/agent_reference (Ordinum's own), release candidate ordinum-2-release" },
+    { k: "Pre-fix strict verify", v: "Commit 6806931, variant pc_delegate_parent against the hardened (safe) build" },
+    { k: "Search", v: "feedback_full arm, budget 40" },
+    { k: "Regression unit test", v: "test_hardened_cancel_reaches_a_delegated_call_already_in_flight" },
+    { k: "Fix", v: "Commit 9a70c5c" },
+    { k: "Fixed build", v: "agentref@0.1.0-4f1bacd749c7" },
+    { k: "Planted-case replay", v: "9/9 PASS FIXED at 2af351c; ordinum ci: 9 PASS" },
+  ],
+  related: [
+    { label: "AI agent security", href: "/products/agents" },
+    { label: "From a failed authorization test to a verified fix", href: "/labs/from-failed-authorization-test-to-verified-fix" },
+  ],
+  reproducibility: [{ label: "Evidence package: reference agent cancel bug", href: "/evidence/agent-reference-cancel" }],
+  corrections: [{ date: PUBLISHED, text: "First published." }],
+  methodsNote: AI_METHODS_NOTE,
+} as const satisfies LabsArticle;
 
 const flagshipArticle = {
   slug: "from-failed-authorization-test-to-verified-fix",
@@ -68,6 +165,7 @@ const flagshipArticle = {
   category: "Case Studies",
   leadingResult: `Yes. With a defect we planted in our own client path for unmodified PocketBase 0.40.6, ordinum verify returned FIX_VERIFIED: read authorization was violated in ${flagship.affected} comparison runs on the failing build and ${flagship.fixed} on the fixed build (one-sided Fisher p = ${flagship.fisherP}).`,
   label: { text: FLAGSHIP_LABEL, classes: flagship.labelClasses },
+  cardLabel: "Planted defect · fix verified on unmodified PocketBase",
   summary:
     "A stale read cache we planted in our PocketBase client path: found, confirmed, reduced, then checked as fixed, without counting a pass where the property never came into play.",
   authors: [AUTHOR],
@@ -78,6 +176,9 @@ const flagshipArticle = {
   system: [
     "PocketBase 0.40.6, unmodified, with the binary pinned by SHA-256, on one host. The access policy and the workload are Ordinum's own.",
     `What we planted: ${flagship.planted}, a stale read cache in ${flagship.plantedWhere}. The failing build includes it; the fixed build is the same build without it, the change an engineer would make.`,
+  ],
+  whyItMatters: [
+    "A failing test is only useful if you can trust what happens after the fix. Ordinum's verdict requires the failure to be gone on the fixed build and the property to have actually been exercised, so a change that simply stops the code path from running does not count as a fix.",
   ],
   method: [
     "ordinum verify runs a search campaign on the failing build, confirms each violation by re-running it, and reduces the fault schedule with delta debugging.",
@@ -102,8 +203,16 @@ const flagshipArticle = {
     "Ten runs per build is a statistical comparison, not a proof that the failure can never return.",
     "No historical third-party failing/fixed reproduction, and no new third-party vulnerability, has been shown yet.",
   ],
+  technical: [
+    { k: "Source revision", v: `Product commit ${flagship.commitShort} (stable checkpoint)` },
+    { k: "Target", v: flagship.target },
+    { k: "Planted defect", v: `${flagship.planted}, in ${flagship.plantedWhere}` },
+    { k: "Commands", v: "ordinum verify --require-exercise read_authz --require-exercise model_agreement, then ordinum ci" },
+    { k: "Isolation", v: "unshare -rn (loopback only), no Docker" },
+    { k: "Host", v: flagship.host },
+  ],
   related: [
-    { label: "Watch the demo", href: "/demos#demo-flagship" },
+    { label: "Watch demo", href: "/#demo" },
     { label: "Software & APIs", href: "/products/software" },
     { label: "Research summary", href: "/labs/research-summary" },
   ],
@@ -122,6 +231,7 @@ const nav2Article = {
     text: `${EVIDENCE_CLASS_LABELS["real-external-target"]} · ${EVIDENCE_CLASS_LABELS["harness-artifact"]}`,
     classes: ["real-external-target", "harness-artifact"],
   },
+  cardLabel: "Real external target · harness artifact, not a Nav2 defect",
   summary:
     "A check that compares what a robot reports with where it really is caught a mismatch. The cause was our own unrealistic fault.",
   authors: [AUTHOR],
@@ -132,6 +242,9 @@ const nav2Article = {
   system: [
     `Nav2 1.3.13 on ROS 2 Jazzy, unmodified, in a pinned container with no network, on a simplified loopback simulator: no physics and no state estimator. Task ${sm.task.id} (${sm.task.name}) on the ${sm.task.map} map, with a ${sm.task.deadlineS} s deadline.`,
     "The property: if Nav2 reports success, the robot must truly be within 0.35 m of the goal. The harness records the simulator's true pose; the search never sees it.",
+  ],
+  whyItMatters: [
+    "Robots and services often report their own success. A check that compares the report with ground truth catches the cases where the two disagree. Classifying the cause matters as much: here the mismatch came from our own fault configuration, and saying so keeps the result honest.",
   ],
   method: [
     `The random arm of an exploratory pilot scheduled ${sm.minimization.before} faults; ${sm.minimization.beforeApplied} applied. Among them: transform noise (σ 0.356 m) from 4.40 s and laser-scan reordering at 6.52 s.`,
@@ -148,14 +261,23 @@ const nav2Article = {
     { k: "Classification", v: "The injected noise is physically unrealistic and corrupts the only position source" },
   ],
   resultsNote: "A violation is a test failure, not automatically a defect.",
+  visual: "goalPlot",
   limitations: [
     "Simulation only: no physics, no state estimator, no physical robot.",
     "Check bounds were not yet fault-aware.",
     "The original, unreduced schedule did not violate when re-run at its discovery seed (stochastic target).",
     "The regression case encodes this artifact, so it checks our harness, not Nav2.",
   ],
+  technical: [
+    { k: "Failure id", v: sm.failureId },
+    { k: "Build fingerprint", v: sm.target.fingerprint },
+    { k: "Config hash", v: sm.target.configHash },
+    { k: "Discovery", v: `${sm.discovery.arm} arm, campaign seed ${sm.discovery.campaignSeed}, execution ${sm.discovery.atExecution}` },
+    { k: "Trace", v: sm.traceSources[1] },
+    { k: "Artifacts", v: `Copied at ${FACT_SOURCE.artifactsCommitShort}, unchanged at ${FACT_SOURCE.evidenceCommitShort}` },
+  ],
   related: [
-    { label: "Robotics & Connected Systems", href: "/products/robotics" },
+    { label: "Robotics & connected systems", href: "/products/robotics" },
     { label: "Research summary: the Nav2 pilot", href: "/labs/research-summary#nav2-pilot" },
   ],
   reproducibility: [
@@ -182,6 +304,7 @@ const summaryArticle = {
     text: `${EVIDENCE_CLASS_LABELS["positive-control"]} · ${EVIDENCE_CLASS_LABELS["real-external-target"]} · ${EVIDENCE_CLASS_LABELS["harness-artifact"]}`,
     classes: ["positive-control", "real-external-target", "harness-artifact"],
   },
+  cardLabel: "Positive controls, real external targets and harness artifacts",
   summary:
     "The toy benchmark, the Nav2 pilot, the four-process testbed and the MQTT campaign, each result with its label, plus limitations, reproducibility, methods and the withdrawn v1 results.",
   authors: [AUTHOR],
@@ -193,6 +316,9 @@ const summaryArticle = {
     "Stock ROS 2 Nav2 in a simplified loopback simulation (real external target).",
     "A four-process testbed we built, modeling a cloud-to-device command path.",
     "The Eclipse Mosquitto MQTT broker (real external target).",
+  ],
+  whyItMatters: [
+    "It is the plain record of what the engine has and has not shown, including a benchmark result that did not go our way and the results we withdrew.",
   ],
   method: [
     "Two channels: the search reads only what the system reports; checks read only harness-recorded ground truth.",
@@ -212,6 +338,11 @@ const summaryArticle = {
     "No independently confirmed defect in Nav2, Mosquitto or any other system.",
     "Nothing beyond a simplified ROS 2 simulation; no physical hardware.",
     "No customers or design partners.",
+  ],
+  technical: [
+    { k: "Results as of", v: `Research commit ${FACT_SOURCE.researchCommitShort} (${FACT_SOURCE.researchCheckedOn}), updates at ${FACT_SOURCE.evidenceCommitShort}` },
+    { k: "Test suite", v: `${TEST_SUITE_STATUS}; ${TEST_SUITE_STABLE}` },
+    { k: "Hosted CI", v: HOSTED_CI_STATUS },
   ],
   related: [
     { label: "From a failed authorization test to a verified fix", href: "/labs/from-failed-authorization-test-to-verified-fix" },
@@ -233,10 +364,23 @@ const summaryArticle = {
   body: "research-summary",
 } as const satisfies LabsArticle;
 
-export const labsArticles = [flagshipArticle, nav2Article, summaryArticle] as const satisfies readonly LabsArticle[];
+/** Index order: newest finding first. */
+export const labsArticles = [agentArticle, flagshipArticle, nav2Article, summaryArticle] as const satisfies readonly LabsArticle[];
 
 export const labs = {
   indexTitle: "Published articles",
+  /** Compact "Evidence and sources" block on /labs. */
+  sources: {
+    kicker: "EVIDENCE AND SOURCES",
+    title: "Which product revision each claim comes from.",
+    items: [
+      { k: "Stable checkpoint", v: `Product commit ${FACT_SOURCE.evidenceCommitShort}: the PocketBase, Nav2 and testbed evidence packages. ${TEST_SUITE_STABLE}.` },
+      { k: "Release candidate", v: `Branch ${FACT_SOURCE.releaseBranch}, code gates at ${FACT_SOURCE.releaseCommitShort}: the agent and transaction reference applications. ${TEST_SUITE_STATUS}.` },
+      { k: "Research summary", v: `Results as of ${FACT_SOURCE.researchCommitShort}, with later updates noted.` },
+      { k: "Hosted CI", v: HOSTED_CI_STATUS },
+      { k: "Source access", v: "The product repository is private during the research stage. Selected artifacts are published as evidence packages." },
+    ],
+  },
 } as const;
 
 export function labsArticle(slug: string): LabsArticle | undefined {

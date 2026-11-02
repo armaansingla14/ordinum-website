@@ -1,5 +1,5 @@
 /**
- * Ordinum copy deck (labs + products release, 1 November 2026; focused site 24 October 2026).
+ * Ordinum copy deck (9/10 pass and labs + products release, 1 November 2026; focused site 24 October 2026).
  *
  * Single source of truth for every word and number on the site. Builders render these objects;
  * they do not write copy in components.
@@ -16,6 +16,9 @@
  *     Labs articles in ./labs.ts; proof packages in ./evidence-packages.ts.
  *   - Internal site claim map (not published).
  *   - Real proof artifacts: ./evidence.ts (numbers are read from there, not retyped).
+ *   - 9/10 pass (1 November 2026): approved plan plus the internal claim table (stable 768a9b5,
+ *     release candidate ordinum-2-release with code gates at 5a05996). Every "what works today"
+ *     item carries a Channel label (stable vs release candidate).
  *
  * RULES
  *   - Integration maturity uses exactly four labels (MATURITY_LABELS). Planned is not built.
@@ -28,8 +31,12 @@
  *   - Feedback guidance has not been shown to outperform random search. Do not imply it has.
  *   - No Nav2, Mosquitto or other external defect has been found. No customers, users, partners,
  *     pilots, revenue or ongoing conversations exist: design-partner copy is an invitation.
- *   - Reuse percentages and component ratios are not used. The only test figure is TEST_SUITE_STATUS
- *     (local full suite at the stable checkpoint 768a9b5).
+ *   - Reuse percentages and component ratios are not used. The test figures are TEST_SUITE_STATUS
+ *     (release candidate 5a05996) and TEST_SUITE_STABLE (stable checkpoint 768a9b5).
+ *   - One primary CTA (PRIMARY_CTA, "Request an evaluation") and one secondary (WATCH_DEMO). No
+ *     install commands, no promised repository access, no implied pilot agreement.
+ *   - Agent and transaction results are about OUR OWN reference applications (release candidate);
+ *     say so wherever they appear.
  *   - No em dashes in visible copy, titles, OG text or aria labels (tests/claims.site.spec.ts).
  *   - Reviews are "review by separate AI review agents": never described as independent, external
  *     or by a named party. They are not independent human audits.
@@ -143,35 +150,53 @@ export const FACT_SOURCE = {
   researchCheckedOn: "24 October 2026",
   /** The demo artifacts in lib/evidence.ts were copied at this commit and are unchanged at 768a9b5. */
   artifactsCommitShort: PRODUCT_SOURCE.commitShort,
-  note: "Facts checked against product ordinum-2 head 44284b0; evidence pinned at stable checkpoint 768a9b5 (checked 1 November 2026).",
+  /** Release candidate (branch ordinum-2-release): code gates at 5a05996, docs-only commits after. */
+  releaseBranch: "ordinum-2-release",
+  releaseCommitShort: "5a05996",
+  note: "Facts checked against the stable checkpoint 768a9b5 and the release candidate ordinum-2-release (code gates at 5a05996), 1 November 2026.",
   researchNote:
     "The results in this summary reflect the ordinum-2 research branch at commit 124dde072, checked on 24 October 2026. The Nav2 pilot and toy benchmark artifacts are unchanged at 768a9b5.",
   artifactsNote: `Demo artifacts were copied at commit ${PRODUCT_SOURCE.commitShort} and are unchanged at the stable checkpoint 768a9b5.`,
 } as const;
 
-/** Founder-approved wording for CI (copy pass, 1 November 2026). The only CI statement on the site. Use verbatim. */
+/**
+ * The only hosted-CI statement on the site (claim table, 1 November 2026). One sentence. Use verbatim.
+ * Facts: light jobs for Ordinum's own repository passed on GitHub Actions (2,460 passed at
+ * 0d6c4ac); the heavy Docker suite has never run on a hosted runner; customer CI is templates only.
+ */
 export const HOSTED_CI_STATUS =
-  "Ordinum's own repository runs its light test jobs on GitHub Actions, and they pass. CI for your pipeline: templates exist, not yet run on a hosted runner.";
+  "Light test jobs for Ordinum's own repository have passed on GitHub Actions (2,460 passed at 0d6c4ac); the heavy Docker suite has not yet run on a hosted runner, and CI for your pipeline exists only as templates.";
 
-/** The only test-suite figure on the site (local full suite at the stable checkpoint). Use verbatim. */
-export const TEST_SUITE_STATUS = "2229 passed, 32 skipped (local full suite at product commit 768a9b5)";
+/** The local test-suite figure (release candidate code gates). Use verbatim. */
+export const TEST_SUITE_STATUS = "2,506 passed, 32 skipped, 0 failed (local full suite at release candidate 5a05996)";
+/** The same suite at the stable checkpoint, for comparison. */
+export const TEST_SUITE_STABLE = "2,229 passed, 32 skipped, 0 failed at the stable checkpoint 768a9b5";
 
 /**
- * How Ordinum is delivered today (product head 44284b0). A local tool: no hosted service,
- * dashboard or accounts, and no automatic code repair. Custom adapters are written with pilots
- * (estimated 1 to 2 weeks each; not yet done with an outside team).
+ * Where a capability ships. Every "what works today" item carries one of these, so stable and
+ * release-candidate results are never mixed up.
+ */
+export type Channel = "stable" | "rc";
+export const CHANNEL_LABELS = {
+  stable: "Stable · 768a9b5",
+  rc: "Release candidate",
+} as const satisfies Record<Channel, string>;
+
+/**
+ * How Ordinum is delivered today. No hosted service, dashboard or accounts, no public install and
+ * no self-serve product: evaluations are guided by the founders on the team's own machines.
  */
 export const delivery = {
   /** One line for the first screen. */
-  short: "A CLI and Python integration interfaces. Custom integrations written with pilot teams. Runs on your machine.",
+  short: "Ordinum runs on your machines as a CLI with Python integrations. Evaluations are guided by the founders.",
   items: [
-    { term: "CLI", detail: "ordinum, installed from source with pip install -e. Not on PyPI." },
-    { term: "Adapter contract", detail: "A Python interface (Target and Session) that connects a system. ordinum init scaffolds a new integration." },
-    { term: "Configuration", detail: "Runs are described in declarative TOML." },
+    { term: "CLI", detail: "The ordinum command line runs campaigns, confirms and reduces failures, compares builds, verifies fixes and replays regression cases." },
+    { term: "Python integrations", detail: "An adapter contract (Target and Session) connects a system. A new system needs its own integration; today the founders write it with you." },
+    { term: "Configuration", detail: "Runs are described in declarative TOML: the system, its rules, the faults and the budget." },
     { term: "Agents kit", detail: "ordinum.agents, a Python kit for testing an agent's tool calls against its permissions." },
-    { term: "Custom integrations", detail: "For pilots we write the adapter with you. We estimate 1 to 2 weeks per system; we have not yet done this with an outside team." },
+    { term: "Guided evaluation", detail: "There is no self-serve install. Evaluations are guided by the founders, with your team, on your machines." },
   ],
-  local: "Everything runs on your machine. There is no hosted service, dashboard or account, and Ordinum does not change your code.",
+  local: "Everything runs on your machines. There is no hosted service, dashboard or account, and Ordinum does not change your code.",
 } as const;
 
 /** Methods note on every Labs article (founder decision, 1 November 2026). Use verbatim. */
@@ -231,9 +256,9 @@ export const site = {
   instagram: "https://www.instagram.com/ordinumai",
   founderLinkedin: "https://www.linkedin.com/in/armaansingla",
   cofounderLinkedin: "https://www.linkedin.com/in/aaravsinglaa",
-  tagline: "Find failures that only appear when systems interact.",
+  tagline: "Find security failures before they reach the real world.",
   description:
-    "Ordinum is a local testing tool for engineers: connect a system, define the rules it must obey, run controlled failure scenarios, reproduce what fails and check the fix. Research-stage.",
+    "Ordinum is building continuous security testing for software, firmware and hardware. It reproduces failures, checks fixes and turns confirmed cases into tests for future releases. Research-stage.",
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -245,30 +270,31 @@ export const seo = {
     /** The home <title> is exactly the brand (absolute, no template). */
     title: "Ordinum",
     description:
-      "Ordinum is a local testing tool for engineers. Connect a system, define the rules it must obey, run controlled failure scenarios, reproduce what fails and check your fix. A CLI and Python integration interfaces. Research-stage.",
-    ogTitle: "Ordinum: Find failures that only appear when systems interact",
+      "Ordinum is building continuous security testing for software, firmware and hardware. It reproduces failures, checks the engineer's fix and turns confirmed cases into tests for future releases. Runs on your machines as a CLI with Python integrations.",
+    ogTitle: "Ordinum: Find security failures before they reach the real world",
     ogDescription:
-      "A local testing tool for engineers: connect a system, define its rules, run failure scenarios, reproduce what fails and check the fix.",
-    twitterTitle: "Ordinum: Find failures that only appear when systems interact",
+      "Continuous security testing for software, firmware and hardware. Ordinum reproduces failures, checks fixes and keeps confirmed cases as regression tests.",
+    twitterTitle: "Ordinum: Find security failures before they reach the real world",
     twitterDescription:
-      "A local testing tool for engineers: connect a system, define its rules, run failure scenarios, reproduce what fails and check the fix.",
+      "Continuous security testing for software, firmware and hardware. Ordinum reproduces failures, checks fixes and keeps confirmed cases as regression tests.",
   },
   /** Organization JSON-LD description (app/layout.tsx). */
   organizationDescription:
-    "Ordinum builds a local testing tool that runs controlled failure scenarios against interacting systems, reproduces what fails and checks fixes.",
+    "Ordinum is building continuous security testing infrastructure for software, firmware and hardware. It reproduces failures, checks fixes and keeps confirmed cases as regression tests.",
   /** Per-page full titles for OG/Twitter. pages[*].meta.title stays short for the "%s | Ordinum" template. */
   pages: {
-    products: "Ordinum platform: How it works, commands and outputs",
-    software: "Software & APIs: Catch reads and writes your access rules forbid",
-    agents: "AI Agents: Test whether agents obey permissions",
-    robotics: "Robotics & Connected Systems: Nav2, MQTT brokers and a four-process testbed",
-    roadmap: "Roadmap: What we are building next",
-    demos: "Demo: Watch a planted failure get found, fixed and checked",
+    products: "Ordinum platform: One engine, one workflow, and how a run works",
+    software: "Software & APIs: Test access rules and concurrent writes under faults",
+    agents: "AI agent security: Test what agents do with their permissions",
+    robotics: "Robotics & connected systems: Check what robots report against ground truth",
+    transactions: "Transaction assurance: Test approvals and ledgers in a reference application",
+    roadmap: "Roadmap: Firmware, hardware and the agentic security loop",
+    demos: "Demo: A planted failure found, fixed and verified",
     nav2Walkthrough: "Nav2 walkthrough: A real run, step by step",
-    labs: "Ordinum Labs: Case studies and research",
-    security: "Security: Network isolation, limits and how a run works",
+    labs: "Ordinum Labs: What we tested and what we found",
+    security: "Security: Deployment, data handling and network isolation",
     about: "About: The founders building Ordinum",
-    contact: "Contact: Talk to the founders",
+    contact: "Request an evaluation of Ordinum",
     terms: "Website Terms",
     privacy: "Privacy Notice",
   },
@@ -305,6 +331,11 @@ export type NavLink = {
 
 export type NavEntry = NavGroup | NavLink;
 
+/** The one primary call to action, everywhere on the site (founder decision, 1 November 2026). */
+export const PRIMARY_CTA = { label: "Request an evaluation", href: "/contact" } as const satisfies Link;
+/** The one secondary call to action: the flagship recording on the home page. */
+export const WATCH_DEMO = { label: "Watch demo", href: "/#demo" } as const satisfies Link;
+
 export const nav = {
   /**
    * Top level: Products (disclosure), Demos, Ordinum Labs, Resources (disclosure), Company
@@ -319,35 +350,42 @@ export const nav = {
         {
           label: "Platform overview",
           href: "/products",
-          description: "How it works, what you install, commands and outputs.",
+          description: "One engine, one workflow, and how a run works.",
           maturity: "validated",
           maturityNote: "core engine",
         },
         {
           label: "Software & APIs",
           href: "/products/software",
-          description: "Catch reads and writes your access rules forbid.",
+          description: "Access rules and concurrent writes on a running service.",
           maturity: "experimental",
           maturityNote: "PocketBase · one host",
         },
         {
-          label: "AI Agents",
+          label: "AI agent security",
           href: "/products/agents",
-          description: "Test whether agents obey permissions.",
+          description: "What agents do with tools, credentials and permissions.",
           maturity: "experimental",
-          maturityNote: "planted fixtures only",
+          maturityNote: "our reference applications",
         },
         {
-          label: "Robotics & Connected Systems",
+          label: "Robotics & connected systems",
           href: "/products/robotics",
           description: "Nav2 in simulation, MQTT brokers, a four-process testbed.",
           maturity: "validated",
           maturityNote: "Nav2 · simulation only",
         },
         {
+          label: "Transaction assurance",
+          href: "/products/transactions",
+          description: "Approvals and ledgers, in our own reference application.",
+          maturity: "experimental",
+          maturityNote: "reference application",
+        },
+        {
           label: "Roadmap",
           href: "/roadmap",
-          description: "Transactions, pipeline CI, firmware, devices and hardware.",
+          description: "Firmware, devices, hardware and the agentic security loop.",
           maturity: "planned",
           maturityNote: "not available yet",
         },
@@ -363,7 +401,7 @@ export const nav = {
         {
           label: "Security",
           href: "/security",
-          description: "Network isolation per integration, limits, and how a run works.",
+          description: "Where runs execute, data handling and network isolation.",
         },
       ],
     },
@@ -373,16 +411,14 @@ export const nav = {
       label: "Company",
       items: [
         { label: "About", href: "/about", description: "The two co-founders building Ordinum." },
-        { label: "Contact", href: "/contact", description: "Talk to the founders or send a short note." },
+        { label: "Contact", href: "/contact", description: "Request an evaluation or send a short note." },
       ],
     },
   ],
-  bookCall: { label: "Book a call", href: site.calUrl },
   /** Primary header CTA. Key kept as `demo` so existing Navbar/MobileMenu code compiles. */
-  demo: { label: "Talk to us", href: "/contact#talk" },
+  demo: PRIMARY_CTA,
 } as const satisfies {
   entries: readonly NavEntry[];
-  bookCall: Link;
   demo: Link;
 };
 
@@ -392,15 +428,17 @@ export const navDestinations: readonly string[] = nav.entries.flatMap((e) =>
 );
 
 /* -------------------------------------------------------------------------- */
-/* The three-step workflow (home and /products#how-it-works)                   */
+/* The five-step workflow (home diagram and /products#how-it-works)            */
 /* -------------------------------------------------------------------------- */
 
-export type WorkflowStageId = "connect" | "run" | "reproduce";
+export type WorkflowStageId = "connect" | "run" | "reproduce" | "verify" | "regress";
 
 export type WorkflowStage = {
   readonly n: string;
   readonly id: WorkflowStageId;
   readonly label: string;
+  /** One short line for the home diagram. */
+  readonly short: string;
   readonly body: string;
   readonly facts: readonly FactRef[];
 };
@@ -409,23 +447,42 @@ export const WORKFLOW_STAGES = [
   {
     n: "01",
     id: "connect",
-    label: "Connect and define rules",
+    label: "Connect",
+    short: "An adapter and the rules your system must obey.",
     body: "Connect your system through an adapter and write the rules it must obey, for example who may read which records.",
     facts: ["B1"],
   },
   {
     n: "02",
     id: "run",
-    label: "Run failure scenarios",
+    label: "Run scenarios",
+    short: "Faults injected, rules checked on ground truth.",
     body: "Ordinum runs controlled scenarios with delays, dropped messages, restarts and permission changes. Ground-truth checks judge what actually happened, not what the system reported.",
     facts: ["A1", "E3", "B2", "B3"],
   },
   {
     n: "03",
     id: "reproduce",
-    label: "Reproduce and check the fix",
-    body: "Ordinum re-runs each failure to measure how often it recurs and cuts it down to the faults that cause it. After you change the code, it checks the fixed build and keeps the case as a regression test.",
-    facts: ["B6", "B7", "B8", "release"],
+    label: "Reproduce",
+    short: "Re-run, measured, cut down to its cause.",
+    body: "Ordinum re-runs each failure to measure how often it recurs and cuts the fault schedule down to the faults that cause it.",
+    facts: ["B6", "B7"],
+  },
+  {
+    n: "04",
+    id: "verify",
+    label: "Verify the fix",
+    short: "Failing build against fixed build.",
+    body: "After the engineer changes the code, Ordinum runs the failing and the fixed build side by side and checks that the rule was really exercised, so a pass that tested nothing does not count.",
+    facts: ["release"],
+  },
+  {
+    n: "05",
+    id: "regress",
+    label: "Keep as a regression",
+    short: "Replayed against every future release.",
+    body: "The confirmed case is saved as a self-contained regression test that ordinum ci replays against future builds.",
+    facts: ["B8", "A9"],
   },
 ] as const satisfies readonly WorkflowStage[];
 
@@ -495,15 +552,16 @@ export const integrations = [
   },
   {
     id: "agents",
-    name: "Agents kit",
+    name: "Agents kit and reference application",
     maturity: "experimental",
-    maturityNote: "planted fixtures only",
-    targetKind: "Fixtures we wrote, with planted defects",
-    summary: "ordinum.agents checks whether an agent stays inside its permissions, on fixtures we wrote. No third-party agent tested.",
+    maturityNote: "our own reference applications",
+    targetKind: "Applications we wrote, with planted defects",
+    summary:
+      "ordinum.agents checks whether an agent stays inside its permissions. Tested on our own reference agent application and one small model run locally; no third-party agent application tested.",
     detail:
-      "A Python kit for testing what an AI agent is allowed to do and what it actually changes. Today it runs only against fixtures we wrote, with planted defects.",
-    limits: ["Planted fixtures only.", "No third-party agent application has been tested."],
-    facts: ["release"],
+      "A Python kit for testing what an AI agent is allowed to do and what it actually changes. At the release candidate it runs against our own reference agent application, with 9 planted defects, and found one real bug in that application's hardened build.",
+    limits: ["Our own reference applications only.", "No third-party agent application has been tested."],
+    facts: ["release", "A37", "A41", "A42"],
   },
   {
     id: "nav2",
@@ -607,12 +665,19 @@ export function integration(id: IntegrationId): Integration {
 /* Testing areas (home section 4): each area with its supported integrations    */
 /* -------------------------------------------------------------------------- */
 
+export type TestingAreaKey = "software" | "agents" | "robotics" | "transactions";
+
 export type TestingArea = {
-  readonly key: "software" | "agents" | "robotics";
+  readonly key: TestingAreaKey;
   readonly label: string;
   readonly href: string;
   readonly body: string;
-  readonly integrations: readonly { readonly name: string; readonly maturity: Maturity; readonly note: string }[];
+  readonly integrations: readonly {
+    readonly name: string;
+    readonly maturity: Maturity;
+    readonly note: string;
+    readonly channel: Channel;
+  }[];
 };
 
 export const testingAreas = [
@@ -621,123 +686,214 @@ export const testingAreas = [
     label: "Software & APIs",
     href: "/products/software",
     body: "Access rules and concurrent writes on a running service.",
-    integrations: [{ name: "PocketBase 0.40.6", maturity: "experimental", note: "one host" }],
+    integrations: [{ name: "PocketBase 0.40.6", maturity: "experimental", note: "one host", channel: "stable" }],
   },
   {
     key: "agents",
-    label: "AI Agents",
+    label: "AI agent security",
     href: "/products/agents",
-    body: "Whether an agent stays inside its permissions, including after they change.",
-    integrations: [{ name: "ordinum.agents kit", maturity: "experimental", note: "planted fixtures only" }],
+    body: "What an agent does with its tools and permissions.",
+    integrations: [{ name: "Our reference agent application", maturity: "experimental", note: "reference application", channel: "rc" }],
   },
   {
     key: "robotics",
-    label: "Robotics & Connected Systems",
+    label: "Robotics & connected systems",
     href: "/products/robotics",
-    body: "Robots, brokers and devices, checked against what actually happened.",
+    body: "What robots and brokers report, checked against ground truth.",
     integrations: [
-      { name: "ROS 2 / Nav2", maturity: "validated", note: "simulation only" },
-      { name: "Mosquitto + NanoMQ edge bridge", maturity: "experimental", note: "local Docker" },
-      { name: "Four-process testbed", maturity: "experimental", note: "our own system" },
+      { name: "ROS 2 / Nav2", maturity: "validated", note: "simulation only", channel: "stable" },
+      { name: "Mosquitto + NanoMQ edge bridge", maturity: "experimental", note: "local Docker", channel: "stable" },
     ],
   },
+  {
+    key: "transactions",
+    label: "Transaction assurance",
+    href: "/products/transactions",
+    body: "Approvals and ledger writes under faults and retries.",
+    integrations: [{ name: "Our transaction reference application", maturity: "experimental", note: "reference application", channel: "rc" }],
+  },
 ] as const satisfies readonly TestingArea[];
+
+/** The planned row under the four areas (home) and on /roadmap. */
+export const plannedAreas = {
+  label: "Firmware, native fuzzing, devices and physical hardware",
+  body: "Planned. Not built yet.",
+  link: { label: "Roadmap", href: "/roadmap" },
+} as const;
 
 /* -------------------------------------------------------------------------- */
 /* Home: hero                                                                  */
 /* -------------------------------------------------------------------------- */
 
 /**
- * Headline chosen by the 2026-10-24 comprehension test (n = 6 personas per option). The copy pass
- * (1 November 2026) puts what Ordinum is, who uses it and how it is delivered on the first screen.
+ * Hero (9/10 pass, 1 November 2026): the platform ambition first, then what is available today
+ * and how it is delivered. Firmware and hardware are named as planned in the availability line.
  */
 export const hero = {
-  eyebrow: "Failure testing for interacting systems",
-  titleLine1: "Find failures that only appear",
-  titleLine2: "when systems interact.",
-  lede: "Ordinum is a testing tool for engineers. Connect a system, define the rules it must obey and run controlled failure scenarios. When a rule breaks, Ordinum reproduces the failure. After you change the code, it checks the fix.",
-  /** Who it is for. A target audience, not a customer claim. */
-  audience: "For engineering and product-security teams whose systems span services, AI agents, message brokers and robots.",
+  eyebrow: "Continuous security testing",
+  titleLine1: "Find security failures",
+  titleLine2: "before they reach the real world.",
+  lede: "We're building continuous security testing for software, firmware and hardware. Ordinum reproduces failures, checks the engineer's fix and turns each confirmed case into a test for future releases.",
+  /** What can be evaluated today, and what is planned. */
+  availability: {
+    label: "Available today",
+    text: "Software and APIs, AI-agent reference applications, robotics in simulation.",
+    plannedLabel: "Planned",
+    planned: "Firmware and physical hardware.",
+  },
   delivery: delivery.short,
-  primaryCta: { label: "Watch the demo", href: "/demos#demo-flagship" },
-  secondaryCta: { label: "Talk to us", href: "/contact#talk" },
-  /** Status row. Maturity labels are exact MATURITY_LABELS, with scope. */
-  status: [
-    { text: "Research-stage", maturity: null },
-    { text: "ROS 2 / Nav2: Built & validated, simulation only", maturity: "validated" },
-    { text: "PocketBase, agents kit, MQTT: Built, experimental", maturity: "experimental" },
-  ],
+  primaryCta: PRIMARY_CTA,
+  secondaryCta: WATCH_DEMO,
   /** Mono meta row; meta[0] is also the OG image footer. */
-  meta: ["RESEARCH-STAGE", "SOFTWARE & APIS · AI AGENTS · ROBOTICS & CONNECTED SYSTEMS"],
+  meta: ["RESEARCH-STAGE", "SOFTWARE · AI AGENTS · ROBOTICS · TRANSACTIONS"],
 } as const satisfies {
   eyebrow: string;
   titleLine1: string;
   titleLine2: string;
   lede: string;
-  audience: string;
+  availability: { label: string; text: string; plannedLabel: string; planned: string };
   delivery: string;
   primaryCta: Link;
   secondaryCta: Link;
-  status: readonly { text: string; maturity: Maturity | null }[];
   meta: readonly string[];
 };
 
-/** The status row as one line (OG alt text). */
-export const heroStatusLine = hero.status.map((s) => s.text).join(" · ");
+/** Availability as one line (OG alt text). */
+export const heroStatusLine = `${hero.availability.label}: ${hero.availability.text} ${hero.availability.plannedLabel}: ${hero.availability.planned}`;
 
 /* -------------------------------------------------------------------------- */
-/* Home: sections 2-6                                                          */
+/* Home: sections 2-7                                                          */
 /* -------------------------------------------------------------------------- */
 
 const sm = nav2SuccessMismatch;
 
+/** One step of the annotated strip under the flagship recording. `at` is the time in the recording. */
+export type DemoStripStep = {
+  readonly n: string;
+  readonly label: string;
+  readonly value: string;
+  readonly caption: string;
+  /** Seconds into the recording where this step is shown (from the caption file). */
+  readonly at?: number;
+};
+
 /**
- * Home (copy pass, 1 November 2026), in order: hero; the flagship PocketBase demonstration; three
- * workflow steps; testing areas and integrations; two Labs articles; one pilot invitation (the
- * CTA band). Budget: 650 words of main text (tests/site.spec.ts).
+ * Home (9/10 pass), in order: hero; the flagship recording with a five-step strip and a
+ * before/after card; the workflow diagram; four product areas plus the planned row; the ambition
+ * and the agentic loop; Labs; the evaluation band. Budget: 650 words of main text.
  */
 export const home = {
-  /** Section 2: the flagship recording. The planted-defect label is shown by FlagshipVideo. */
+  /** Section 2: the flagship recording. The planted-defect label sits beside the result card, once. */
   demo: {
-    kicker: "DEMO / 001",
-    title: "Ordinum finds the failure.",
-    titleMuted: "You fix it. Ordinum checks the fix.",
-    lede: "We planted a stale read cache in our own client path for PocketBase 0.40.6. Ordinum caught clients reading records they were no longer allowed to see, confirmed it and showed that one fault is enough to trigger it. The engineer removed the cache, and Ordinum checked the fixed build: the violation was gone.",
+    kicker: "DEMO",
+    title: "Failure to verified fix, in 1:35.",
+    lede: "A recorded run on unmodified PocketBase 0.40.6: Ordinum finds forbidden reads, the engineer removes the cause, Ordinum checks the fix.",
+    strip: [
+      { n: "01", label: "Failure", value: "read_authz violated", caption: "Clients read records the policy no longer allows.", at: 7 },
+      { n: "02", label: "Reproduction", value: `Confirmed ${flagship.confirmed}`, caption: "One fault is enough (1-minimal).", at: 46 },
+      { n: "03", label: "Engineer's fix", value: "Cache removed", caption: "The fixed build drops the stale cache." },
+      { n: "04", label: "Verification", value: flagship.verdict, caption: `Affected ${flagship.affected} vs fixed ${flagship.fixed}.`, at: 55 },
+      { n: "05", label: "Saved regression", value: `ordinum ci: ${flagship.ciResult}`, caption: "Replayed against future builds.", at: 70 },
+    ],
+    result: {
+      title: "Result",
+      affected: { label: "Affected build", detail: "with the stale cache", failures: 10, runs: 10 },
+      fixed: { label: "Fixed build", detail: "cache removed", failures: 0, runs: 10 },
+      unit: "runs that violated read_authz",
+      verdict: `${flagship.verdict} · one-sided Fisher p = ${flagship.fisherP}`,
+    },
     link: { label: "Evidence package", href: "/evidence/pocketbase-verified-fix" },
   },
 
-  /** Section 3: the three workflow steps (WORKFLOW_STAGES). */
+  /** Section 3: the workflow diagram (WORKFLOW_STAGES). */
   workflow: {
-    kicker: "HOW IT WORKS / 002",
-    title: "From a rule",
-    titleMuted: "to a checked fix.",
-    link: { label: "What you install and what you get", href: "/products" },
+    kicker: "HOW IT WORKS",
+    title: "From a rule to a kept regression test.",
+    link: { label: "How a run works", href: "/products#how-it-works" },
   },
 
-  /** Section 4: testing areas and supported integrations (testingAreas). */
+  /** Section 4: product areas (testingAreas) plus the planned row. */
   areas: {
-    kicker: "WHAT YOU CAN TEST / 003",
-    title: "Services, agents",
-    titleMuted: "and robots.",
-    links: [
-      { label: "Network isolation by integration", href: "/security#network" },
-      { label: "Roadmap", href: "/roadmap" },
-    ],
+    kicker: "PRODUCT AREAS",
+    title: "One engine, four areas today.",
+    link: { label: "Platform overview", href: "/products" },
   },
 
-  /** Section 5: two Labs articles (slugs in lib/labs.ts). */
+  /** Section 5: the ambition and the agentic loop (agenticLoop). */
+  ambition: {
+    kicker: "WHERE THIS IS GOING",
+  },
+
+  /** Section 6: Labs articles (slugs in lib/labs.ts). */
   labs: {
-    kicker: "ORDINUM LABS / 004",
-    title: "What we tested,",
-    titleMuted: "and what we found.",
-    slugs: ["from-failed-authorization-test-to-verified-fix", "what-a-robots-success-message-can-hide"],
+    kicker: "ORDINUM LABS",
+    title: "What we tested, and what we found.",
+    slugs: [
+      "ordinum-found-a-bug-in-our-own-reference-agent",
+      "from-failed-authorization-test-to-verified-fix",
+      "what-a-robots-success-message-can-hide",
+    ],
     link: { label: "All articles", href: "/labs" },
   },
 } as const satisfies {
-  demo: { kicker: string; title: string; titleMuted: string; lede: string; link: Link };
-  workflow: { kicker: string; title: string; titleMuted: string; link: Link };
-  areas: { kicker: string; title: string; titleMuted: string; links: readonly Link[] };
-  labs: { kicker: string; title: string; titleMuted: string; slugs: readonly string[]; link: Link };
+  demo: {
+    kicker: string;
+    title: string;
+    lede: string;
+    strip: readonly DemoStripStep[];
+    result: {
+      title: string;
+      affected: { label: string; detail: string; failures: number; runs: number };
+      fixed: { label: string; detail: string; failures: number; runs: number };
+      unit: string;
+      verdict: string;
+    };
+    link: Link;
+  };
+  workflow: { kicker: string; title: string; link: Link };
+  areas: { kicker: string; title: string; link: Link };
+  ambition: { kicker: string };
+  labs: { kicker: string; title: string; slugs: readonly string[]; link: Link };
+};
+
+/* -------------------------------------------------------------------------- */
+/* The agentic security loop (home section 5 and /roadmap). A labeled vision.   */
+/* -------------------------------------------------------------------------- */
+
+export type LoopStatus = "today" | "dev" | "planned";
+export const LOOP_STATUS_LABELS = {
+  today: "Today",
+  dev: "In development",
+  planned: "Planned",
+} as const satisfies Record<LoopStatus, string>;
+
+/**
+ * Facts (claim table): only a seed-suggestion interface exists; there is no language model in the
+ * loop; agents that build harnesses, choose techniques or propose fixes are planned.
+ */
+export const agenticLoop = {
+  title: "Security testing infrastructure for increasingly autonomous companies.",
+  lede: "As more software, agents and machines act on their own, testing has to keep up. The long-term goal is a loop that tests, learns and proposes fixes, with engineers deciding what ships.",
+  stages: [
+    { id: "run", label: "Run scenarios", status: "today" },
+    { id: "check", label: "Check rules", status: "today" },
+    { id: "reproduce", label: "Reproduce", status: "today" },
+    { id: "verify", label: "Verify fixes", status: "today" },
+    { id: "regress", label: "Keep regressions", status: "today" },
+    { id: "suggest", label: "Seed suggestions", status: "dev" },
+    { id: "harness", label: "Agents build harnesses", status: "planned" },
+    { id: "technique", label: "Agents choose techniques", status: "planned" },
+    { id: "fix", label: "Agents propose fixes", status: "planned" },
+  ],
+  note: "Today there is no language model in the loop. Only an interface for suggested starting scenarios is in development.",
+  ariaLabel:
+    "Diagram of the agentic security loop. Today: run scenarios, check rules, reproduce, verify fixes and keep regressions. In development: an interface for seed suggestions. Planned: agents that build harnesses, choose techniques and propose fixes. Today there is no language model in the loop.",
+} as const satisfies {
+  title: string;
+  lede: string;
+  stages: readonly { id: string; label: string; status: LoopStatus }[];
+  note: string;
+  ariaLabel: string;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -745,15 +901,14 @@ export const home = {
 /* -------------------------------------------------------------------------- */
 
 export const ctaBand = {
-  kicker: "PILOTS",
-  title: "Bring one failure",
-  titleMuted: "your team struggles to reproduce.",
-  body: "We are looking for pilot teams. Describe the failure, and we will say plainly whether Ordinum can test it today.",
-  note: "Research-stage. No pricing or pilot terms yet.",
+  kicker: "EVALUATIONS",
+  title: "Request an evaluation.",
+  titleMuted: "Bring one system and one failure.",
+  body: "We start with a short discussion and a demo, then agree on a suitable system and testing scope with you.",
+  note: "Research-stage. Runs on your machines; evaluations are guided by the founders.",
   /** Primary button. Key kept as `demo` for the existing CtaBand component. */
-  demo: { label: "Talk to us", href: "/contact#talk" },
-  secondary: { label: "Watch the demo", href: "/demos#demo-flagship" },
-  bookCall: { label: "Book a call", href: site.calUrl },
+  demo: PRIMARY_CTA,
+  secondary: WATCH_DEMO,
 } as const satisfies {
   kicker: string;
   title: string;
@@ -762,7 +917,6 @@ export const ctaBand = {
   note: string;
   demo: Link;
   secondary: Link;
-  bookCall: Link;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -881,7 +1035,7 @@ export const demoPage = {
   },
   walkthrough: demoWalkthrough,
   /** Compact next step right after the classification (reuses the CTA band labels). */
-  midCta: { primary: ctaBand.demo, call: ctaBand.bookCall },
+  midCta: { primary: PRIMARY_CTA },
   /** Under the classification: the Labs case study and the Nav2 pilot section of the research summary. */
   caseStudy: { label: "Read the case study", href: "/labs/what-a-robots-success-message-can-hide" },
   pilot: { label: "The Nav2 pilot in the research summary", href: "/labs/research-summary#nav2-pilot" },
@@ -934,7 +1088,7 @@ export const demoPage = {
     { start: "00:30", end: "00:37", text: "Re-run on 10 fresh seeds: 8 violate. Faults reduced from 4 to 2." },
     { start: "00:37", end: "00:43", text: "The scenario is saved as a regression case that re-runs on stored seeds." },
     { start: "00:43", end: "00:50", text: "Classified: the noise is physically unrealistic. A harness artifact, not a Nav2 defect." },
-    { start: "00:50", end: "00:56", text: "Ordinum: find failures that only appear when systems interact." },
+    { start: "00:50", end: "00:56", text: "Ordinum: find security failures before they reach the real world." },
   ],
   provenance: {
     kicker: "PROVENANCE / 004",
@@ -963,7 +1117,7 @@ export const demoPage = {
 } as const satisfies {
   intro: { kicker: string; title: string; lede: string };
   walkthrough: typeof demoWalkthrough;
-  midCta: { primary: Link; call: Link };
+  midCta: { primary: Link };
   caseStudy: Link;
   pilot: Link;
   fullTrace: { kicker: string; title: string; titleMuted: string };
@@ -991,7 +1145,7 @@ export const demoPage = {
 };
 
 /* -------------------------------------------------------------------------- */
-/* Seven-stage lifecycle (/security#lifecycle)                                 */
+/* Seven-stage lifecycle (/products#lifecycle)                                 */
 /* -------------------------------------------------------------------------- */
 
 export type LifecycleStageId = "define" | "generate" | "execute" | "observe" | "verify" | "reproduce" | "regress";
@@ -1007,20 +1161,20 @@ export type LifecycleStage = {
   readonly artifact: { readonly name: string; readonly detail: string };
   /** What exists in the engine today for this stage. */
   readonly today: string;
-  /** Which of the three workflow steps this belongs to. */
+  /** Which of the five workflow steps this belongs to. */
   readonly workflowStage: WorkflowStageId;
   readonly facts: readonly FactRef[];
 };
 
 export const lifecycle = {
-  /** Anchor id on /security (old /products#lifecycle links). */
+  /** Anchor id on /products (moved back from /security). */
   id: "lifecycle",
   kicker: "INSIDE A RUN",
-  /** Below md the seven stages sit behind this disclosure (open from md up). */
-  disclosure: "The seven stages in full",
+  /** The seven stages sit behind this disclosure, so /products stays compact. */
+  disclosure: "Show the seven stages in full",
   title: "Seven stages,",
   titleMuted: "from a scenario to a kept test.",
-  lede: "The three workflow steps, in full. What changes between targets is the adapter and the ground truth the checks rely on.",
+  lede: "The workflow in full. What changes between targets is the adapter and the ground truth the checks rely on.",
   stages: [
     {
       n: "01",
@@ -1117,7 +1271,7 @@ export const lifecycle = {
         detail: "A self-contained case: scenario, build fingerprint, property and replay data.",
       },
       today: "Each failure is saved as a JSON case; ordinum ci replays saved cases locally.",
-      workflowStage: "reproduce",
+      workflowStage: "regress",
       facts: ["B8", "A9"],
     },
   ],
@@ -1155,7 +1309,11 @@ export type Capability = {
   readonly body: string;
 };
 
-/** /products: one workflow, what you install, commands and outputs. #how-it-works is a redirect target. */
+/**
+ * /products: one workflow (#how-it-works, redirect target), one shared engine (#engine), delivery
+ * (#delivery), commands, outputs, and a compact "how a run works" (#architecture, #lifecycle,
+ * #reproduction, moved here from /security; /technology redirects to #architecture).
+ */
 export const platform = {
   howItWorks: {
     id: "how-it-works",
@@ -1164,17 +1322,24 @@ export const platform = {
     titleMuted: "for every system.",
     lede: "What changes between systems is the adapter that connects them and the rules they must obey.",
   },
+  engine: {
+    id: "engine",
+    kicker: "ONE ENGINE / 002",
+    title: "One shared engine",
+    titleMuted: "behind every product area.",
+    lede: "Each product area is the same engine with a different adapter and different rules. Fix verification works the same way on a database, an agent or a simulated robot.",
+  },
   delivery: {
-    id: "install",
-    kicker: "WHAT YOU INSTALL / 002",
-    title: "A CLI and",
-    titleMuted: "Python interfaces.",
+    id: "delivery",
+    kicker: "DELIVERY / 003",
+    title: "Runs on your machines.",
+    titleMuted: "Guided by the founders.",
     items: delivery.items,
     local: delivery.local,
   },
   capabilities: {
     id: "capabilities",
-    kicker: "COMMANDS / 003",
+    kicker: "COMMANDS / 004",
     title: "Find, confirm, reduce,",
     titleMuted: "verify the fix.",
     lede: "The engine and CLI at the stable checkpoint 768a9b5.",
@@ -1233,7 +1398,7 @@ export const platform = {
   },
   outputs: {
     id: "outputs",
-    kicker: "WHAT YOU GET / 004",
+    kicker: "WHAT YOU GET / 005",
     title: "Evidence you can act on.",
     lede: "For each reproduced failure. Examples are from the Nav2 run in the walkthrough.",
     items: [
@@ -1287,13 +1452,14 @@ export const platform = {
     ],
   },
   cta: {
-    title: "Tell us how your team tests today.",
-    body: "Thirty minutes with the founders about your system and the failures that are hardest to reproduce.",
-    primary: { label: "Talk to us", href: "/contact#talk" },
-    secondary: { label: "Watch the demo", href: "/demos#demo-flagship" },
+    title: "See whether Ordinum fits your system.",
+    body: "We start with a short discussion and a demo, then agree on a suitable system and testing scope with you.",
+    primary: PRIMARY_CTA,
+    secondary: WATCH_DEMO,
   },
 } as const satisfies {
   howItWorks: { id: string; kicker: string; title: string; titleMuted: string; lede: string };
+  engine: { id: string; kicker: string; title: string; titleMuted: string; lede: string };
   delivery: {
     id: string;
     kicker: string;
@@ -1328,7 +1494,7 @@ export const product = { outputs: platform.outputs } as const;
 
 /* ------------------------------ product-area pages ------------------------------ */
 
-export type ProductAreaKey = "software" | "agents" | "robotics";
+export type ProductAreaKey = "software" | "agents" | "robotics" | "transactions";
 
 /** One lane of a sequence diagram. */
 export type SequenceActor = { readonly id: string; readonly label: string };
@@ -1352,51 +1518,74 @@ export type SequenceDiagramCopy = {
   readonly steps: readonly SequenceStep[];
 };
 
-/** One supported integration on a product page, with its own maturity label and limits. */
+/** One supported integration on a product page, with its own maturity label, channel and limits. */
 export type ProductSupport = {
   readonly id: string;
   readonly name: string;
   readonly maturity: Maturity;
   readonly maturityNote: string;
+  /** Stable checkpoint or release candidate. */
+  readonly channel: Channel;
   readonly body: string;
   readonly limits?: readonly string[];
   readonly link?: Link;
 };
 
+/** The example visual on a product page. "sequence" uses `example.sequence`. */
+export type ProductVisual = "beforeAfter" | "goalPlot" | "sequence";
+
 /**
- * Product-area page template. Each page answers, in order: what can I test (and which failures
- * does it check), what do I connect, one concrete example with one visual, what do I get, what
- * works today, and how do I try it.
+ * Product-area page template. Each page answers, in order: who is this for and which failures it
+ * tests; one concrete example failure with one visual; what you connect; what Ordinum runs; the
+ * evidence you get; what works today (stable vs release candidate); and how to evaluate it.
  */
 export type ProductArea = {
   readonly key: ProductAreaKey;
   readonly maturity: Maturity;
   readonly maturityNote: string;
-  /** What you can test and the failures it checks. `who` is a target audience, never a customer claim. */
-  readonly test: { readonly kicker: string; readonly title: string; readonly titleMuted?: string; readonly who: string; readonly failures: readonly string[] };
-  readonly connect: { readonly kicker: string; readonly title: string; readonly items: readonly { readonly term: string; readonly detail: string }[] };
+  /** Optional: what is built today vs the vision (AI agent security). */
+  readonly scope?: {
+    readonly kicker: string;
+    readonly title: string;
+    readonly items: readonly { readonly id: string; readonly status: LoopStatus; readonly title: string; readonly body: string }[];
+  };
+  /** `body` is a target audience, never a customer claim. */
+  readonly who: { readonly kicker: string; readonly title: string; readonly titleMuted?: string; readonly body: string; readonly failures: readonly string[] };
   readonly example: {
     readonly kicker: string;
     readonly title: string;
     readonly titleMuted?: string;
     readonly body: string;
-    /** Optional short steps beside the diagram (robotics: from demoWalkthrough). */
+    /** Evidence label shown with the example (planted, real, reference application...). */
+    readonly label?: string;
+    readonly visual: ProductVisual;
+    /** Optional short steps beside the visual (robotics: from demoWalkthrough). */
     readonly steps?: readonly { readonly label: string; readonly text: string }[];
-    readonly sequence: SequenceDiagramCopy;
+    readonly sequence?: SequenceDiagramCopy;
     readonly links: readonly Link[];
   };
+  readonly connect: { readonly kicker: string; readonly title: string; readonly items: readonly { readonly term: string; readonly detail: string }[] };
+  readonly runs: { readonly kicker: string; readonly title: string; readonly items: readonly { readonly term: string; readonly detail: string }[] };
   readonly outputs: { readonly kicker: string; readonly title: string; readonly items: readonly { readonly name: string; readonly detail: string }[] };
   readonly today: { readonly kicker: string; readonly title: string; readonly titleMuted?: string; readonly items: readonly ProductSupport[]; readonly notYet: readonly string[] };
-  readonly tryIt: { readonly kicker: string; readonly title: string; readonly steps: readonly string[]; readonly links: readonly Link[] };
+  readonly evaluate: { readonly kicker: string; readonly title: string; readonly links: readonly Link[] };
   readonly cta: { readonly title: string; readonly body: string; readonly primary: Link; readonly secondary?: Link };
 };
+
+/** How an evaluation runs (founder decision, 1 November 2026). No install commands, no promised access. */
+export const EVALUATE_STEPS = [
+  "Request an evaluation. Tell us about the system and the failure you care about.",
+  "We start with a short discussion and a demo.",
+  "Then we agree on a suitable system and testing scope with you.",
+] as const;
+export const EVALUATE_NOTE = delivery.short;
 
 const fixLink = { label: "Evidence package: PocketBase verified fix", href: "/evidence/pocketbase-verified-fix" } as const;
 const fixArticle = { label: "Case study: from a failed authorization test to a verified fix", href: "/labs/from-failed-authorization-test-to-verified-fix" } as const;
 const nav2Article = { label: "Case study: what a robot's success message can hide", href: "/labs/what-a-robots-success-message-can-hide" } as const;
+const agentArticle = { label: "Case study: Ordinum found a bug in our own reference agent", href: "/labs/ordinum-found-a-bug-in-our-own-reference-agent" } as const;
+const agentEvidence = { label: "Evidence package: reference agent cancel bug", href: "/evidence/agent-reference-cancel" } as const;
 const summaryArticle = { label: "Research summary: what we've measured", href: "/labs/research-summary" } as const;
-const watchDemo = { label: "Watch the demo", href: "/demos#demo-flagship" } as const;
-const installStep = "Install the ordinum CLI from source (pip install -e). It is not on PyPI.";
 const walkStep = (id: DemoStepId) => {
   const step = demoWalkthrough.steps.find((s) => s.id === id);
   if (!step) throw new Error(`Unknown walkthrough step: ${id}`);
@@ -1408,19 +1597,27 @@ export const productAreas = {
     key: "software",
     maturity: "experimental",
     maturityNote: "PocketBase · one host",
-    test: {
-      kicker: "WHAT YOU CAN TEST / 001",
-      title: "Access rules",
-      titleMuted: "on a running service.",
-      who: "For teams that own a service with access rules and many clients at once.",
+    who: {
+      kicker: "WHO IT IS FOR / 001",
+      title: "Teams that own a service",
+      titleMuted: "with access rules.",
+      body: "For teams running a service with access rules, many clients at once, and permissions that change while requests are in flight.",
       failures: [
-        "A client reads a record the policy no longer allows (read_authz).",
+        "Stale permissions: a client still reads records after its access changed (read_authz).",
         "Clients see data that disagrees with a reference model (model_agreement).",
-        "Concurrent writes that overwrite each other.",
+        "Lost updates: concurrent writes that silently overwrite each other.",
       ],
     },
+    example: {
+      kicker: "EXAMPLE FAILURE / 002",
+      title: "A stale cache",
+      titleMuted: "that leaked reads.",
+      body: "We planted a stale read cache in our own client path for unmodified PocketBase 0.40.6. Ordinum found the forbidden reads, confirmed them 5/5 and reduced them to one fault. The engineer removed the cache, and ordinum verify returned FIX_VERIFIED.",
+      visual: "beforeAfter",
+      links: [WATCH_DEMO, fixLink],
+    },
     connect: {
-      kicker: "WHAT YOU CONNECT / 002",
+      kicker: "WHAT YOU CONNECT / 003",
       title: "Your service, an adapter and the rules.",
       items: [
         { term: "The service", detail: "A build you can start locally." },
@@ -1429,39 +1626,19 @@ export const productAreas = {
         { term: "Two builds", detail: "The failing build and the build with your fix." },
       ],
     },
-    example: {
-      kicker: "EXAMPLE / 003",
-      title: "A stale cache",
-      titleMuted: "that leaked reads.",
-      body: "We planted a stale read cache in our own client path for unmodified PocketBase 0.40.6. Ordinum found the forbidden reads and showed that one fault is enough to cause them. We removed the cache, and ordinum verify returned FIX_VERIFIED.",
-      sequence: {
-        title: "Failure to verified fix",
-        conceptual: true,
-        ariaLabel:
-          "Conceptual sequence of the flagship run: the Ordinum engine runs our workload through the client path against PocketBase; the planted stale read cache returns data the policy no longer allows; the check flags read_authz; the engine confirms and reduces the failure, compares the failing and fixed builds, and returns FIX_VERIFIED; ordinum ci then replays the saved cases.",
-        caption: "Simplified. The counts are from the recorded run at 768a9b5.",
-        actors: [
-          { id: "engine", label: "Ordinum engine" },
-          { id: "client", label: "Client path (ours)" },
-          { id: "service", label: "PocketBase 0.40.6" },
-          { id: "check", label: "Checks" },
-        ],
-        steps: [
-          { from: "engine", to: "client", label: "Run seeded workload", tone: "info" },
-          { from: "client", to: "service", label: "Reads under our access policy", tone: "info" },
-          { from: "client", to: "client", label: "Planted stale read cache", tone: "fault" },
-          { from: "client", to: "check", label: "Returns data no longer allowed", tone: "violation" },
-          { from: "check", to: "engine", label: "read_authz violated", tone: "violation" },
-          { from: "engine", to: "engine", label: "Confirm 5/5; 1-minimal", tone: "info" },
-          { from: "engine", to: "service", label: "Failing 10/10 vs fixed 0/10", tone: "info" },
-          { from: "check", to: "engine", label: "FIX_VERIFIED; ci: 2 PASS", tone: "verdict" },
-        ],
-      },
-      links: [watchDemo, fixLink],
+    runs: {
+      kicker: "WHAT ORDINUM RUNS / 004",
+      title: "Many clients, timed faults, ground-truth checks.",
+      items: [
+        { term: "Workload", detail: "Seeded client traffic, reading and writing at once under your access policy." },
+        { term: "Faults", detail: "Timed faults declared by the adapter, scheduled against requests in flight." },
+        { term: "Checks", detail: "read_authz and model_agreement, judged on what the service actually returned." },
+        { term: "Fix verification", detail: "ordinum verify compares the failing and fixed builds and requires each property to be exercised." },
+      ],
     },
     outputs: {
-      kicker: "WHAT YOU GET / 004",
-      title: "What the run produced.",
+      kicker: "EVIDENCE YOU GET / 005",
+      title: "What the PocketBase run produced.",
       items: [
         { name: "Verdict", detail: "FIX_VERIFIED from ordinum verify." },
         { name: "Build comparison", detail: "Violations in 10/10 runs on the failing build, 0/10 on the fixed build." },
@@ -1470,7 +1647,7 @@ export const productAreas = {
       ],
     },
     today: {
-      kicker: "WHAT WORKS TODAY / 005",
+      kicker: "WHAT WORKS TODAY / 006",
       title: "PocketBase works today.",
       titleMuted: "Other services need an adapter.",
       items: [
@@ -1479,51 +1656,95 @@ export const productAreas = {
           name: "PocketBase 0.40.6 adapter",
           maturity: "experimental",
           maturityNote: "one host",
-          body: "Unmodified PocketBase, binary pinned by SHA-256, under our own policy and workload. No Docker needed.",
+          channel: "stable",
+          body: "Unmodified PocketBase, binary pinned by SHA-256, under our own policy and workload. No Docker needed. Ordinum also reproduced a lost update, a class the PocketBase maintainers already acknowledge: reproduced, not discovered.",
         },
       ],
       notYet: [
-        "Every fix demonstration so far uses a defect we planted.",
-        "No new third-party vulnerability found. A lost update we reproduced was already known to the PocketBase maintainers.",
+        "Every FIX_VERIFIED result so far is on a defect we planted.",
+        "No new third-party vulnerability found.",
         "Ten runs per build is a statistical comparison, not a proof.",
       ],
     },
-    tryIt: {
-      kicker: "HOW TO TRY IT / 006",
-      title: "Run it on your machine.",
-      steps: [
-        installStep,
-        "Scaffold an integration with ordinum init, or we write the adapter with you.",
-        "Write the access policy, workload and properties.",
-        "Run ordinum verify on both builds, then ordinum ci. The PocketBase run took about 5.5 minutes on a laptop.",
-      ],
+    evaluate: {
+      kicker: "HOW TO EVALUATE / 007",
+      title: "Start with one service and one rule.",
       links: [fixArticle, summaryArticle],
     },
     cta: {
       title: "Have an access rule that fails only under load?",
-      body: "Tell us about the service and the failure.",
-      primary: { label: "Talk to us", href: "/contact#talk" },
-      secondary: watchDemo,
+      body: "Request an evaluation and tell us about the service and the failure.",
+      primary: PRIMARY_CTA,
+      secondary: WATCH_DEMO,
     },
   },
 
   agents: {
     key: "agents",
     maturity: "experimental",
-    maturityNote: "planted fixtures only",
-    test: {
-      kicker: "WHAT YOU CAN TEST / 001",
-      title: "Permissions,",
-      titleMuted: "before and after they change.",
-      who: "For teams giving AI agents tools, credentials and write access.",
-      failures: [
-        "An action the agent was never allowed to take.",
-        "An action after its permission was revoked.",
-        "A change outside its permissions, as recorded by the harness.",
+    maturityNote: "our reference applications",
+    scope: {
+      kicker: "TWO MEANINGS",
+      title: "Testing agents is built. Agents doing security work is the vision.",
+      items: [
+        {
+          id: "testing-agents",
+          status: "today",
+          title: "A. Testing the security of AI agents",
+          body: "Ordinum checks what an agent does with its tools, credentials and permissions, including after they change or a task is cancelled. Built, and tested on our own reference applications.",
+        },
+        {
+          id: "agents-doing-security",
+          status: "planned",
+          title: "B. Agents that do security work",
+          body: "Agents that build test harnesses, choose techniques and propose fixes inside Ordinum. Planned: today only an interface for seed suggestions is in development, and there is no language model in the loop.",
+        },
       ],
     },
+    who: {
+      kicker: "WHO IT IS FOR / 001",
+      title: "Teams giving agents",
+      titleMuted: "tools and write access.",
+      body: "For teams whose agents call tools, delegate to sub-agents, hold credentials or change real records.",
+      failures: [
+        "A retried call that runs on the old authorization instead of the current one.",
+        "Cancel not honored: work keeps running after a cancel.",
+        "Stale authorization: an action allowed by a permission that was already revoked.",
+        "A change outside the agent's permissions, as recorded by the harness.",
+      ],
+    },
+    example: {
+      kicker: "EXAMPLE FAILURE / 002",
+      title: "A cancel that missed",
+      titleMuted: "an in-flight call.",
+      body: "While checking a planted defect, Ordinum found a real bug in the hardened build of our own reference agent: cancelling delegated work did not reach a sub-agent call already in flight. Confirmed 5/5, then fixed test-first.",
+      label: "Our own reference application · real, unplanted bug · release candidate",
+      visual: "sequence",
+      sequence: {
+        title: "A cancel that missed an in-flight call",
+        conceptual: true,
+        ariaLabel:
+          "Simplified sequence of the finding: Ordinum starts a task; the agent delegates work to a sub-agent, which starts a tool call; Ordinum cancels the delegated work; the cancel does not reach the call already in flight; the call still runs; the check flags stale_authorization_on_retry_or_cancel.",
+        caption: "Simplified from the finding in our own reference agent. Not a recorded trace.",
+        actors: [
+          { id: "engine", label: "Ordinum" },
+          { id: "agent", label: "Agent (hardened)" },
+          { id: "sub", label: "Sub-agent" },
+          { id: "check", label: "Checks" },
+        ],
+        steps: [
+          { from: "engine", to: "agent", label: "Start task", tone: "info" },
+          { from: "agent", to: "sub", label: "Delegate work", tone: "info" },
+          { from: "sub", to: "sub", label: "Tool call in flight", tone: "info" },
+          { from: "engine", to: "agent", label: "Cancel delegated work", tone: "fault" },
+          { from: "sub", to: "check", label: "Call still runs after cancel", tone: "violation" },
+          { from: "check", to: "engine", label: "stale_authorization_on_retry_or_cancel", tone: "verdict" },
+        ],
+      },
+      links: [agentArticle, agentEvidence],
+    },
     connect: {
-      kicker: "WHAT YOU CONNECT / 002",
+      kicker: "WHAT YOU CONNECT / 003",
       title: "Your agent, its tools and its permissions.",
       items: [
         { term: "The agent", detail: "Its tool calls run through ordinum.agents, which records each call and its effect." },
@@ -1531,36 +1752,18 @@ export const productAreas = {
         { term: "Permissions", detail: "What it may do, and when that changes." },
       ],
     },
-    example: {
-      kicker: "EXAMPLE / 003",
-      title: "A permission",
-      titleMuted: "revoked mid-task.",
-      body: "Ordinum revokes a permission mid-task. If the agent writes anyway, the check flags it. This is the kind of rule the kit checks; it is not a recorded run.",
-      sequence: {
-        title: "A permission revoked mid-task",
-        conceptual: true,
-        ariaLabel:
-          "Conceptual sequence: Ordinum grants an agent access and starts a task; Ordinum revokes the permission mid-task; the agent writes to the resource anyway; the harness records the effect; the check flags an action outside the agent's permissions.",
-        caption: "Conceptual example. Not a recorded run.",
-        actors: [
-          { id: "engine", label: "Ordinum" },
-          { id: "agent", label: "Agent" },
-          { id: "resource", label: "Resource" },
-          { id: "check", label: "Checks" },
-        ],
-        steps: [
-          { from: "engine", to: "agent", label: "Grant access, start task", tone: "info" },
-          { from: "agent", to: "resource", label: "Read and plan", tone: "info" },
-          { from: "engine", to: "agent", label: "Revoke permission", tone: "fault" },
-          { from: "agent", to: "resource", label: "Writes anyway", tone: "violation" },
-          { from: "resource", to: "check", label: "Effect recorded by harness", tone: "info" },
-          { from: "check", to: "engine", label: "Action outside permissions", tone: "verdict" },
-        ],
-      },
-      links: [summaryArticle],
+    runs: {
+      kicker: "WHAT ORDINUM RUNS / 004",
+      title: "Tasks, cancels and permission changes.",
+      items: [
+        { term: "Scenarios", detail: "Agent tasks with tool calls, delegation, retries and cancels." },
+        { term: "Faults", detail: "Permission changes and cancels, timed against calls already in flight." },
+        { term: "Checks", detail: "Rules such as stale_authorization_on_retry_or_cancel, judged on what the harness recorded." },
+        { term: "Fix verification", detail: "A defective build and a fixed build compared run by run." },
+      ],
     },
     outputs: {
-      kicker: "WHAT YOU GET / 004",
+      kicker: "EVIDENCE YOU GET / 005",
       title: "Verdicts and regression cases.",
       items: [
         { name: "Verdicts", detail: "Pass, fail or Unresolved for each rule." },
@@ -1569,31 +1772,52 @@ export const productAreas = {
       ],
     },
     today: {
-      kicker: "WHAT WORKS TODAY / 005",
-      title: "A kit and fixtures we wrote.",
+      kicker: "WHAT WORKS TODAY / 006",
+      title: "Our own reference applications.",
       titleMuted: "No third-party agent tested.",
       items: [
         {
-          id: "agents-kit",
-          name: "ordinum.agents kit",
+          id: "agent-reference",
+          name: "Agent reference application (ours)",
           maturity: "experimental",
-          maturityNote: "planted fixtures only",
-          body: "Runs against fixtures we wrote, with planted defects. Results show the kit catches what we planted, nothing about a real agent.",
+          maturityNote: "9 planted defects",
+          channel: "rc",
+          body: "Every planted case passes as fixed on the fixed build (9/9 PASS FIXED), and ordinum ci replays them: 9 PASS.",
+        },
+        {
+          id: "agent-real-bug",
+          name: "A real bug in our hardened build",
+          maturity: "experimental",
+          maturityNote: "our own application",
+          channel: "rc",
+          body: "Unplanted: a cancel of delegated work missed an in-flight sub-agent call. Confirmed 5/5, fixed test-first in commit 9a70c5c.",
+          link: { label: "Read the case study", href: agentArticle.href },
+        },
+        {
+          id: "local-model",
+          name: "A local-model agent",
+          maturity: "experimental",
+          maturityNote: "one small model",
+          channel: "rc",
+          body: "qwen2.5:1.5b through Ollama and LangGraph: PASS FIXED, violations in 14/20 runs before the fix and 0/20 after. A strict re-recording is still to do.",
         },
       ],
-      notYet: ["No recording or evidence package for agents yet.", "No network isolation is claimed for the agents kit."],
+      notYet: [
+        "No third-party agent application has been tested.",
+        "After the fix, the strict verdict for the reference agent is CANNOT_VERIFY: evidence for sibling defects was inconclusive.",
+        "No network isolation is claimed for the agents kit.",
+      ],
     },
-    tryIt: {
-      kicker: "HOW TO TRY IT / 006",
+    evaluate: {
+      kicker: "HOW TO EVALUATE / 007",
       title: "Start with one agent and one rule.",
-      steps: [installStep, "Route your agent's tool calls through ordinum.agents. Today we do that wiring with you.", "Write the permission rules, then run the scenarios."],
-      links: [summaryArticle],
+      links: [agentArticle, summaryArticle],
     },
     cta: {
       title: "Giving agents real permissions?",
-      body: "Tell us what your agents can touch and how you check it today.",
-      primary: { label: "Talk to us", href: "/contact#talk" },
-      secondary: watchDemo,
+      body: "Request an evaluation and tell us what your agents can touch.",
+      primary: PRIMARY_CTA,
+      secondary: WATCH_DEMO,
     },
   },
 
@@ -1601,20 +1825,32 @@ export const productAreas = {
     key: "robotics",
     maturity: "validated",
     maturityNote: "Nav2 · simulation only",
-    test: {
-      kicker: "WHAT YOU CAN TEST / 001",
-      title: "Robots, brokers and devices,",
-      titleMuted: "where they meet.",
-      who: "For teams building ROS 2 robots, fleets or devices that talk through message brokers.",
+    who: {
+      kicker: "WHO IT IS FOR / 001",
+      title: "Teams building robots",
+      titleMuted: "and connected devices.",
+      body: "For teams building ROS 2 robots, fleets or devices that talk through message brokers.",
       failures: [
-        "The robot reports success but is not at the goal.",
+        "False success: the robot reports it arrived, but it is not at the goal.",
         "Collisions, speeding, getting stuck.",
         "Duplicate or forbidden MQTT deliveries, lost session messages.",
         "A command that actuates twice, or after an emergency stop.",
       ],
     },
+    example: {
+      kicker: "EXAMPLE FAILURE / 002",
+      title: "Nav2 said it arrived.",
+      titleMuted: `The robot was ${sm.verdict.distanceText} off.`,
+      body: "Stock Nav2 in simulation, under injected faults. We traced the mismatch to our own unrealistic transform noise: a harness artifact, not a Nav2 defect.",
+      visual: "goalPlot",
+      steps: [walkStep("property"), walkStep("observed"), walkStep("verdict"), walkStep("reproduction")],
+      links: [
+        { label: "Step through the run", href: "/demos/nav2-walkthrough" },
+        { label: "Evidence package: Nav2 success mismatch", href: "/evidence/nav2-success-mismatch" },
+      ],
+    },
     connect: {
-      kicker: "WHAT YOU CONNECT / 002",
+      kicker: "WHAT YOU CONNECT / 003",
       title: "Your stack, its ground truth and the faults.",
       items: [
         { term: "The stack", detail: "A containerized ROS 2 stack, an MQTT broker, or a set of processes." },
@@ -1622,40 +1858,18 @@ export const productAreas = {
         { term: "Faults and rules", detail: "Delays, drops, noise and restarts, and the rules that must still hold." },
       ],
     },
-    example: {
-      kicker: "EXAMPLE / 003",
-      title: "Nav2 said it arrived.",
-      titleMuted: `The robot was ${sm.verdict.distanceText} off.`,
-      body: "Stock Nav2 in simulation, under injected faults. We traced the mismatch to our own unrealistic transform noise: a harness artifact, not a Nav2 defect.",
-      steps: [walkStep("property"), walkStep("observed"), walkStep("verdict"), walkStep("reproduction")],
-      sequence: {
-        title: "Nav2 said it arrived",
-        conceptual: false,
-        ariaLabel: `Sequence from the recorded Nav2 run: the harness sends a goal; transform noise is injected at 4.40 s and laser scans are reordered at 6.52 s; Nav2 reports ${sm.minimized.result.status} at ${sm.minimized.result.tS} s; the simulator's ground truth shows the robot ${sm.verdict.distanceText} from the goal; the truth-vs-claimed check flags success_mismatch.`,
-        caption: "Times from the reduced run's recorded trace.",
-        source: sm.traceSources[1],
-        actors: [
-          { id: "harness", label: "Ordinum harness" },
-          { id: "nav2", label: "Nav2 1.3.13" },
-          { id: "sim", label: "Simulator (truth)" },
-          { id: "check", label: "Check" },
-        ],
-        steps: [
-          { from: "harness", to: "nav2", label: "Goal sent, 0.00 s", tone: "info" },
-          { from: "harness", to: "nav2", label: "TF noise σ 0.356 m, 4.40 s", tone: "fault" },
-          { from: "harness", to: "nav2", label: "Scans reordered, 6.52 s", tone: "fault" },
-          { from: "nav2", to: "check", label: `Reports ${sm.minimized.result.status}, ${sm.minimized.result.tS} s`, tone: "info" },
-          { from: "sim", to: "check", label: `True pose ${sm.verdict.distanceText} from goal`, tone: "violation" },
-          { from: "check", to: "harness", label: "success_mismatch violated", tone: "verdict" },
-        ],
-      },
-      links: [
-        { label: "Step through the run", href: "/demos/nav2-walkthrough" },
-        { label: "Evidence package: Nav2 success mismatch", href: "/evidence/nav2-success-mismatch" },
+    runs: {
+      kicker: "WHAT ORDINUM RUNS / 004",
+      title: "Seeded tasks, injected faults, true-pose checks.",
+      items: [
+        { term: "Scenarios", detail: "Navigation tasks, broker sessions or command sequences, each seeded." },
+        { term: "Faults", detail: "Twelve Nav2 fault kinds (delayed, dropped, noisy or reordered messages and more), plus broker restarts and process kills." },
+        { term: "Checks", detail: "Seven Nav2 properties per run, such as success_mismatch, judged on the simulator's true pose." },
+        { term: "Reproduction", detail: "Statistical: re-runs on fresh seeds, reported as k of N with an interval." },
       ],
     },
     outputs: {
-      kicker: "WHAT YOU GET / 004",
+      kicker: "EVIDENCE YOU GET / 005",
       title: "What the Nav2 run produced.",
       items: [
         { name: "Reduced scenario", detail: `${sm.minimization.before} faults cut to ${sm.minimization.after} (time cap reached).` },
@@ -1664,7 +1878,7 @@ export const productAreas = {
       ],
     },
     today: {
-      kicker: "WHAT WORKS TODAY / 005",
+      kicker: "WHAT WORKS TODAY / 006",
       title: "Nav2 in simulation is validated.",
       titleMuted: "Brokers and the testbed are experimental.",
       items: [
@@ -1673,6 +1887,7 @@ export const productAreas = {
           name: "ROS 2 / Nav2",
           maturity: "validated",
           maturityNote: "simulation only",
+          channel: "stable",
           body: "Stock Nav2 1.3.13 on ROS 2 Jazzy, on a simplified simulator with no physics. A pilot reproduced three violations; all three were our own harness, oracle or configuration artifacts.",
           link: nav2Article,
         },
@@ -1681,6 +1896,7 @@ export const productAreas = {
           name: "MQTT: Mosquitto with a NanoMQ edge bridge",
           maturity: "experimental",
           maturityNote: "bridge on by default",
+          channel: "stable",
           body: `${MQTT_SETUP.config} ${MQTT_SETUP.results}`,
           limits: MQTT_SETUP.limits,
           link: { label: "MQTT results in the research summary", href: "/labs/research-summary#mqtt" },
@@ -1690,28 +1906,128 @@ export const productAreas = {
           name: "Four-process testbed",
           maturity: "experimental",
           maturityNote: "our own system",
+          channel: "stable",
           body: "Four processes we built that model a command path to a device, checked against four written policy clauses. A planted-defect build shows the checks catch a violation.",
           link: { label: "Evidence package: testbed planted control", href: "/evidence/testbed-planted-control" },
         },
       ],
       notYet: ["Nothing runs on physical hardware or emulated firmware yet.", "Nav2 and MQTT are reproduced statistically, not replayed exactly."],
     },
-    tryIt: {
-      kicker: "HOW TO TRY IT / 006",
+    evaluate: {
+      kicker: "HOW TO EVALUATE / 007",
       title: "Start with one stack in simulation.",
-      steps: [
-        "A Linux machine with Docker.",
-        installStep,
-        "Connect your stack with an adapter. Today we write it with you.",
-        "Write the rules and fault bounds, then run a campaign.",
-      ],
       links: [nav2Article, summaryArticle],
     },
     cta: {
       title: "Building robots or connected devices?",
-      body: "Tell us about the failure between the cloud, the broker and the device.",
-      primary: { label: "Talk to us", href: "/contact#talk" },
-      secondary: watchDemo,
+      body: "Request an evaluation and tell us about the failure between the cloud, the broker and the device.",
+      primary: PRIMARY_CTA,
+      secondary: WATCH_DEMO,
+    },
+  },
+
+  transactions: {
+    key: "transactions",
+    maturity: "experimental",
+    maturityNote: "reference application",
+    who: {
+      kicker: "WHO IT IS FOR / 001",
+      title: "Teams building approvals,",
+      titleMuted: "ledgers and payment logic.",
+      body: "For teams whose systems approve, sign or record money movements, where one wrong approval is costly.",
+      failures: [
+        "An approval used for a different recipient than the one approved.",
+        "A ledger that disagrees with the approvals behind it.",
+        "A \"fix\" that passes only by rejecting everything.",
+      ],
+    },
+    example: {
+      kicker: "EXAMPLE FAILURE / 002",
+      title: "An approval",
+      titleMuted: "for a substituted recipient.",
+      body: "In our own transaction reference application, a payment is approved for one recipient and the recipient is then swapped. The check flags any payment that settles without an approval for that exact recipient.",
+      label: "Our own reference application · planted defects · test-only keys",
+      visual: "sequence",
+      sequence: {
+        title: "An approval for a substituted recipient",
+        conceptual: true,
+        ariaLabel:
+          "Conceptual sequence: a client requests approval for a payment to recipient A; the reference application approves it; the recipient is swapped to B; the payment to B settles; the check flags a payment without an approval for its recipient.",
+        caption: "Conceptual. The reference application is ours; it is not real payment software.",
+        actors: [
+          { id: "client", label: "Client" },
+          { id: "app", label: "Reference app (ours)" },
+          { id: "engine", label: "Ordinum" },
+          { id: "check", label: "Checks" },
+        ],
+        steps: [
+          { from: "client", to: "app", label: "Request approval: pay A", tone: "info" },
+          { from: "app", to: "client", label: "Approved for A", tone: "info" },
+          { from: "engine", to: "app", label: "Recipient swapped to B", tone: "fault" },
+          { from: "app", to: "check", label: "Payment to B settles", tone: "violation" },
+          { from: "check", to: "engine", label: "No approval for B", tone: "verdict" },
+        ],
+      },
+      links: [{ label: "How fix verification works", href: "/products#how-it-works" }],
+    },
+    connect: {
+      kicker: "WHAT YOU CONNECT / 003",
+      title: "Your application, its rules and two builds.",
+      items: [
+        { term: "The application", detail: "A build you can start locally, with test-only keys." },
+        { term: "Rules", detail: "What an approval allows, and what the ledger must agree with." },
+        { term: "Two builds", detail: "The failing build and the build with your fix." },
+      ],
+    },
+    runs: {
+      kicker: "WHAT ORDINUM RUNS / 004",
+      title: "Approval flows, timed faults, ledger checks.",
+      items: [
+        { term: "Scenarios", detail: "Seeded approval and payment flows." },
+        { term: "Faults", detail: "Timed faults declared by the adapter, such as a changed recipient." },
+        { term: "Checks", detail: "Approval and ledger rules, judged on what the application recorded." },
+        { term: "Fix verification", detail: "The failing and fixed builds compared run by run. A fix has to keep the rules working, not just block traffic." },
+      ],
+    },
+    outputs: {
+      kicker: "EVIDENCE YOU GET / 005",
+      title: "Verdicts, comparisons and regression cases.",
+      items: [
+        { name: "Verdicts", detail: "FIXED or NOT_FIXED for each planted defect." },
+        { name: "Build comparison", detail: "Violations on the failing build vs the fixed build." },
+        { name: "Regression cases", detail: "JSON cases; ordinum ci: 4 PASS." },
+      ],
+    },
+    today: {
+      kicker: "WHAT WORKS TODAY / 006",
+      title: "Our own reference application.",
+      titleMuted: "Not real payment software.",
+      items: [
+        {
+          id: "transaction-reference",
+          name: "Transaction reference application (ours)",
+          maturity: "experimental",
+          maturityNote: "planted defects · test-only keys",
+          channel: "rc",
+          body: "3 planted approval and ledger defects, each fix-verified. A fake fix that rejected every transaction was not accepted: NOT_FIXED in 10/10 runs. ordinum ci: 4 PASS.",
+        },
+      ],
+      notYet: [
+        "No real payment, banking or ledger software has been tested.",
+        "Test-only keys: nothing touches real money.",
+        "Release candidate only; not in the stable checkpoint.",
+      ],
+    },
+    evaluate: {
+      kicker: "HOW TO EVALUATE / 007",
+      title: "Start with one approval rule.",
+      links: [summaryArticle],
+    },
+    cta: {
+      title: "Building approval or ledger logic?",
+      body: "Request an evaluation and tell us which rule must never break.",
+      primary: PRIMARY_CTA,
+      secondary: WATCH_DEMO,
     },
   },
 } as const satisfies Record<ProductAreaKey, ProductArea>;
@@ -1722,15 +2038,14 @@ export const productAreas = {
 
 export type RoadmapItem = { readonly name: string; readonly maturity: Maturity; readonly body: string };
 
-/** Founder decision: Transactions is "In progress" only, with no numbers and no product page. */
+/** In progress and planned work. Transactions moved to /products/transactions (reference application). */
 export const roadmap = {
   items: {
     kicker: "NEXT / 001",
-    title: "Transactions, pipeline CI,",
-    titleMuted: "firmware and hardware.",
+    title: "Firmware, hardware,",
+    titleMuted: "and pipeline CI.",
     lede: "In progress means partly built and not usable yet. Planned means not started.",
     list: [
-      { name: "Transactions", maturity: "in-progress", body: "Testing for transaction and ledger systems. No results published." },
       { name: "CI for your pipeline", maturity: "in-progress", body: HOSTED_CI_STATUS },
       { name: "Native fuzzing", maturity: "planned", body: "Fuzzing native code and binaries." },
       { name: "Emulated firmware", maturity: "planned", body: "Firmware under emulation, with the same checks." },
@@ -1738,8 +2053,13 @@ export const roadmap = {
       { name: "Physical hardware", maturity: "planned", body: "Hardware in the loop." },
     ],
   },
+  loop: {
+    id: "agentic-loop",
+    kicker: "THE AGENTIC LOOP / 002",
+  },
 } as const satisfies {
   items: { kicker: string; title: string; titleMuted: string; lede: string; list: readonly RoadmapItem[] };
+  loop: { id: string; kicker: string };
 };
 
 /* -------------------------------------------------------------------------- */
@@ -1846,15 +2166,38 @@ export type BoundaryRow = { readonly id: string; readonly title: string; readonl
 /** Network isolation, one row per integration (release fact list, 1 November 2026). The only place this is described. */
 export type NetworkRow = { readonly integration: string; readonly isolation: string };
 
+/**
+ * /security: deployment (where runs execute and what they may target), data handling, network
+ * isolation per integration (#network), operating limits, the hosted-CI fact and how to report a
+ * concern. How a run works moved to /products (#architecture, #lifecycle, #reproduction).
+ */
 export const security = {
-  scope: {
-    kicker: "SCOPE / 001",
-    title: "Only systems you may test.",
-    body: "Ordinum runs on your machine against local simulations, our own targets, authorized open-source software or systems you are authorized to test. It does not scan external systems or drive physical actuators.",
+  deployment: {
+    id: "deployment",
+    kicker: "DEPLOYMENT / 001",
+    title: "Runs on your machines.",
+    titleMuted: "Only against systems you may test.",
+    items: [
+      { title: "Where it runs", body: "On the machines where you start it, as a CLI with Python integrations. There is no hosted service, dashboard or account, and no cloud execution." },
+      { title: "What it may target", body: "Local simulations, our own reference targets, authorized open-source software, or systems you are authorized to test. It does not scan external systems or drive physical actuators." },
+      { title: "Who runs it", body: "Evaluations are guided by the founders, on your machines. Ordinum does not change your code." },
+    ],
+  },
+  data: {
+    id: "data",
+    kicker: "DATA HANDLING / 002",
+    title: "Your results stay with you.",
+    items: [
+      { title: "Run data", body: "Traces, reports and regression cases are local files on your machines. Ordinum has no hosted service, so there is nowhere for it to upload them." },
+      { title: "Evidence on this site", body: "Evidence packages come from our own runs. They were exported by the founders and scanned for local paths, usernames, hostnames, emails, tokens and keys." },
+      { title: "The contact form", body: "Stores your work email and, if you give them, your company, what you are working on, your message, a category and a request type, with the time you sent it. Submissions are stored in Supabase and read by the founders." },
+    ],
+    privacy: { label: "Privacy Notice", href: "/privacy" },
+    caveat: "Do not send us credentials, customer data or unpatched vulnerability details through the form.",
   },
   network: {
     id: "network",
-    kicker: "NETWORK ISOLATION / 002",
+    kicker: "NETWORK ISOLATION / 003",
     title: "Isolation depends",
     titleMuted: "on the integration.",
     rows: [
@@ -1862,7 +2205,7 @@ export const security = {
       { integration: "ROS 2 / Nav2", isolation: "Docker with --network none." },
       { integration: "MQTT brokers", isolation: "A Docker network per session. Broker ports are published on 127.0.0.1 only. The edge bridge reaches the cloud broker through a host-side proxy on that network's gateway address, which forwards only peers inside the session subnet. No egress firewall." },
       { integration: "Four-process testbed", isolation: "Unix sockets, inside unshare -rn when available. Otherwise an audit hook that restricts sockets and file writes; that is not a sandbox." },
-      { integration: "Agents kit", isolation: "No isolation claim." },
+      { integration: "Agents kit and reference applications", isolation: "No isolation claim." },
     ],
     notes: [
       "In an offline check, the workflow without Docker showed 0 non-local network events. Docker targets were not tested offline.",
@@ -1870,15 +2213,10 @@ export const security = {
     ],
   },
   boundaries: {
-    kicker: "OPERATING LIMITS / 003",
+    kicker: "OPERATING LIMITS / 004",
     title: "Permissions, resources",
-    titleMuted: "and your files.",
+    titleMuted: "and cleanup.",
     rows: [
-      {
-        id: "local-execution",
-        title: "Local execution",
-        body: "Runs execute on the machine where you start them. There is no hosted service and no cloud execution.",
-      },
       {
         id: "permissions",
         title: "Permissions",
@@ -1895,52 +2233,32 @@ export const security = {
         title: "Cleanup",
         body: "All four testbed components restart for every run. The Nav2 compatibility gate checks that no containers are left behind.",
       },
-      {
-        id: "artifacts",
-        title: "Artifacts and data",
-        body: "Traces, reports and regression cases are local files you keep. Evidence published on this site was exported by hand and scanned for local paths, usernames, hostnames, emails, tokens and keys.",
-        caveat: "Do not send us credentials, customer data or unpatched vulnerability details through the contact form.",
-      },
     ],
     sandbox: "These measures keep tests of authorized systems contained. They are not a sandbox for untrusted code.",
   },
-  fidelity: {
-    kicker: "WHAT RUNS WHERE / 006",
-    title: "Simulation and local software.",
-    titleMuted: "No hardware yet.",
-    rows: [
-      { tier: "Simulation", examples: "ROS 2 / Nav2 on a loopback simulator", maturity: "validated", note: "simulation only" },
-      { tier: "Local software", examples: "PocketBase, Mosquitto with a NanoMQ edge bridge, the four-process testbed, agent fixtures", maturity: "experimental", note: "one host" },
-      { tier: "Emulated device", examples: "Firmware under emulation, device transports", maturity: "planned", note: "not built" },
-      { tier: "Physical hardware", examples: "Hardware in the loop", maturity: "planned", note: "not built" },
-    ],
-  },
   ci: {
-    title: "CI",
+    id: "ci",
+    kicker: "HOSTED CI / 005",
+    title: "What has run in CI.",
     body: HOSTED_CI_STATUS,
   },
   contact: {
-    kicker: "CONTACT / 008",
+    kicker: "REPORT A CONCERN / 006",
     title: "Report a security concern.",
     body: `Email ${site.email}. Describe the issue without credentials or unpatched details of third-party systems; we will reply with a safe way to share more.`,
     cta: { label: `Email ${site.email}`, href: `mailto:${site.email}` },
   },
 } as const satisfies {
-  scope: { kicker: string; title: string; body: string };
+  deployment: { id: string; kicker: string; title: string; titleMuted: string; items: readonly { title: string; body: string }[] };
+  data: { id: string; kicker: string; title: string; items: readonly { title: string; body: string }[]; privacy: Link; caveat: string };
   network: { id: string; kicker: string; title: string; titleMuted: string; rows: readonly NetworkRow[]; notes: readonly string[] };
   boundaries: { kicker: string; title: string; titleMuted: string; rows: readonly BoundaryRow[]; sandbox: string };
-  fidelity: {
-    kicker: string;
-    title: string;
-    titleMuted: string;
-    rows: readonly { tier: string; examples: string; maturity: Maturity; note: string }[];
-  };
-  ci: { title: string; body: string };
+  ci: { id: string; kicker: string; title: string; body: string };
   contact: { kicker: string; title: string; body: string; cta: Link };
 };
 
 /* -------------------------------------------------------------------------- */
-/* How a run works (/security #architecture, #lifecycle, #reproduction)         */
+/* How a run works (/products #architecture, #lifecycle, #reproduction)         */
 /* -------------------------------------------------------------------------- */
 
 export type ArchitectureNode = {
@@ -2007,9 +2325,9 @@ export const XSYS_POLICY_CLAUSES = [
 
 export const technology = {
   architecture: {
-    /** /security #architecture (redirect target of /technology). */
+    /** /products #architecture (redirect target of /technology). */
     id: "architecture",
-    kicker: "HOW A RUN WORKS / 004",
+    kicker: "HOW A RUN WORKS / 006",
     title: "Adapters in,",
     titleMuted: "regression cases out.",
     lede: "Systems connect through adapters to one engine on your machine. The engine runs, checks and reduces failures, then saves them as cases you can replay.",
@@ -2021,7 +2339,8 @@ export const technology = {
           { name: "ROS 2 / Nav2, in simulation", maturity: "validated", note: "Simulation only.", facts: ["A3"] },
           { name: "Toy robot (our own)", maturity: "validated", note: "Planted bugs as positive controls.", facts: ["A2"] },
           { name: "PocketBase 0.40.6, local", maturity: "experimental", note: "One host.", facts: ["release"] },
-          { name: "Agents kit", maturity: "experimental", note: "Planted fixtures only.", facts: ["release"] },
+          { name: "Agent reference application (our own)", maturity: "experimental", note: "Release candidate. 9 planted defects.", facts: ["A37", "A41"] },
+          { name: "Transaction reference application (our own)", maturity: "experimental", note: "Release candidate. Test-only keys.", facts: ["A38"] },
           { name: "Mosquitto 2.0.22 with a NanoMQ 0.25.7 edge bridge", maturity: "experimental", note: "0 FAIL so far.", facts: ["release"] },
           { name: "Four-process testbed (our own)", maturity: "experimental", note: "Includes a planted-defect build.", facts: ["A6"] },
           { name: "Native fuzzing, emulated firmware, devices, hardware", maturity: "planned", facts: ["release"] },
@@ -2060,9 +2379,9 @@ export const technology = {
     note: "Single machine, Python today. A handful of targets use the adapter contract; that does not mean every kind of system is supported.",
   },
   reproduction: {
-    /** /security #reproduction. */
+    /** /products #reproduction. */
     id: "reproduction",
-    kicker: "REPRODUCTION / 005",
+    kicker: "REPRODUCTION / 007",
     title: "Measured, reduced,",
     titleMuted: "kept as a test.",
     items: [
@@ -2087,15 +2406,16 @@ export const technology = {
     ],
   },
   limitations: {
-    /** /security #limitations. */
+    /** /products #limitations. */
     id: "limitations",
-    kicker: "LIMITATIONS / 007",
+    kicker: "LIMITATIONS / 008",
     title: "What it does not do yet.",
     items: [
       "Runs on a single machine. No distributed runner, no cloud execution.",
       "No hardware, firmware or hardware-in-the-loop support. Nav2 runs in a simplified simulation.",
-      "Every end-to-end fix demonstration uses a planted defect.",
-      "The four-process testbed is our own system, not production software.",
+      "Every FIX_VERIFIED result so far is on a planted defect.",
+      "The four-process testbed and the agent and transaction reference applications are our own systems, not production software.",
+      "No language model is in the loop. Agents that build harnesses or propose fixes are planned.",
       "Minimization is 1-minimal at best, and the in-process watchdog cannot kill a hung thread.",
     ],
     facts: ["A1", "A3", "A5", "A6", "A7", "A9", "A10", "B3", "B6"],
@@ -2691,27 +3011,26 @@ export type TechnologyCategory = (typeof TECHNOLOGY_CATEGORIES)[number]["value"]
 
 export const contact = {
   talk: {
-    /** Anchor id; hero and CTA links point to /contact#talk. */
+    /** Anchor id kept for old /contact#talk links. */
     id: "talk",
-    kicker: "TALK TO US / 001",
-    title: "Talk to the founders.",
-    body: "A 30-minute call about your system and the failures your team finds hardest to reproduce.",
-    calCta: { label: "Book a call", href: site.calUrl },
+    kicker: "EVALUATIONS / 001",
+    title: "Request an evaluation.",
+    body: "We start with a short discussion and a demo. Then we agree on a suitable system and testing scope with you.",
+    steps: [
+      { title: "Tell us about your system", body: "What you are building, and the failure you care about." },
+      { title: "A short discussion and a demo", body: "A founder replies by email to set it up." },
+      { title: "Agree on scope", body: "A suitable system and testing scope, chosen with you." },
+    ],
+    delivery: `${delivery.short} There is no hosted product.`,
+    note: "Research-stage. No pricing or terms yet.",
+    calCta: { label: "Prefer to pick a time? Book 30 minutes", href: site.calUrl },
     emailCta: { label: `Email ${site.email}`, href: `mailto:${site.email}` },
   },
   inquiry: {
     id: "inquiry",
-    kicker: "SEND AN INQUIRY / 002",
-    title: "Or send a short note.",
+    kicker: "YOUR SYSTEM / 002",
+    title: "Tell us about your system.",
     body: "Only your work email is required.",
-  },
-  partnership: {
-    title: "What a design partnership means right now",
-    items: [
-      "A conversation about your hardest cross-component failures: what breaks, how you find it today, and what makes it hard to reproduce.",
-      "If you build on ROS 2 / Nav2, that is where the engine is most mature. For other stacks, we write the adapter with you.",
-      "Research-stage: no product to buy, no pricing and no pilot terms yet.",
-    ],
   },
   form: {
     /** id for the <form> wrapper. */
@@ -2719,7 +3038,7 @@ export const contact = {
     emailLabel: "Work email",
     companyLabel: "Company",
     workingOnLabel: "What are you working on?",
-    workingOnHint: "For example: a robot fleet, an IoT platform, a set of services.",
+    workingOnHint: "For example: a set of services, an agent platform, a robot fleet.",
     messageLabel: "Message",
     optional: "Optional",
     moreDetails: {
@@ -2737,22 +3056,34 @@ export const contact = {
       text: "The founders store and read what you send. How we handle it:",
       link: { label: "Privacy Notice", href: "/privacy" },
     },
-    submit: "Send",
-    pending: "Sending",
-    successKicker: "Message received",
-    successFollowUp: "If you would rather talk now, pick a time that works for you.",
+    /** Shown under the submit button: what happens after sending. */
+    nextLine: "After you send this, a founder replies by email to arrange a short discussion and a demo.",
+    submit: "Send request",
+    pending: "Sending your request",
+    successKicker: "Request received",
+    successFollowUp:
+      "What happens next: a founder reads your request and replies by email to arrange a short discussion and a demo. Then we agree on a suitable system and testing scope with you.",
     messages: {
-      success: "Thanks. Your message was saved, and the founders will read it.",
+      success: "Thanks. Your request was saved, and a founder will reply by email.",
       rateLimited: `We've received several messages from this email in the last hour, so this one was not saved. Please try again later, or email ${site.email}.`,
-      invalid: "Check the highlighted fields and try again.",
-      tooFast: "That was quick. Take a moment to check your details, then submit again.",
-      error: `Something went wrong on our side and your message was not saved. Please try again, or email ${site.email}.`,
+      invalid: "Some fields need attention. Check the highlighted fields, then send again.",
+      tooFast: "That was quick. Take a moment to check your details, then send again.",
+      error: `Something went wrong on our side and your request was not saved. Please try again, or email ${site.email}.`,
     },
   },
 } as const satisfies {
-  talk: { id: string; kicker: string; title: string; body: string; calCta: Link; emailCta: Link };
+  talk: {
+    id: string;
+    kicker: string;
+    title: string;
+    body: string;
+    steps: readonly { title: string; body: string }[];
+    delivery: string;
+    note: string;
+    calCta: Link;
+    emailCta: Link;
+  };
   inquiry: { id: string; kicker: string; title: string; body: string };
-  partnership: { title: string; items: readonly string[] };
   form: {
     anchorId: string;
     emailLabel: string;
@@ -2772,6 +3103,7 @@ export const contact = {
     technologyCategories: readonly { value: string; label: string }[];
     confidentialityWarning: string;
     privacy: { text: string; link: Link };
+    nextLine: string;
     submit: string;
     pending: string;
     successKicker: string;
@@ -2952,15 +3284,16 @@ export const legal = {
 /* -------------------------------------------------------------------------- */
 
 export const footer = {
-  thesis: "A local testing tool that finds failures between interacting systems, reproduces them and checks the fix.",
+  thesis: "Continuous security testing for software, firmware and hardware. Today: reproduce failures, verify fixes, keep regressions.",
   columns: [
     {
       title: "Products",
       links: [
         { label: "Platform overview", href: "/products" },
         { label: "Software & APIs", href: "/products/software" },
-        { label: "AI Agents", href: "/products/agents" },
-        { label: "Robotics & Connected Systems", href: "/products/robotics" },
+        { label: "AI agent security", href: "/products/agents" },
+        { label: "Robotics & connected systems", href: "/products/robotics" },
+        { label: "Transaction assurance", href: "/products/transactions" },
         { label: "Roadmap", href: "/roadmap" },
       ],
     },
@@ -2976,8 +3309,7 @@ export const footer = {
       title: "Company",
       links: [
         { label: "About", href: "/about" },
-        { label: "Talk to us", href: "/contact#talk" },
-        { label: "Book a call", href: site.calUrl, external: true },
+        { label: "Request an evaluation", href: "/contact" },
         { label: site.email, href: `mailto:${site.email}` },
       ],
     },
@@ -3012,7 +3344,7 @@ export const notFound = {
   title: "This page doesn't exist.",
   body: "The page you are looking for does not exist or has moved.",
   cta: { label: "Back to Ordinum", href: "/" },
-  secondaryCta: { label: "Talk to us", href: "/contact#talk" },
+  secondaryCta: PRIMARY_CTA,
 } as const satisfies {
   headline: string;
   title: string;
@@ -3030,6 +3362,7 @@ export type PageKey =
   | "software"
   | "agents"
   | "robotics"
+  | "transactions"
   | "roadmap"
   | "demos"
   | "nav2Walkthrough"
@@ -3062,14 +3395,14 @@ export const pages = {
     label: "Platform overview",
     header: {
       kicker: "Platform overview",
-      title: "What Ordinum does,",
-      titleMuted: "and what you get.",
-      lede: "Ordinum runs on your machine. You connect a system, define the rules it must obey and run controlled failure scenarios. Ordinum reproduces what fails, checks your fix and saves the case as a regression test.",
+      title: "One engine,",
+      titleMuted: "one workflow.",
+      lede: "You connect a system and write the rules it must obey. Ordinum runs controlled failure scenarios, reproduces what fails, verifies the engineer's fix and keeps the case as a regression test. It runs on your machines.",
     },
     meta: {
       title: "Platform overview",
       description:
-        "How Ordinum works: one three-step workflow, what you install (a CLI and Python integration interfaces), the commands at the stable checkpoint and what you receive for each failure.",
+        "How Ordinum works: one shared engine behind every product area, one five-step workflow, how it is delivered (a CLI with Python integrations, evaluations guided by the founders) and how a run works.",
     },
   },
   software: {
@@ -3079,42 +3412,57 @@ export const pages = {
       kicker: "Software & APIs",
       title: "Catch reads and writes",
       titleMuted: "your access rules forbid.",
-      lede: "Ordinum runs your service on your machine with many clients at once, flags any read or write your access policy forbids, and checks your fix against the failing build.",
+      lede: "Ordinum runs your service with many clients at once, flags any read or write your access policy forbids, and checks the engineer's fix against the failing build.",
     },
     meta: {
-      title: "Software & APIs",
+      title: "Software & APIs: access rules and concurrent writes",
       description:
-        "Access-rule and concurrency testing for local services, with fix verification. Example: unmodified PocketBase 0.40.6 with a defect we planted in our own client path; FIX_VERIFIED, 10/10 vs 0/10.",
+        "Access-rule and concurrency testing for services, with fix verification. Example: unmodified PocketBase 0.40.6 with a defect we planted in our own client path; FIX_VERIFIED, 10/10 vs 0/10.",
     },
   },
   agents: {
     href: "/products/agents",
-    label: "AI Agents",
+    label: "AI agent security",
     header: {
-      kicker: "AI Agents",
-      title: "Test whether agents",
-      titleMuted: "obey permissions.",
-      lede: "Check that an agent's actions stay inside the permissions it was granted, including after they change, judged on what actually changed.",
+      kicker: "AI agent security",
+      title: "Test what agents do",
+      titleMuted: "with their permissions.",
+      lede: "Ordinum checks that an agent's actions stay inside the permissions it was granted, including after they change or a task is cancelled, judged on what actually changed.",
     },
     meta: {
-      title: "AI Agents",
+      title: "AI agent security: testing what agents do",
       description:
-        "Test whether AI agents obey permissions with the ordinum.agents kit. Runs on fixtures we wrote, with planted defects; no third-party agent application tested yet.",
+        "Test what AI agents do with tools and permissions. Tested on our own reference agent application (9 planted defects), where Ordinum also found a real cancel bug in the hardened build. Release candidate; no third-party agent tested yet.",
     },
   },
   robotics: {
     href: "/products/robotics",
-    label: "Robotics & Connected Systems",
+    label: "Robotics & connected systems",
     header: {
-      kicker: "Robotics & Connected Systems",
+      kicker: "Robotics & connected systems",
       title: "When the robot says it arrived,",
       titleMuted: "check where it is.",
       lede: "Ordinum tests ROS 2 / Nav2 in simulation, MQTT brokers and a four-process command path to a device. It compares what each part reports with what actually happened.",
     },
     meta: {
-      title: "Robotics & Connected Systems",
+      title: "Robotics & connected systems: ground-truth checks",
       description:
         "Ordinum for robotics and connected systems: ROS 2 / Nav2 in simulation (Built & validated), Mosquitto with a NanoMQ edge bridge and a four-process testbed (Built, experimental).",
+    },
+  },
+  transactions: {
+    href: "/products/transactions",
+    label: "Transaction assurance",
+    header: {
+      kicker: "Transaction assurance",
+      title: "Test approvals and ledgers",
+      titleMuted: "before money moves.",
+      lede: "Ordinum checks that approvals are honored exactly as given and that the ledger agrees with them, then verifies the fix. Today it runs on our own transaction reference application, not real payment software.",
+    },
+    meta: {
+      title: "Transaction assurance: approvals and ledgers",
+      description:
+        "Testing approval and ledger rules, with fix verification. Today on Ordinum's own transaction reference application (release candidate, test-only keys): 3 planted defects fix-verified, a reject-all fix rejected.",
     },
   },
   roadmap: {
@@ -3122,14 +3470,14 @@ export const pages = {
     label: "Roadmap",
     header: {
       kicker: "Roadmap",
-      title: "What we are",
-      titleMuted: "building next.",
-      lede: "What is in progress, what is planned, and where it leads.",
+      title: "Where Ordinum",
+      titleMuted: "is going next.",
+      lede: "Firmware and hardware, CI for your pipeline, and the long-term agentic security loop. Nothing on this page is available yet.",
     },
     meta: {
       title: "Roadmap",
       description:
-        "Ordinum's roadmap: transactions and CI for your pipeline in progress; native fuzzing, emulated firmware, device transport and physical hardware planned.",
+        "Ordinum's roadmap: CI for your pipeline in progress; native fuzzing, emulated firmware, device transport and physical hardware planned; the agentic security loop as the long-term direction.",
     },
   },
   demos: {
@@ -3137,12 +3485,12 @@ export const pages = {
     label: "Demos",
     header: {
       kicker: "Demo",
-      title: "Watch a planted failure",
-      titleMuted: "get found, fixed and checked.",
-      lede: "A 1:35 recording of a real run on PocketBase 0.40.6, replaying its terminal output.",
+      title: "A planted failure,",
+      titleMuted: "found, fixed and verified.",
+      lede: "A 1:35 recording of a real run on PocketBase 0.40.6, replaying its terminal output, with each step marked below.",
     },
     meta: {
-      title: "Demos",
+      title: "Demo: failure to verified fix",
       description:
         "Watch Ordinum find a defect we planted in our PocketBase client path, then check the fixed build (FIX_VERIFIED). Plus a Nav2 walkthrough and a testbed run, each with its evidence package.",
     },
@@ -3169,12 +3517,12 @@ export const pages = {
       kicker: "Ordinum Labs",
       title: "What we tested,",
       titleMuted: "and what we found.",
-      lede: "Each article starts with the question and the result, then the method, the evidence and the limits.",
+      lede: "Each article starts with the finding, then what was tested, how, what it shows and what it does not.",
     },
     meta: {
-      title: "Labs",
+      title: "Ordinum Labs: case studies and research",
       description:
-        "Ordinum Labs: a verified fix on a planted PocketBase defect, a Nav2 success mismatch traced to our own harness, and a research summary, each with its evidence.",
+        "Ordinum Labs: a real bug Ordinum found in our own reference agent, a verified fix on a planted PocketBase defect, a Nav2 success mismatch traced to our own harness, and a research summary.",
     },
   },
   security: {
@@ -3183,13 +3531,13 @@ export const pages = {
     header: {
       kicker: "Security",
       title: "Where runs execute,",
-      titleMuted: "and how a run works.",
-      lede: "Network isolation for each integration, operating limits, and how a run turns faults into checked, reproducible results.",
+      titleMuted: "and what happens to the data.",
+      lede: "Deployment, data handling, network isolation for each integration, operating limits, and how to report a concern.",
     },
     meta: {
-      title: "Security",
+      title: "Security: deployment and data handling",
       description:
-        "Ordinum's network isolation per integration, operating limits, how a run works (architecture, lifecycle, reproduction), current limitations and how to report a concern.",
+        "Where Ordinum runs (your machines), what happens to run data and contact-form data, network isolation per integration, operating limits, hosted CI and how to report a security concern.",
     },
   },
   about: {
@@ -3202,7 +3550,7 @@ export const pages = {
       lede: "Why we are building it, and who we are.",
     },
     meta: {
-      title: "About",
+      title: "About the founders",
       description: "Ordinum is being built by co-founders Armaan Singla and Aarav Singla.",
     },
   },
@@ -3211,8 +3559,8 @@ export const pages = {
     label: "Contact",
     /* No header: /contact renders ClosingCTA (contact.talk) as its page heading. */
     meta: {
-      title: "Contact",
-      description: "Talk to Ordinum's founders about pilots, technical demonstrations and research collaboration.",
+      title: "Request an evaluation",
+      description: "Request an evaluation of Ordinum: a short discussion and a demo, then a suitable system and testing scope agreed with you.",
     },
   },
   terms: {
@@ -3244,4 +3592,4 @@ export const pages = {
 } as const satisfies Record<PageKey, PageCopy>;
 
 /** Reading order for the "Next" link at the bottom of each product page. */
-export const pageOrder = ["products", "software", "agents", "robotics", "roadmap"] as const satisfies readonly PageKey[];
+export const pageOrder = ["products", "software", "agents", "robotics", "transactions", "roadmap"] as const satisfies readonly PageKey[];

@@ -9,15 +9,15 @@ import { useEffect } from "react";
  * (final URLs, never a route that redirects again).
  *
  * Keys are the old single-page section ids; they must not be reused as section ids on the home
- * page (a matching hash would navigate away). Home ids today: top, demo, workflow, areas, labs,
- * get-started. Hash targets exist on their pages: #architecture (technology.architecture.id) on
- * /security, #why-now on /roadmap.
+ * page (a matching hash would navigate away). Home ids today: top, demo, workflow, areas, ambition,
+ * labs, get-started. Hash targets exist on their pages: #architecture (technology.architecture.id)
+ * on /products, #why-now on /roadmap.
  */
 const MOVED: Record<string, string> = {
   product: "/products",
   "why-ordinum": "/products",
-  technology: "/security#architecture",
-  stack: "/security#architecture",
+  technology: "/products#architecture",
+  stack: "/products#architecture",
   research: "/labs/research-summary",
   "why-now": "/roadmap#why-now",
   vision: "/roadmap",

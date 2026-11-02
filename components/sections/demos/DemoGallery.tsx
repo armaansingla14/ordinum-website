@@ -5,37 +5,29 @@ import Reveal from "@/components/ui/Reveal";
 import Section from "@/components/ui/Section";
 import { cn } from "@/lib/cn";
 import { demos, type DemoCard } from "@/lib/content";
-import FlagshipVideo from "./FlagshipVideo";
+import FlagshipBlock from "./FlagshipBlock";
 
 /**
  * /demos #demo-flagship: the recorded run, rendered inside the page header so it is the first
- * thing on the page. FlagshipVideo shows the planted-defect label before playback; beside it, the
- * failure and the result in plain words, then the evidence links.
+ * thing on the page, with the before/after result card (which carries the planted-defect label)
+ * and the five-step strip (FlagshipBlock, shared with the home page); then the case study link.
  */
 export function FlagshipDemo() {
   const f = demos.flagship;
   return (
-    <article id={`demo-${f.id}`} aria-labelledby={`demo-${f.id}-title`} className="mt-10 md:mt-12">
+    <article id={`demo-${f.id}`} aria-labelledby={`demo-${f.id}-title`} className="mt-8 md:mt-10">
       <h2 id={`demo-${f.id}-title`} className="sr-only">
         {f.title}
       </h2>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,8fr)_minmax(0,4fr)] lg:gap-10">
-        <FlagshipVideo className="min-w-0" />
-        <div className="flex min-w-0 flex-col gap-6 lg:pt-[30px]">
-          {[f.failure, f.result].map((b) => (
-            <div key={b.label}>
-              <h3 className={cn(mono, "text-lime")}>{b.label}</h3>
-              <p className="mt-3 text-[15px] leading-[1.7] text-[#c9d1ce]">{b.text}</p>
-            </div>
+      <FlagshipBlock />
+      <div className="mt-3 flex flex-wrap gap-x-8">
+        {f.links
+          .filter((l) => !l.href.startsWith("/evidence/"))
+          .map((l) => (
+            <ArrowLink key={l.href} href={l.href}>
+              {l.label}
+            </ArrowLink>
           ))}
-          <div className="flex flex-wrap gap-x-8">
-            {f.links.map((l) => (
-              <ArrowLink key={l.href} href={l.href}>
-                {l.label}
-              </ArrowLink>
-            ))}
-          </div>
-        </div>
       </div>
     </article>
   );

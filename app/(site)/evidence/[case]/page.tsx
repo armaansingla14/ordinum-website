@@ -4,7 +4,7 @@ import { routeMetadata } from "@/components/layout/metadata";
 import EvidencePackageView from "@/components/sections/evidence/EvidencePackageView";
 import { evidencePackage, evidencePackages } from "@/lib/evidence-packages";
 
-/** Only the three packages exist; built at build time, so file links reflect public/evidence then. */
+/** Only the listed packages exist; built at build time, so file links reflect public/evidence then. */
 export const dynamicParams = false;
 
 export function generateStaticParams() {

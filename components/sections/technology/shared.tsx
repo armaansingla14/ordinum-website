@@ -3,7 +3,7 @@ import Heading from "@/components/ui/Heading";
 import Kicker from "@/components/ui/Kicker";
 import Reveal from "@/components/ui/Reveal";
 import { cn } from "@/lib/cn";
-import { MATURITY_LABELS, MATURITY_ORDER, type Maturity } from "@/lib/content";
+import { CHANNEL_LABELS, MATURITY_LABELS, MATURITY_ORDER, type Channel, type Maturity } from "@/lib/content";
 import { MaturityMarker } from "@/components/ui/MaturityMarker";
 
 /*
@@ -28,7 +28,7 @@ export const pad = (n: number) => String(n).padStart(2, "0");
 export const mono = "font-mono text-[10px] leading-none tracking-[0.13em] uppercase";
 
 /** Tighter rhythm than the default Section padding: these pages stack many sections. */
-export const SECTION_PAD = "py-[64px] md:py-[100px]";
+export const SECTION_PAD = "py-[56px] md:py-[84px]";
 
 /** Numbered section head: kicker + h2 on the left, lede (and optional aside) on the right. */
 export function SectionIntro({
@@ -58,7 +58,7 @@ export function SectionIntro({
     >
       <div>
         <Kicker index={index}>{label}</Kicker>
-        <Heading id={titleId} muted={titleMuted} className="mt-6 max-w-[18ch]">
+        <Heading id={titleId} muted={titleMuted} className="mt-4 max-w-[24ch]">
           {title}
         </Heading>
       </div>
@@ -98,6 +98,22 @@ export function MaturityChip({
         {MATURITY_LABELS[maturity]}
         {note && <span className="text-subtle normal-case tracking-[0.04em]"> · {note}</span>}
       </span>
+    </span>
+  );
+}
+
+/** Where a capability ships: the stable checkpoint or the release candidate. Text, never colour alone. */
+export function ChannelTag({ channel, className }: { channel: Channel; className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex max-w-full items-center gap-1.5 font-mono text-[10px] leading-[1.2] tracking-[0.1em] uppercase",
+        channel === "stable" ? "text-muted" : "text-[#d2c7a6]",
+        className,
+      )}
+    >
+      <span aria-hidden="true">{channel === "stable" ? "■" : "◆"}</span>
+      {CHANNEL_LABELS[channel]}
     </span>
   );
 }

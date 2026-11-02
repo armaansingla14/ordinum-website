@@ -36,16 +36,16 @@ export function SectionIntro({
 }) {
   const [label, index] = splitLabel(kicker);
   return (
-    <Reveal className="grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-start lg:gap-12 xl:gap-16">
+    <Reveal className={cn("grid gap-6", (lede || aside) && "lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-12 xl:gap-16")}>
       <div>
         <Kicker index={index}>{label}</Kicker>
-        <Heading id={titleId} muted={titleMuted} className="mt-6">
+        <Heading id={titleId} muted={titleMuted} className="mt-4 max-w-[26ch]">
           {title}
         </Heading>
       </div>
       {(lede || aside) && (
         <div className="max-w-[540px]">
-          {lede && <p className="text-[16px] leading-[1.8] text-muted md:text-[17px]">{lede}</p>}
+          {lede && <p className="text-[16px] leading-[1.7] text-muted md:text-[17px]">{lede}</p>}
           {aside && <div className={cn(lede && "mt-6")}>{aside}</div>}
         </div>
       )}

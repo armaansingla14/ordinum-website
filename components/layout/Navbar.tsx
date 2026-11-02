@@ -29,7 +29,7 @@ export default function Navbar() {
   const onHome = pathname === "/";
   const scrolled = useScrolled();
   const [openId, setOpenId] = useState<string | null>(null);
-  // The primary CTA points at a section of /contact; mark it current on that page.
+  // The primary CTA ("Request an evaluation") leads to /contact; mark it current there.
   const ctaPath = nav.demo.href.split("#")[0];
   const activeEntry = nav.entries.find((entry) => entryOwns(entry, pathname));
   const activeKey = activeEntry ? (activeEntry.kind === "group" ? activeEntry.id : activeEntry.href) : null;
@@ -106,9 +106,6 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2.5">
-          <Button href={nav.bookCall.href} variant="secondary" size="sm" className="hidden xl:inline-flex">
-            {nav.bookCall.label}
-          </Button>
           <Button
             href={resolveHref(nav.demo.href, onHome)}
             size="sm"

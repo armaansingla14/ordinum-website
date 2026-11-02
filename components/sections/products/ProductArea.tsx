@@ -2,71 +2,93 @@ import Link from "next/link";
 import CtaBand from "@/components/sections/CtaBand";
 import NextPage from "@/components/sections/NextPage";
 import PageHeader from "@/components/sections/PageHeader";
+import { EvidenceLabel } from "@/components/sections/demo/parts";
 import { ArrowLink } from "@/components/sections/home/shared";
 import { Bullets } from "@/components/sections/research/shared";
-import { MaturityChip, SECTION_PAD, SectionIntro, mono } from "@/components/sections/technology/shared";
+import { ChannelTag, MaturityChip, SECTION_PAD, SectionIntro, mono } from "@/components/sections/technology/shared";
+import Button from "@/components/ui/Button";
+import { MaturityMarker } from "@/components/ui/MaturityMarker";
 import Reveal, { RevealItem } from "@/components/ui/Reveal";
 import Section from "@/components/ui/Section";
+import BeforeAfter from "@/components/visuals/BeforeAfter";
+import GoalPlot from "@/components/visuals/GoalPlot";
 import SequenceDiagram from "@/components/visuals/SequenceDiagram";
 import { cn } from "@/lib/cn";
-import { productAreas, type Link as LinkT, type ProductArea as ProductAreaT, type ProductAreaKey } from "@/lib/content";
+import {
+  EVALUATE_NOTE,
+  EVALUATE_STEPS,
+  LOOP_STATUS_LABELS,
+  PRIMARY_CTA,
+  productAreas,
+  type Link as LinkT,
+  type ProductArea as ProductAreaT,
+  type ProductAreaKey,
+} from "@/lib/content";
 
 /**
- * Product-area page template (/products/software, /products/agents, /products/robotics). Each
- * section answers one question: what can I test (and which failures it checks), what do I
- * connect, one concrete example with one visual (SequenceDiagram), what do I get, what works
- * today, and how do I try it. All copy from lib/content.ts `productAreas`.
+ * Product-area page template (/products/software, /agents, /robotics, /transactions). The
+ * sections answer, in order: who is this for and which failures it tests (#test); one concrete
+ * example failure with one visual (#example); what you connect (#connect); what Ordinum runs
+ * (#runs); the evidence you get (#outputs); what works today, stable vs release candidate
+ * (#today); and how to evaluate it (#evaluate). AI agent security adds #scope first, separating
+ * what is built from the vision. All copy from lib/content.ts `productAreas`.
  */
 export default function ProductArea({ area: key }: { area: ProductAreaKey }) {
   const area: ProductAreaT = productAreas[key];
   return (
     <>
       <PageHeader page={key}>
-        <div className="mt-8 md:mt-10">
+        <div className="mt-7 md:mt-8">
           <MaturityChip maturity={area.maturity} note={area.maturityNote} />
         </div>
       </PageHeader>
-      <WhatYouCanTest area={area} />
-      <Connect area={area} />
+      {area.scope && <Scope area={area} />}
+      <Who area={area} />
       <Example area={area} />
+      <Connect area={area} />
+      <Runs area={area} />
       <Outputs area={area} />
       <Today area={area} />
-      <TryIt area={area} />
+      <Evaluate area={area} />
       <NextPage current={key} />
       <CtaBand current={key} copy={area.cta} />
     </>
   );
 }
 
-function WhatYouCanTest({ area }: { area: ProductAreaT }) {
-  const t = area.test;
+function Scope({ area }: { area: ProductAreaT }) {
+  const s = area.scope;
+  if (!s) return null;
   return (
-    <Section id="test" aria-labelledby="test-title" className={SECTION_PAD}>
-      <SectionIntro kicker={t.kicker} title={t.title} titleMuted={t.titleMuted} titleId="test-title" lede={t.who} />
-      <Reveal className="mt-12 border border-line bg-surface p-6 sm:p-8 md:mt-14">
-        <h3 className={cn(mono, "text-lime")}>Failures it checks</h3>
-        <Bullets items={t.failures} className="mt-5 [&_li]:text-[15.5px] [&_li]:text-text" />
-      </Reveal>
+    <Section id="scope" variant="charcoal" aria-labelledby="scope-title" className="py-[48px] md:py-[64px]">
+      <p className={cn(mono, "text-lime")}>{s.kicker}</p>
+      <h2 id="scope-title" className="mt-4 max-w-[30ch] text-[clamp(22px,2.2vw,28px)] leading-[1.25] font-semibold tracking-title text-balance text-text">
+        {s.title}
+      </h2>
+      <ul className="hairline-grid mt-8 grid-cols-1 md:grid-cols-2">
+        {s.items.map((it) => (
+          <li key={it.id} id={it.id} className={cn("flex flex-col p-6", it.status === "today" ? "bg-surface" : "bg-bg")}>
+            <p className={cn(mono, "flex items-center gap-2", it.status === "today" ? "text-lime" : "text-muted")}>
+              <MaturityMarker maturity={it.status === "today" ? "validated" : "planned"} />
+              {LOOP_STATUS_LABELS[it.status]}
+            </p>
+            <h3 className="mt-3 text-[18px] leading-[1.3] font-semibold tracking-[-0.025em] text-text">{it.title}</h3>
+            <p className="mt-2 text-[15px] leading-[1.65] text-muted">{it.body}</p>
+          </li>
+        ))}
+      </ul>
     </Section>
   );
 }
 
-function Connect({ area }: { area: ProductAreaT }) {
-  const c = area.connect;
+function Who({ area }: { area: ProductAreaT }) {
+  const t = area.who;
   return (
-    <Section id="connect" variant="charcoal" aria-labelledby="connect-title" className={SECTION_PAD}>
-      <SectionIntro kicker={c.kicker} title={c.title} titleId="connect-title" />
-      <Reveal as="ul" stagger={0.04} amount={0.1} className="mt-12 border-t border-line md:mt-14">
-        {c.items.map((it) => (
-          <RevealItem
-            key={it.term}
-            as="li"
-            className="grid gap-x-8 gap-y-1.5 border-b border-line py-5 sm:grid-cols-[220px_minmax(0,1fr)]"
-          >
-            <h3 className="text-[16px] leading-[1.4] font-semibold tracking-[-0.02em] text-text">{it.term}</h3>
-            <p className="max-w-[760px] text-[15px] leading-[1.7] text-muted">{it.detail}</p>
-          </RevealItem>
-        ))}
+    <Section id="test" aria-labelledby="test-title" className={SECTION_PAD}>
+      <SectionIntro kicker={t.kicker} title={t.title} titleMuted={t.titleMuted} titleId="test-title" lede={t.body} />
+      <Reveal className="mt-8 border border-line bg-surface p-6 sm:p-7 md:mt-10">
+        <h3 className={cn(mono, "text-lime")}>Failures it tests for</h3>
+        <Bullets items={t.failures} className="mt-5 [&_li]:text-[15.5px] [&_li]:text-text" />
       </Reveal>
     </Section>
   );
@@ -75,10 +97,11 @@ function Connect({ area }: { area: ProductAreaT }) {
 function Example({ area }: { area: ProductAreaT }) {
   const e = area.example;
   return (
-    <Section id="example" aria-labelledby="example-title" className={SECTION_PAD}>
+    <Section id="example" variant="charcoal" aria-labelledby="example-title" className={SECTION_PAD}>
       <SectionIntro kicker={e.kicker} title={e.title} titleMuted={e.titleMuted} titleId="example-title" lede={e.body} />
+      {e.label && <EvidenceLabel text={e.label} classes={[]} className="mt-6" />}
       {e.steps && (
-        <Reveal as="ol" stagger={0.04} amount={0.1} className="hairline-grid mt-12 grid-cols-1 sm:grid-cols-2 md:mt-14 lg:grid-cols-4">
+        <Reveal as="ol" stagger={0.04} amount={0.1} className="hairline-grid mt-8 grid-cols-1 sm:grid-cols-2 md:mt-10 lg:grid-cols-4">
           {e.steps.map((s) => (
             <RevealItem key={s.label} as="li" className="bg-surface p-5">
               <p className={cn(mono, "leading-[1.4] text-subtle")}>{s.label}</p>
@@ -87,10 +110,12 @@ function Example({ area }: { area: ProductAreaT }) {
           ))}
         </Reveal>
       )}
-      <Reveal className={e.steps ? "mt-8" : "mt-12 md:mt-14"} amount={0.05}>
-        <SequenceDiagram diagram={e.sequence} />
+      <Reveal className={e.steps ? "mt-6" : "mt-8 md:mt-10"} amount={0.05}>
+        {e.visual === "beforeAfter" && <BeforeAfter className="max-w-[560px]" />}
+        {e.visual === "goalPlot" && <GoalPlot />}
+        {e.visual === "sequence" && e.sequence && <SequenceDiagram diagram={e.sequence} />}
       </Reveal>
-      <div className="mt-5 flex flex-wrap gap-x-8">
+      <div className="mt-4 flex flex-wrap gap-x-8">
         {e.links.map((l) => (
           <ArrowLink key={l.href} href={l.href}>
             {l.label}
@@ -101,12 +126,46 @@ function Example({ area }: { area: ProductAreaT }) {
   );
 }
 
+/** A term/detail list in a hairline table (what you connect, what Ordinum runs). */
+function TermList({ items }: { items: readonly { term: string; detail: string }[] }) {
+  return (
+    <Reveal as="ul" stagger={0.04} amount={0.1} className="mt-8 border-t border-line md:mt-10">
+      {items.map((it) => (
+        <RevealItem key={it.term} as="li" className="grid gap-x-8 gap-y-1.5 border-b border-line py-4 sm:grid-cols-[220px_minmax(0,1fr)]">
+          <h3 className="text-[16px] leading-[1.4] font-semibold tracking-[-0.02em] text-text">{it.term}</h3>
+          <p className="max-w-[760px] text-[15px] leading-[1.65] text-muted">{it.detail}</p>
+        </RevealItem>
+      ))}
+    </Reveal>
+  );
+}
+
+function Connect({ area }: { area: ProductAreaT }) {
+  const c = area.connect;
+  return (
+    <Section id="connect" aria-labelledby="connect-title" className={SECTION_PAD}>
+      <SectionIntro kicker={c.kicker} title={c.title} titleId="connect-title" />
+      <TermList items={c.items} />
+    </Section>
+  );
+}
+
+function Runs({ area }: { area: ProductAreaT }) {
+  const r = area.runs;
+  return (
+    <Section id="runs" variant="charcoal" aria-labelledby="runs-title" className={SECTION_PAD}>
+      <SectionIntro kicker={r.kicker} title={r.title} titleId="runs-title" />
+      <TermList items={r.items} />
+    </Section>
+  );
+}
+
 function Outputs({ area }: { area: ProductAreaT }) {
   const o = area.outputs;
   return (
-    <Section id="outputs" variant="charcoal" aria-labelledby="outputs-title" className={SECTION_PAD}>
+    <Section id="outputs" aria-labelledby="outputs-title" className={SECTION_PAD}>
       <SectionIntro kicker={o.kicker} title={o.title} titleId="outputs-title" />
-      <Reveal as="ul" stagger={0.04} amount={0.05} className="hairline-grid mt-12 grid-cols-1 sm:grid-cols-2 md:mt-14 lg:grid-cols-3">
+      <Reveal as="ul" stagger={0.04} amount={0.05} className="hairline-grid mt-8 grid-cols-1 sm:grid-cols-2 md:mt-10 lg:grid-cols-3">
         {o.items.map((it, i) => (
           <RevealItem key={it.name} as="li" className={cn("bg-surface p-5 sm:p-6", fillLast(i, o.items.length))}>
             <h3 className={cn(mono, "text-lime")}>{it.name}</h3>
@@ -128,23 +187,26 @@ function Today({ area }: { area: ProductAreaT }) {
   const t = area.today;
   const cols = t.items.length === 1 ? "lg:grid-cols-1" : "lg:grid-cols-3";
   return (
-    <Section id="today" aria-labelledby="today-title" className={SECTION_PAD}>
+    <Section id="today" variant="charcoal" aria-labelledby="today-title" className={SECTION_PAD}>
       <SectionIntro kicker={t.kicker} title={t.title} titleMuted={t.titleMuted} titleId="today-title" />
-      <Reveal as="ul" stagger={0.05} amount={0.05} className={cn("hairline-grid mt-12 grid-cols-1 md:mt-14", cols)}>
+      <Reveal as="ul" stagger={0.05} amount={0.05} className={cn("hairline-grid mt-8 grid-cols-1 md:mt-10", cols)}>
         {t.items.map((it) => (
-          <RevealItem key={it.id} as="li" id={`support-${it.id}`} className="flex min-w-0 flex-col bg-bg p-6 sm:p-7">
-            <h3 className="text-[21px] leading-[1.25] font-semibold tracking-title text-text">{it.name}</h3>
-            <MaturityChip maturity={it.maturity} note={it.maturityNote} className="mt-4 self-start" />
-            <p className="mt-5 max-w-[760px] text-[15px] leading-[1.7] text-muted">{it.body}</p>
+          <RevealItem key={it.id} as="li" id={`support-${it.id}`} className="flex min-w-0 flex-col bg-bg p-6">
+            <h3 className="text-[19px] leading-[1.3] font-semibold tracking-title text-text">{it.name}</h3>
+            <div className="mt-3 flex flex-col items-start gap-2">
+              <MaturityChip maturity={it.maturity} note={it.maturityNote} />
+              <ChannelTag channel={it.channel} />
+            </div>
+            <p className="mt-4 max-w-[760px] text-[15px] leading-[1.65] text-muted">{it.body}</p>
             {it.limits && it.limits.length > 0 && (
               <>
-                <p className={cn(mono, "mt-6 text-subtle")}>Limits</p>
+                <p className={cn(mono, "mt-5 text-subtle")}>Limits</p>
                 <Bullets items={it.limits} mark="dashed" className="mt-3 [&_li]:text-[14px] [&_li]:text-muted" />
               </>
             )}
             <span aria-hidden="true" className="min-h-4 flex-1" />
             {it.link && (
-              <ArrowLink href={it.link.href} className="mt-4 self-start">
+              <ArrowLink href={it.link.href} className="mt-3 self-start">
                 {it.link.label}
               </ArrowLink>
             )}
@@ -159,15 +221,15 @@ function Today({ area }: { area: ProductAreaT }) {
   );
 }
 
-function TryIt({ area }: { area: ProductAreaT }) {
-  const t = area.tryIt;
+function Evaluate({ area }: { area: ProductAreaT }) {
+  const t = area.evaluate;
   return (
-    <Section id="try" variant="charcoal" aria-labelledby="try-title" className={SECTION_PAD}>
+    <Section id="evaluate" aria-labelledby="evaluate-title" className={SECTION_PAD}>
       <div className="grid gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-12">
         <div>
-          <SectionIntro kicker={t.kicker} title={t.title} titleId="try-title" className="lg:grid-cols-1" />
-          <Reveal as="ol" stagger={0.04} amount={0.1} className="mt-10 border-t border-line">
-            {t.steps.map((step, i) => (
+          <SectionIntro kicker={t.kicker} title={t.title} titleId="evaluate-title" className="lg:grid-cols-1" />
+          <Reveal as="ol" stagger={0.04} amount={0.1} className="mt-8 border-t border-line">
+            {EVALUATE_STEPS.map((step, i) => (
               <RevealItem key={step} as="li" className="grid grid-cols-[36px_minmax(0,1fr)] gap-x-3 border-b border-line py-4">
                 <span aria-hidden="true" className="pt-[3px] font-mono text-[11px] text-lime">
                   {String(i + 1).padStart(2, "0")}
@@ -176,8 +238,12 @@ function TryIt({ area }: { area: ProductAreaT }) {
               </RevealItem>
             ))}
           </Reveal>
+          <p className="mt-5 border-l border-line-2 pl-4 text-[14px] leading-[1.65] text-muted">{EVALUATE_NOTE}</p>
+          <Button href={PRIMARY_CTA.href} icon="→" className="mt-7">
+            {PRIMARY_CTA.label}
+          </Button>
         </div>
-        <Reveal className="lg:pt-[118px]">
+        <Reveal className="lg:pt-[96px]">
           <p className={cn(mono, "text-subtle")}>Read more</p>
           <LinkList links={t.links} className="mt-2" />
         </Reveal>

@@ -8,9 +8,10 @@ import { lifecycle, technology } from "@/lib/content";
 import { Disclosure, SECTION_PAD, SectionIntro, splitLabel } from "./shared";
 
 /**
- * /security #architecture (redirect target of /technology): the architecture overview
+ * /products #architecture (redirect target of /technology): the architecture overview
  * (PlatformMap: three tiers, every node labelled with its maturity), then the seven-stage
- * lifecycle (#lifecycle), collapsed behind a disclosure below md.
+ * lifecycle (#lifecycle) behind a disclosure, so the page stays compact. The content is in the
+ * static HTML either way.
  */
 export default function Architecture() {
   const a = technology.architecture;
@@ -33,11 +34,7 @@ export default function Architecture() {
           </div>
           <p className="max-w-[540px] text-[16px] leading-[1.75] text-muted">{lifecycle.lede}</p>
         </Reveal>
-        {/* md+: the lifecycle in full. Below md: behind a disclosure (the content is in the static HTML). */}
-        <Reveal className="mt-10 hidden md:mt-12 md:block" amount={0.05}>
-          <Lifecycle />
-        </Reveal>
-        <Disclosure summary={lifecycle.disclosure} className="mt-6 md:hidden">
+        <Disclosure summary={lifecycle.disclosure} className="mt-6">
           <Lifecycle className="mt-2" />
         </Disclosure>
       </div>

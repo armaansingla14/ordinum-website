@@ -2,7 +2,26 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { AI_METHODS_NOTE, HOSTED_CI_STATUS, flagshipVideo, demoWalkthrough, legal, nav, pages, site, testingAreas, type NavEntry, type NavGroup } from "../lib/content";
+import {
+  AI_METHODS_NOTE,
+  FLAGSHIP_LABEL,
+  HOSTED_CI_STATUS,
+  PRIMARY_CTA,
+  WATCH_DEMO,
+  agenticLoop,
+  contact,
+  demoWalkthrough,
+  flagshipVideo,
+  home,
+  legal,
+  nav,
+  pages,
+  security,
+  site,
+  testingAreas,
+  type NavEntry,
+  type NavGroup,
+} from "../lib/content";
 import { PENDING_LABEL, evidencePackages } from "../lib/evidence-packages";
 import { labsArticles } from "../lib/labs";
 import { REDIRECTS, ROUTES } from "./routes";
@@ -18,8 +37,8 @@ const FOUNDER_LINKEDIN = ["linkedin.com/in/armaansingla", "linkedin.com/in/aarav
 
 /**
  * Homepage copy budget. Copy pass (1 November 2026): the home page had 778 words of main text
- * (~/scratch/ordinum-human/wordcount-before.json); the brief cuts about a third and sets a hard
- * ceiling of 650 words. Word = whitespace-separated token with at least one Unicode letter.
+ * (~/scratch/ordinum-human/wordcount-before.json); the brief set a hard ceiling of 650 words, kept
+ * by the 9/10 pass. Word = whitespace-separated token with at least one Unicode letter.
  */
 const HOME_WORD_BASELINE = 778;
 const HOME_WORD_BUDGET = 650;
@@ -161,17 +180,38 @@ test("every nav group opens and lists its destinations", async ({ page }) => {
   }
 });
 
-test("header primary CTA is 'Talk to us' and leads to /contact", async ({ page }) => {
+test("header primary CTA is 'Request an evaluation' and leads to /contact", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  expect(nav.demo.label).toBe("Talk to us");
-  expect(nav.demo.href.startsWith("/contact")).toBe(true);
-  const cta = page.locator(`header a[href='${nav.demo.href}']`);
+  expect(nav.demo).toEqual(PRIMARY_CTA);
+  expect(PRIMARY_CTA).toEqual({ label: "Request an evaluation", href: "/contact" });
+  const cta = page.getByRole("banner").getByRole("link", { name: PRIMARY_CTA.label, exact: true });
   await expect(cta).toBeVisible();
-  await expect(cta).toContainText("Talk to us");
+  await expect(cta).toHaveAttribute("href", PRIMARY_CTA.href);
+  await expect(cta).toContainText(PRIMARY_CTA.label);
+  // Exactly one call to action in the header.
+  await expect(page.locator("header a[href*='cal.com']")).toHaveCount(0);
   await cta.click();
-  await expect(page).toHaveURL(/\/contact(#talk)?$/);
-  await expect(page.locator(`header a[href='${nav.demo.href}']`)).toHaveAttribute("aria-current", "page");
+  await expect(page).toHaveURL(/\/contact$/);
+  await expect(page.getByRole("banner").getByRole("link", { name: PRIMARY_CTA.label, exact: true })).toHaveAttribute("aria-current", "page");
+});
+
+test("CTAs: every link to /contact says 'Request an evaluation', every 'Watch demo' goes to /#demo, no competing buttons", async ({ page }) => {
+  for (const route of ROUTES) {
+    await page.goto(route);
+    const contactLabels = await page.locator("main a[href='/contact'], footer a[href='/contact']").allInnerTexts();
+    for (const label of contactLabels) expect(label.trim().toLowerCase(), route).toContain(PRIMARY_CTA.label.toLowerCase());
+    const demoHrefs = await page
+      .locator("a")
+      .filter({ hasText: /^\s*Watch demo/ })
+      .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+    for (const href of demoHrefs) expect(href, route).toBe(WATCH_DEMO.href);
+    // "Book a call", "Talk to us" and "Talk to the founders" are gone everywhere; Cal.com is linked only on /contact.
+    await expect(page.locator("a, button").filter({ hasText: /book a call|talk to us|talk to the founders/i }), route).toHaveCount(0);
+    if (route !== "/contact") await expect(page.locator("a[href*='cal.com']"), route).toHaveCount(0);
+  }
+  await page.goto("/contact");
+  await expect(page.locator("main a[href*='cal.com']")).toHaveCount(1);
 });
 
 test("mobile menu: accordion sections, focus trap, Escape closes", async ({ page }) => {
@@ -226,44 +266,100 @@ test("mobile menu opens the section that owns the current page", async ({ page }
   await expect(page.locator("nav[aria-label='Mobile']")).toHaveCount(0);
 });
 
-test("home hero: 'Watch the demo' -> the flagship recording and 'Talk to us'", async ({ page }) => {
+test("home hero: 'Request an evaluation' -> /contact and 'Watch demo' -> #demo", async ({ page }) => {
   await page.goto("/");
   const hero = page.locator("#top");
-  await expect(hero.locator("a[href='/demos#demo-flagship']")).toContainText("Watch the demo");
-  await expect(hero.locator("a[href='/contact#talk']")).toContainText("Talk to us");
+  await expect(hero.locator(`a[href='${PRIMARY_CTA.href}']`)).toContainText(PRIMARY_CTA.label);
+  await expect(hero.locator(`a[href='${WATCH_DEMO.href}']`)).toContainText(WATCH_DEMO.label);
+  await expect(page.locator("h1")).toContainText("Find security failures before they reach the real world.");
 });
 
-test("home: what and who, delivery, flagship recording, three steps, testing areas, two articles, one CTA band", async ({ page }) => {
+test("home: hero with availability and delivery, demo with strip and result, workflow, four areas, ambition, Labs, one band", async ({ page }) => {
   await page.goto("/");
   const main = page.locator("main");
   const hero = page.locator("#top");
-  await expect(hero).toContainText("testing tool for engineers");
-  await expect(hero).toContainText("CLI");
-  await expect(hero).toContainText("Runs on your machine");
+  await expect(hero).toContainText("firmware");
+  await expect(hero).toContainText("Firmware and physical hardware");
+  await expect(hero).toContainText("CLI with Python integrations");
+  await expect(hero).toContainText("guided by the founders");
+  await expect(hero).not.toContainText(/pip install|installed from source/i);
   const ids = await main.locator(":scope > section[id]").evaluateAll((els) => els.map((el) => el.id));
-  expect(ids).toEqual(["top", "demo", "workflow", "areas", "labs", "get-started"]);
-  await expect(main.locator("#demo video")).toHaveCount(1);
-  await expect(main.locator("#demo")).toContainText("not a PocketBase bug");
-  await expect(main.locator("#demo a[href^='/evidence/']")).toHaveCount(1);
-  await expect(main.locator("#workflow ol > li")).toHaveCount(3);
+  expect(ids).toEqual(["top", "demo", "workflow", "areas", "ambition", "labs", "get-started"]);
+
+  // Demo: the recording, the five-step strip, the before/after card, and the planted label exactly once.
+  const demo = main.locator("#demo");
+  await expect(demo.locator("video")).toHaveCount(1);
+  await expect(demo.locator("video")).toHaveAttribute("preload", "none");
+  await expect(demo.locator("video")).not.toHaveAttribute("autoplay", /.*/);
+  const strip = demo.locator("ol[aria-label] > li");
+  await expect(strip).toHaveCount(5);
+  for (const [i, step] of home.demo.strip.entries()) {
+    await expect(strip.nth(i)).toContainText(step.label);
+    await expect(strip.nth(i)).toContainText(step.value);
+  }
+  await expect(demo).toContainText("10/10");
+  await expect(demo).toContainText("0/10");
+  await expect(demo).toContainText("FIX_VERIFIED");
+  const demoText = (await demo.textContent()) ?? "";
+  expect(demoText.split(FLAGSHIP_LABEL).length - 1).toBe(1);
+  await expect(demo.locator("a[href^='/evidence/']")).toHaveCount(1);
+  await expect(demo.locator(`a[href='${flagshipVideo.transcript}']`)).toHaveCount(1);
+
+  await expect(main.locator("#workflow ol > li")).toHaveCount(5);
+  await expect(main.locator("#workflow")).toContainText("Diagram");
   for (const area of testingAreas) {
+    await expect(main.locator("#areas"), area.label).toContainText(area.label);
     for (const i of area.integrations) await expect(main.locator("#areas"), i.name).toContainText(i.name);
   }
-  await expect(main.locator("#labs li")).toHaveCount(2);
-  // No retired sections: the Nav2 showcase, the separate failure-to-fix stats and the boundaries block.
-  for (const id of ["recorded-run", "failure-to-fix", "boundaries", "product-areas"]) await expect(main.locator(`[id="${id}"]`)).toHaveCount(0);
-  // One pilot invitation, and no button repeats the hero's "Watch the demo".
+  await expect(main.locator("#areas")).toContainText("Firmware, native fuzzing, devices and physical hardware");
+  for (const label of ["Today", "In development", "Planned"]) await expect(main.locator("#ambition"), label).toContainText(label);
+  await expect(main.locator("#ambition")).toContainText(agenticLoop.note);
+  await expect(main.locator("#labs li")).toHaveCount(home.labs.slugs.length);
+  // One evaluation band; it does not repeat the hero's "Watch demo".
   await expect(main.locator("#get-started")).toHaveCount(1);
-  await expect(main.locator("#get-started a", { hasText: "Watch the demo" })).toHaveCount(0);
+  await expect(main.locator("#get-started a", { hasText: PRIMARY_CTA.label })).toHaveCount(1);
+  await expect(main.locator("#get-started a", { hasText: WATCH_DEMO.label })).toHaveCount(0);
 });
 
-test("moved sections keep their anchors: #how-it-works on /products; #architecture, #lifecycle, #reproduction, #network on /security", async ({ page }) => {
+test("home: the demo recording starts inside the first 1440x900 viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/", { waitUntil: "networkidle" });
+  const box = await page.locator("#demo video").boundingBox();
+  expect(box, "video has a box").not.toBeNull();
+  expect(box!.y).toBeGreaterThan(0);
+  expect(box!.y).toBeLessThan(900);
+});
+
+test("products: Transaction assurance has its own page; AI agent security separates the built part from the vision", async ({ page }) => {
+  await page.goto("/products/transactions");
+  const main = page.locator("main");
+  await expect(main).toContainText("reference application");
+  await expect(main).toContainText("not real payment software", { ignoreCase: true });
+  await expect(main).toContainText("NOT_FIXED in 10/10");
+  await page.goto("/products/agents");
+  await expect(page.locator("#scope li")).toHaveCount(2);
+  await expect(page.locator("#scope")).toContainText("Today");
+  await expect(page.locator("#scope")).toContainText("Planned");
+  for (const key of ["software", "agents", "robotics", "transactions"] as const) {
+    await page.goto(pages[key].href);
+    const ids = await page.locator("main > section[id]").evaluateAll((els) => els.map((el) => el.id));
+    const order = ["test", "example", "connect", "runs", "outputs", "today", "evaluate"];
+    expect(ids.filter((id) => order.includes(id)), key).toEqual(order);
+    await expect(page.locator("main"), key).not.toContainText(/pip install|installed from source/i);
+  }
+  await page.goto("/products/robotics");
+  await expect(page.locator("#example")).toContainText("Recorded simulation trace · harness artifact, not a Nav2 bug");
+});
+
+test("anchors: how a run works lives on /products; /security is deployment, data, isolation, CI and reporting", async ({ page }) => {
   await page.goto("/products");
-  await expect(page.locator("[id='how-it-works']")).toHaveCount(1);
-  for (const id of ["architecture", "lifecycle", "reproduction"]) await expect(page.locator(`[id="${id}"]`), `/products #${id}`).toHaveCount(0);
+  for (const id of ["how-it-works", "engine", "delivery", "capabilities", "outputs", "architecture", "lifecycle", "reproduction", "limitations"]) {
+    await expect(page.locator(`[id="${id}"]`), `/products #${id}`).toHaveCount(1);
+  }
   await page.goto("/security");
-  for (const id of ["architecture", "lifecycle", "reproduction", "network"]) await expect(page.locator(`[id="${id}"]`), `/security #${id}`).toHaveCount(1);
-  await expect(page.locator("#network tbody tr")).toHaveCount(5);
+  for (const id of ["deployment", "data", "network", "ci", "report"]) await expect(page.locator(`[id="${id}"]`), `/security #${id}`).toHaveCount(1);
+  for (const id of ["architecture", "lifecycle", "reproduction"]) await expect(page.locator(`[id="${id}"]`), `/security #${id}`).toHaveCount(0);
+  await expect(page.locator("#network tbody tr")).toHaveCount(security.network.rows.length);
 });
 
 test("CI wording: one sentence, used verbatim", async ({ page }) => {
@@ -396,8 +492,8 @@ test("old single-page hash links forward to the new pages", async ({ page }) => 
     ["contact", /\/contact$/],
     ["product", /\/products$/],
     ["why-ordinum", /\/products$/],
-    ["technology", /\/security#architecture$/],
-    ["stack", /\/security#architecture$/],
+    ["technology", /\/products#architecture$/],
+    ["stack", /\/products#architecture$/],
     ["vision", /\/roadmap$/],
     ["why-now", /\/roadmap#why-now$/],
     ["about", /\/about$/],
@@ -454,7 +550,8 @@ test("/demos: flagship card plays the recorded run with captions, labeled before
   await expect(page.locator("main > header #demo-flagship")).toHaveCount(1);
   await expect(card).toContainText("not a PocketBase bug");
   await expect(card).toContainText("FIX_VERIFIED");
-  await expect(card).toContainText("10/10 vs 0/10");
+  await expect(card).toContainText("Affected 10/10 vs fixed 0/10");
+  expect(((await card.textContent()) ?? "").split(FLAGSHIP_LABEL).length - 1).toBe(1);
   await expect(card).toContainText(flagshipVideo.duration);
   const video = card.locator("video");
   await expect(video).toHaveCount(1);
@@ -480,7 +577,8 @@ test("/demos: flagship card plays the recorded run with captions, labeled before
   await expect(main.locator("a[href='/evidence/testbed-planted-control']").first()).toBeVisible();
 });
 
-test("Labs: articles lead with question and result and carry author, date, methods note and evidence links", async ({ page }) => {
+test("Labs: articles lead with the finding and carry author, date, methods note and evidence links", async ({ page }) => {
+  const order = ["finding", "tested", "why-it-matters", "how-it-worked", "what-it-shows", "not-established", "artifacts", "methods-note"];
   for (const article of labsArticles) {
     await page.goto(`/labs/${article.slug}`);
     const main = page.locator("main");
@@ -488,24 +586,35 @@ test("Labs: articles lead with question and result and carry author, date, metho
     await expect(main).toContainText("Armaan Singla");
     await expect(main).toContainText(article.date);
     await expect(main).toContainText(AI_METHODS_NOTE);
-    const order = ["question", "leading-result", "results", "system", "method", "reproduce", "article-limitations", "related", "corrections", "methods-note"];
     for (const id of order) {
       await expect(main.locator(`[id="${id}"]`), `${article.slug} #${id}`).toHaveCount(1);
     }
-    // Question and result first, methods note last.
+    // The finding first, the methods note last.
     const ids = await main.locator("article section[id]").evaluateAll((els) => els.map((el) => el.id));
     const positions = order.map((id) => ids.indexOf(id));
     expect(positions, article.slug).toEqual([...positions].sort((a, b) => a - b));
+    expect(ids[0], article.slug).toBe("finding");
+    // Technical details are collapsed by default.
+    await expect(main.locator("#artifacts details")).toHaveCount(1);
+    await expect(main.locator("#artifacts details")).not.toHaveAttribute("open", /.*/);
     expect(article.reproducibility.some((l) => l.href.startsWith("/evidence/"))).toBe(true);
   }
   await page.goto("/labs/research-summary");
   await expect(page.locator("[data-withdrawn]")).toHaveCount(1);
-  // The index lists published articles only: no category counts, no placeholders.
+  // The agent article is clearly about our own reference application.
+  await page.goto("/labs/ordinum-found-a-bug-in-our-own-reference-agent");
+  for (const text of ["our own reference application", "not third-party software", "release candidate", "CANNOT_VERIFY", "9a70c5c"]) {
+    await expect(page.locator("main"), text).toContainText(text, { ignoreCase: true });
+  }
+  // The index lists published articles only, newest finding first: no category counts, no placeholders.
   await page.goto("/labs");
-  await expect(page.locator("#articles li")).toHaveCount(labsArticles.length);
+  const hrefs = await page.locator("#articles li a").evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+  expect(hrefs).toEqual(labsArticles.map((a) => `/labs/${a.slug}`));
+  expect(hrefs[0]).toBe("/labs/ordinum-found-a-bug-in-our-own-reference-agent");
   await expect(page.locator("#in-preparation")).toHaveCount(0);
   await expect(page.locator("main")).not.toContainText(/in preparation/i);
   await expect(page.locator("main ul[aria-label='Categories']")).toHaveCount(0);
+  await expect(page.locator("#sources")).toContainText("Release candidate");
 });
 
 test("unknown route returns 404", async ({ page }) => {
@@ -564,8 +673,23 @@ test("contact form: labelled short fields, optional details, privacy link", asyn
     await expect(form.locator(`[name='${name}']`), name).toHaveCount(0);
   }
   await expect(form.locator("a[href='/privacy']")).toHaveCount(1);
-  // Talk-to-us path is the #talk anchor on the same page.
+  // Heading, the plain "what happens" steps and the next-steps line under the form.
+  await expect(page.locator("h1")).toHaveText(contact.talk.title);
+  await expect(page.locator("main")).toContainText(contact.talk.body);
+  await expect(page.locator("main #talk ol > li")).toHaveCount(contact.talk.steps.length);
+  await expect(form).toContainText(contact.form.nextLine);
+  await expect(form.locator("button[type='submit']")).toContainText(contact.form.submit);
+  // Old /contact#talk links still land on an element.
   await expect(page.locator("#talk")).toHaveCount(1);
+});
+
+test("contact form: client-side validation message without sending", async ({ page }) => {
+  await page.goto("/contact", { waitUntil: "networkidle" });
+  const form = page.locator("#contact-form form");
+  await form.locator("[name='email']").fill("not-an-email");
+  await form.locator("button[type='submit']").click();
+  await expect(form.locator("[role='status']")).toHaveText(contact.form.messages.invalid);
+  await expect(form.locator("[name='email']")).toHaveAttribute("aria-invalid", "true");
 });
 
 test.describe("Nav2 walkthrough without JavaScript", () => {

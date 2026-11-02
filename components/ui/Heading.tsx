@@ -15,7 +15,7 @@ type HeadingProps = {
   className?: string;
 };
 
-/** Section heading: clamp(39px, 4.1vw, 60px), weight 600, tracking -0.06em, leading 1.08. */
+/** Section heading: clamp(30px, 3.3vw, 46px), weight 600, tracking -0.06em, leading 1.1. */
 export default function Heading({
   children,
   muted,
@@ -31,7 +31,7 @@ export default function Heading({
       className={cn(
         "font-semibold tracking-display text-balance",
         // Line-height lives inside the font-size utility so tailwind-merge can never drop it.
-        size === "md" ? "text-[clamp(39px,4.1vw,60px)]/[1.08]" : "text-[clamp(44px,6vw,82px)]/[1.03]",
+        size === "md" ? "text-[clamp(30px,3.3vw,46px)]/[1.1]" : "text-[clamp(36px,4.4vw,60px)]/[1.05]",
         tone === "dark" ? "text-text" : "text-sage-ink",
         className,
       )}

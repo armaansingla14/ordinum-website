@@ -161,14 +161,16 @@ function Confirmation({ state }: { state: InquiryFormState }) {
         </p>
       </div>
       <div className="flex flex-col gap-5 border-t border-[#23352e] pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <Button
+        <a
           href={contact.talk.calCta.href}
-          variant="secondary"
-          size="sm"
-          className="border-[#4a6157] focus-visible:outline-lime"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-11 items-center gap-2 text-[13.5px] text-[#d6e2da] underline decoration-[#41584e] underline-offset-4 transition-colors hover:text-lime hover:decoration-lime focus-visible:outline-lime"
         >
           {contact.talk.calCta.label}
-        </Button>
+          <span aria-hidden="true">↗</span>
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
         <a
           href={`mailto:${site.email}`}
           className="break-all font-mono text-[12px] tracking-[0.02em] text-[#a9bdb1] underline decoration-[#41584e] underline-offset-4 transition-colors hover:text-lime hover:decoration-lime focus-visible:outline-lime"
@@ -448,12 +450,13 @@ export default function DemoForm({ className }: { className?: string }) {
                 aria-live="polite"
                 className={cn(
                   "min-h-[1.5em] text-[13px] leading-[1.55] sm:max-w-[52%] sm:text-right",
-                  statusMessage ? "text-orange" : "text-[#7d958a]",
+                  statusMessage ? "text-orange" : "text-[#b4c7bb]",
                 )}
               >
-                {statusMessage}
+                {statusMessage || (isPending ? `${copy.pending}.` : "")}
               </p>
             </div>
+            <p className="mt-5 border-t border-[#23352e] pt-4 text-[13.5px] leading-[1.6] text-[#a9bdb1]">{copy.nextLine}</p>
           </div>
         </form>
       )}

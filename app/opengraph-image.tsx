@@ -49,7 +49,7 @@ async function loadGoogleFont(
 
 const KICKER = hero.eyebrow.toUpperCase();
 const FOOTER_LEFT = "ordinum.org";
-const FOOTER_RIGHT = `${hero.meta[0]} · DEMOS · LABS · EVIDENCE`;
+const FOOTER_RIGHT = `${hero.meta[0]} · RUNS ON YOUR MACHINES`;
 
 /*
  * Status strip: the product areas from the nav (lib/content.ts nav, Products group), each with its
@@ -57,6 +57,14 @@ const FOOTER_RIGHT = `${hero.meta[0]} · DEMOS · LABS · EVIDENCE`;
  * built area so "Built & validated" is never read without "simulation only".
  */
 const PRODUCTS = (nav.entries as readonly NavEntry[]).find((e): e is NavGroup => e.kind === "group" && e.id === "products");
+/** Short names so five cells fit the 1200px card. */
+const SHORT: Record<string, string> = {
+  "/products/software": "Software & APIs",
+  "/products/agents": "AI agents",
+  "/products/robotics": "Robotics",
+  "/products/transactions": "Transactions",
+  "/roadmap": "Firmware · hardware",
+};
 const GROUPS = (PRODUCTS?.items ?? [])
   .filter((i) => i.href !== "/products")
   .map((i) => {
@@ -66,7 +74,7 @@ const GROUPS = (PRODUCTS?.items ?? [])
       key: i.href,
       maturity,
       label: MATURITY_LABELS[maturity].toUpperCase(),
-      names: (roadmap ? "Firmware · devices · hardware" : i.label).toUpperCase(),
+      names: (SHORT[i.href] ?? i.label).toUpperCase(),
       scope: (roadmap ? "Roadmap" : (i.maturityNote ?? "")).toUpperCase(),
     };
   });
@@ -156,7 +164,7 @@ export default async function OpengraphImage() {
             style={{
               display: "flex",
               flexDirection: "column",
-              fontSize: 64,
+              fontSize: 58,
               fontWeight: 600,
               lineHeight: 1.06,
               letterSpacing: -3.4,
@@ -175,8 +183,8 @@ export default async function OpengraphImage() {
               border: `1px solid ${C.line2}`,
               backgroundColor: C.panel,
               fontFamily: mono,
-              fontSize: 12,
-              letterSpacing: 1.1,
+              fontSize: 11,
+              letterSpacing: 0.8,
             }}
           >
             {GROUPS.map((g, i) => (

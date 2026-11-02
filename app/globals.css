@@ -80,6 +80,11 @@
     scroll-margin-top: 88px;
   }
 
+  /* Long identifiers (property names, test names, commit paths) wrap instead of overflowing at 320px. */
+  main :is(p, li, dd, dt, td, th, h2, h3, h4, figcaption, blockquote) {
+    overflow-wrap: anywhere;
+  }
+
   ::selection {
     background: var(--color-lime);
     color: var(--color-bg);

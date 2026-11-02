@@ -6,7 +6,7 @@ import MoreRuns, { FlagshipDemo } from "@/components/sections/demos/DemoGallery"
 
 export const metadata: Metadata = pageMetadata("demos");
 
-/** /demos: the flagship recording at the top (#demo-flagship), then the other runs as compact cards. */
+/** /demos: the flagship recording at the top (#demo-flagship, with its strip and result card), then the other runs as compact cards. */
 export default function DemosPage() {
   return (
     <>

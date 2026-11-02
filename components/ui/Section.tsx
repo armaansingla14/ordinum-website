@@ -14,7 +14,7 @@ type SectionProps = {
 } & Omit<ComponentPropsWithoutRef<"section">, "id" | "children">;
 
 /**
- * Page section: 79px vertical padding on mobile, 125px from md up.
+ * Page section: 64px vertical padding on mobile, 96px from md up.
  * Variants: "default" (page bg), "charcoal" (#101517 band with hairline top/bottom),
  * "sage" (light CTA band; also switches focus rings to dark ink).
  */
@@ -31,7 +31,7 @@ export default function Section({
     <section
       id={id}
       className={cn(
-        "relative py-[79px] md:py-[125px]",
+        "relative py-[64px] md:py-[96px]",
         variant === "charcoal" && "border-y border-line bg-charcoal",
         variant === "sage" && "on-sage bg-sage text-sage-ink",
         className,

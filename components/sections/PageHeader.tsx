@@ -32,14 +32,14 @@ export default function PageHeader({
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_85%_80%,rgb(123_166_137/0.08),transparent_55%)]"
       />
-      <Container className="pb-16 pt-16 md:pb-24 md:pt-28">
+      <Container className="pb-12 pt-12 md:pb-16 md:pt-20">
         <Reveal immediate>
           <Kicker dot index={index}>
             {header.kicker}
           </Kicker>
           <h1
             id="page-title"
-            className="mt-6 max-w-[1050px] text-[clamp(38px,9.6vw,48px)] font-[650] leading-[1.04] tracking-hero text-balance sm:mt-7 sm:text-[clamp(48px,5.4vw,84px)]"
+            className="mt-6 max-w-[1050px] text-[clamp(38px,9.6vw,48px)] font-[650] leading-[1.04] tracking-hero text-balance sm:mt-7 sm:text-[clamp(44px,4.8vw,68px)]"
           >
             <span className="block">{header.title}</span>
             {header.titleMuted && (

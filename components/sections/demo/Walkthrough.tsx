@@ -48,16 +48,6 @@ export default function Walkthrough() {
             <Button href={demoPage.midCta.primary.href} icon="→">
               {demoPage.midCta.primary.label}
             </Button>
-            <a
-              href={demoPage.midCta.call.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center gap-2 font-mono text-[11px] tracking-[0.1em] text-muted uppercase underline decoration-line-2 underline-offset-4 transition-colors hover:text-lime hover:decoration-lime"
-            >
-              {demoPage.midCta.call.label}
-              <span aria-hidden="true">↗</span>
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
           </div>
         </div>
         <div className="bg-bg p-6 sm:p-8">
